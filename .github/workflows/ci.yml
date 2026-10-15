@@ -78,4 +78,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: "22", cache: "npm" }
-      - run: npm audit --audit-level=high
+      # Production dependencies only: dev tooling (eslint-config-next -> braces)
+      # carries an advisory with no upstream fix and never ships to users.
+      - run: npm audit --audit-level=high --omit=dev
