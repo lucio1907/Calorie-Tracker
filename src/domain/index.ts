@@ -5,6 +5,7 @@ export * from "./meal";
 export * from "./calculators/assert";
 export * from "./calculators/bmr";
 export * from "./calculators/tdee";
+export * from "./calculators/calorie-floor";
 export * from "./calculators/exercise";
 export * from "./calculators/daily-balance";
 export * from "./nutrition";

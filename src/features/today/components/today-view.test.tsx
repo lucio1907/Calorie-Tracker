@@ -6,10 +6,13 @@ import { TodayView } from "./today-view";
 
 const ready: TodaySummary = {
   status: "ready",
+  bmrKcal: 1780,
   tdeeKcal: 2759,
   goal: "maintain",
   goalKgPerWeek: 0,
   goalAdjustmentKcal: 0,
+  minimumKcal: 1500,
+  floorRaiseKcal: 0,
   targetKcal: 2759,
   consumed: { kcal: 1500.4, protein: 90.25, carbs: 150, fat: 50.5 },
   exerciseKcal: 300.3,
@@ -64,6 +67,50 @@ describe("TodayView", () => {
     ]);
   });
 
+  it("says when the target was raised to the safe minimum, and by how much", () => {
+    render(
+      <TodayView
+        dateLabel="Thursday, October 15"
+        summary={{ ...ready, goal: "lose", goalKgPerWeek: 1.5, goalAdjustmentKcal: -1650, floorRaiseKcal: 391, targetKcal: 1500 }}
+      />,
+    );
+
+    const target = screen.getByRole("group", { name: t.targetHeading });
+    expect(within(target).getAllByRole("term").map((term) => term.textContent)).toEqual([
+      t.targetBreakdown.tdee,
+      t.targetBreakdown.lose("1.5"),
+      t.targetBreakdown.floor("1500"),
+      t.targetBreakdown.target,
+    ]);
+    // 2759 - 1650 + 391 = 1500.
+    expect(within(target).getByText(t.targetBreakdown.floor("1500")).nextSibling).toHaveTextContent("391");
+    expect(within(target).getByText(t.targetBreakdown.target).nextSibling).toHaveTextContent("1500");
+  });
+
+  it("shows no safe-minimum line when the target is above it", () => {
+    render(<TodayView dateLabel="Thursday, October 15" summary={ready} />);
+
+    expect(screen.queryByText(t.targetBreakdown.floor("1500"))).not.toBeInTheDocument();
+  });
+
+  it("warns, without blocking, when the target is below BMR", () => {
+    render(
+      <TodayView
+        dateLabel="Thursday, October 15"
+        summary={{ ...ready, goal: "lose", goalKgPerWeek: 0.5, goalAdjustmentKcal: -550, targetKcal: 1586 }}
+      />,
+    );
+
+    expect(screen.getByText(t.belowBmrWarning("1780"))).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: t.remainingLabel })).toBeInTheDocument();
+  });
+
+  it("does not warn when the target is at or above BMR", () => {
+    render(<TodayView dateLabel="Thursday, October 15" summary={{ ...ready, targetKcal: 1780 }} />);
+
+    expect(screen.queryByText(t.belowBmrWarning("1780"))).not.toBeInTheDocument();
+  });
+
   it("shows macro totals against their targets", () => {
     render(<TodayView dateLabel="Thursday, October 15" summary={ready} />);
 
@@ -93,7 +140,7 @@ describe("TodayView", () => {
     );
 
     expect(screen.getByText(t.setupMessage)).toBeInTheDocument();
-    expect(screen.getByText(t.missing(["birth date", "weight"]))).toBeInTheDocument();
+    expect(screen.getByText(t.missing([t.missingFields.birthDate, t.missingFields.weight]))).toBeInTheDocument();
     expect(screen.getByRole("link", { name: t.setupAction })).toHaveAttribute("href", "/settings");
     expect(screen.queryByRole("region", { name: t.remainingLabel })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: t.logFood })).toHaveAttribute("href", "/diary");

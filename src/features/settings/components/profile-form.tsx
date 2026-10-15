@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { Button, SelectField, TextField } from "@/components/ui";
-import { ACTIVITY_LEVELS, dailyAdjustment, GOALS, SEXES, type CalendarDate, type Goal } from "@/domain";
+import { ACTIVITY_LEVELS, dailyAdjustment, GOALS, MIN_DAILY_KCAL, SEXES, type CalendarDate, type Goal } from "@/domain";
 import { toDecimal } from "@/features/foods/lib/food-schema";
 import { formatKcal } from "@/features/foods/lib/format";
-import { macroSplitTotal, PROFILE_LIMITS } from "../lib/profile-schema";
+import { latestBirthDate, macroSplitTotal, PROFILE_LIMITS } from "../lib/profile-schema";
 import type { ProfileFieldName, ProfileFormState, ProfileFormValues } from "../lib/types";
 import { settingsStrings } from "../strings";
 
@@ -18,7 +18,11 @@ const PERCENT_FIELDS = [
   { name: "fatPct", label: p.fatPct },
 ] as const;
 
-/** "≈ 550 kcal/day below TDEE" for a valid rate; null while the rate is blank or out of range. */
+/**
+ * "≈ 550 kcal/day below TDEE" for a valid rate (plus the safe-minimum note
+ * when losing, since Today may raise the target); null while the rate is
+ * blank or out of range.
+ */
 function rateEffect(goal: string, rate: string): string | null {
   const parsed = toDecimal(rate);
   const { min, max } = PROFILE_LIMITS.goalKgPerWeek;
@@ -26,13 +30,14 @@ function rateEffect(goal: string, rate: string): string | null {
     return null;
   }
   const kcal = formatKcal(Math.abs(dailyAdjustment(goal, parsed)));
-  return p.rateEffect(kcal, goal === "lose" ? "below" : "above");
+  if (goal === "gain") return p.rateEffect(kcal, "above");
+  return `${p.rateEffect(kcal, "below")} ${p.floorHint(formatKcal(MIN_DAILY_KCAL.female), formatKcal(MIN_DAILY_KCAL.male))}`;
 }
 
 type ProfileFormProps = {
   /** Initial text for every field (the stored profile or the column defaults). */
   defaults: ProfileFormValues;
-  /** The app's calendar day; birth dates after it are not selectable. */
+  /** The app's calendar day; birth dates of people under the minimum age are not selectable. */
   today: CalendarDate;
   state: ProfileFormState;
   action?: (formData: FormData) => void;
@@ -82,7 +87,7 @@ export function ProfileForm({ defaults, today, state, action, pending = false }:
               </option>
             ))}
           </SelectField>
-          <TextField label={p.birthDate} type="date" required max={today} min="1900-01-02" {...field("birthDate")} />
+          <TextField label={p.birthDate} type="date" required max={latestBirthDate(today)} min="1900-01-02" {...field("birthDate")} />
           <TextField
             label={p.heightCm}
             inputMode="decimal"

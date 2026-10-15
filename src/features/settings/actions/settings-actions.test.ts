@@ -121,9 +121,9 @@ describe("saveProfile", () => {
   });
 
   it("bounds the birth date with the Buenos Aires day, not the UTC day", async () => {
-    // Local today is 2026-10-15, so a 2025-10-16 birth date is still under a year old.
-    const state = await saveProfile(initialProfileFormState, form({ ...fields, birthDate: "2025-10-16" }));
-    expect(state.fieldErrors).toEqual({ birthDate: t.validation.birthDateRange });
+    // Local today is 2026-10-15, so someone born 2008-10-16 is still 17 (18 already by the UTC day).
+    const state = await saveProfile(initialProfileFormState, form({ ...fields, birthDate: "2008-10-16" }));
+    expect(state.fieldErrors).toEqual({ birthDate: t.validation.minAge(18) });
   });
 
   it("reports a database error without revalidating", async () => {

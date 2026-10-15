@@ -28,7 +28,8 @@ describe("ProfileForm", () => {
 
     expect(screen.getByLabelText(p.sex)).toHaveValue("male");
     expect(screen.getByLabelText(p.birthDate)).toHaveValue("1996-01-10");
-    expect(screen.getByLabelText(p.birthDate)).toHaveAttribute("max", TODAY);
+    // Latest birth date of an 18-year-old.
+    expect(screen.getByLabelText(p.birthDate)).toHaveAttribute("max", "2008-10-15");
     expect(screen.getByLabelText(p.heightCm)).toHaveValue("180");
     expect(screen.getByLabelText(p.activityLevel)).toHaveValue("moderate");
     expect(screen.getByLabelText(p.goal)).toHaveValue("lose");
@@ -58,6 +59,18 @@ describe("ProfileForm", () => {
 
     await user.selectOptions(screen.getByLabelText(p.goal), "maintain");
     expect(screen.queryByLabelText(p.goalKgPerWeek)).not.toBeInTheDocument();
+  });
+
+  it("notes the safe minimum next to a weight-loss rate", async () => {
+    const user = userEvent.setup();
+    render(<ProfileForm defaults={{ ...stored, goalKgPerWeek: "" }} today={TODAY} state={initialProfileFormState} />);
+
+    const rate = screen.getByLabelText(p.goalKgPerWeek);
+    await user.type(rate, "1.5");
+
+    expect(rate).toHaveAccessibleDescription(
+      `${p.rateHint(0.05, 1.5)} ${p.rateEffect("1650", "below")} ${p.floorHint("1200", "1500")}`,
+    );
   });
 
   it("updates the macro total while typing", async () => {

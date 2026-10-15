@@ -12,8 +12,11 @@ export const todayStrings = {
     tdee: "TDEE",
     lose: (kgPerWeek: string) => `− Lose ${kgPerWeek} kg/week`,
     gain: (kgPerWeek: string) => `+ Gain ${kgPerWeek} kg/week`,
+    floor: (minimum: string) => `+ Raised to safe minimum (${minimum} kcal)`,
     target: "= Target",
   },
+  belowBmrWarning: (bmr: string) =>
+    `Your target is below your BMR (${bmr} kcal). Eating this little for long is hard to sustain; consider a slower rate.`,
   equation: {
     target: "Target",
     exercise: "+ Exercise",
@@ -30,7 +33,7 @@ export const todayStrings = {
   setupMessage: "Complete your profile to get a daily calorie target.",
   missingFields: {
     sex: "sex",
-    birthDate: "birth date",
+    birthDate: "birth date (18 or older)",
     height: "height",
     activityLevel: "activity level",
     weight: "weight",

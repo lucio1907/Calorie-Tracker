@@ -22,6 +22,8 @@ export const settingsStrings = {
     goalKgPerWeek: "Rate (kg per week)",
     rateHint: (min: number, max: number) => `Between ${min} and ${max} kg.`,
     rateEffect: (kcal: string, direction: "below" | "above") => `≈ ${kcal} kcal/day ${direction} TDEE.`,
+    floorHint: (female: string, male: string) =>
+      `The daily target never goes below ${female} kcal (women) or ${male} kcal (men).`,
     macrosLegend: "Macro split",
     macrosHint: "Percent of the daily target. Must add up to 100%.",
     proteinPct: "Protein (%)",
@@ -64,7 +66,8 @@ export const settingsStrings = {
     number: "Enter a number.",
     wholeNumber: "Enter a whole number.",
     date: "Enter a valid date.",
-    birthDateRange: "Enter a birth date after 1900 and at least a year ago.",
+    birthDateRange: "Enter a birth date after 1900.",
+    minAge: (years: number) => `You must be at least ${years} years old.`,
     heightRange: (min: number, max: number) => `Enter a height between ${min} and ${max} cm.`,
     rateRange: (min: number, max: number) => `Enter between ${min} and ${max} kg per week.`,
     pctRange: "Enter a value from 0 to 100.",

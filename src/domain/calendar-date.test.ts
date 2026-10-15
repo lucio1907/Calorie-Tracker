@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addDays, ageOnDate, calendarDateInZone, isCalendarDate, minutesOfDayInZone } from "./calendar-date";
+import { addDays, addYears, ageOnDate, calendarDateInZone, isCalendarDate, minutesOfDayInZone } from "./calendar-date";
 
 const BUENOS_AIRES = "America/Argentina/Buenos_Aires";
 
@@ -70,5 +70,24 @@ describe("ageOnDate", () => {
   it("is zero or negative for birth dates on or after the date", () => {
     expect(ageOnDate("2026-10-15", "2026-10-15")).toBe(0);
     expect(ageOnDate("2027-01-01", "2026-10-15")).toBe(-1);
+  });
+});
+
+describe("addYears", () => {
+  it("moves the year, keeping month and day", () => {
+    expect(addYears("2026-10-15", -18)).toBe("2008-10-15");
+    expect(addYears("2024-02-29", 4)).toBe("2028-02-29");
+  });
+
+  it("uses 28 February when 29 February does not exist in the target year", () => {
+    expect(addYears("2028-02-29", -18)).toBe("2010-02-28");
+  });
+
+  it("gives the latest birth date that has reached an age on a date", () => {
+    for (const today of ["2026-10-15", "2028-02-29", "2026-03-01", "2026-12-31"]) {
+      const latest = addYears(today, -18);
+      expect(ageOnDate(latest, today)).toBe(18);
+      expect(ageOnDate(addDays(latest, 1), today)).toBe(17);
+    }
   });
 });

@@ -1,8 +1,9 @@
 import {
   ACTIVITY_LEVELS,
-  ageOnDate,
+  addYears,
   GOALS,
   isCalendarDate,
+  MIN_AGE_YEARS,
   SEXES,
   type ActivityLevel,
   type CalendarDate,
@@ -25,15 +26,21 @@ const v = settingsStrings.validation;
  * Form limits. They sit inside the CHECK constraints on public.profiles
  * (height 0-300 cm, rate 0-1.5 kg/week, birth date after 1900-01-01,
  * percentages 0-100 adding up to 100) and are a bit stricter where the
- * database bound would accept an obvious typo.
+ * database bound would accept an obvious typo. Users must be adults
+ * (MIN_AGE_YEARS): the target formulas are adult guidelines.
  */
 export const PROFILE_LIMITS = {
   heightCm: { min: 50, max: 250 },
   goalKgPerWeek: { min: 0.05, max: 1.5 },
   /** Exclusive lower bound, as in the column check. */
   birthDateAfter: "1900-01-01",
-  minAgeYears: 1,
+  minAgeYears: MIN_AGE_YEARS,
 } as const;
+
+/** Latest birth date of someone at least the minimum age on `today`. */
+export function latestBirthDate(today: CalendarDate): CalendarDate {
+  return addYears(today, -PROFILE_LIMITS.minAgeYears);
+}
 
 /** profiles column defaults, used before the row exists. */
 const COLUMN_DEFAULTS = { goal: "maintain", proteinPct: 30, carbsPct: 40, fatPct: 30 } as const;
@@ -70,9 +77,9 @@ function parseBirthDate(raw: FormDataEntryValue | null, today: CalendarDate): Pa
   const value = text(raw);
   if (value === "") return { ok: false, error: v.required };
   if (!isCalendarDate(value)) return { ok: false, error: v.date };
-  const tooOld = value <= PROFILE_LIMITS.birthDateAfter;
-  const tooYoung = ageOnDate(value, today) < PROFILE_LIMITS.minAgeYears;
-  return tooOld || tooYoung ? { ok: false, error: v.birthDateRange } : { ok: true, value };
+  if (value <= PROFILE_LIMITS.birthDateAfter) return { ok: false, error: v.birthDateRange };
+  if (value > latestBirthDate(today)) return { ok: false, error: v.minAge(PROFILE_LIMITS.minAgeYears) };
+  return { ok: true, value };
 }
 
 function parsePercentage(raw: FormDataEntryValue | null): Parsed<number> {

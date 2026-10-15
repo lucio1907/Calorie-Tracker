@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { settingsStrings } from "../strings";
-import { macroSplitTotal, parseProfileForm, profileFormDefaults, PROFILE_LIMITS } from "./profile-schema";
+import { latestBirthDate, macroSplitTotal, parseProfileForm, profileFormDefaults, PROFILE_LIMITS } from "./profile-schema";
 import type { ProfileFormValues } from "./types";
 
 const v = settingsStrings.validation;
@@ -84,20 +84,26 @@ describe("parseProfileForm", () => {
     });
   });
 
-  it.each([
-    ["1900-01-01", "on the database's lower bound"],
-    ["2026-10-15", "today"],
-    ["2025-10-16", "less than a year ago"],
-    ["2030-01-01", "in the future"],
-  ])("rejects a birth date %s (%s)", (birthDate) => {
-    expect(parseProfileForm(form({ ...valid, birthDate }), TODAY)).toMatchObject({
+  it("rejects a birth date on the database's lower bound", () => {
+    expect(parseProfileForm(form({ ...valid, birthDate: "1900-01-01" }), TODAY)).toMatchObject({
       ok: false,
       fieldErrors: { birthDate: v.birthDateRange },
     });
   });
 
-  it("accepts a birth date exactly one year ago", () => {
-    expect(parseProfileForm(form({ ...valid, birthDate: "2025-10-15" }), TODAY)).toMatchObject({ ok: true });
+  it.each([
+    ["2008-10-16", "turning 18 tomorrow"],
+    ["2026-10-15", "today"],
+    ["2030-01-01", "in the future"],
+  ])("rejects a birth date %s (%s) as under the minimum age", (birthDate) => {
+    expect(parseProfileForm(form({ ...valid, birthDate }), TODAY)).toMatchObject({
+      ok: false,
+      fieldErrors: { birthDate: v.minAge(PROFILE_LIMITS.minAgeYears) },
+    });
+  });
+
+  it("accepts someone turning 18 today", () => {
+    expect(parseProfileForm(form({ ...valid, birthDate: "2008-10-15" }), TODAY)).toMatchObject({ ok: true });
   });
 
   it.each([["49.9"], ["250.1"], ["0"], ["-170"]])("rejects a height of %s cm", (heightCm) => {
@@ -156,6 +162,17 @@ describe("parseProfileForm", () => {
 
   it("ignores fields it does not know (e.g. a forged user_id)", () => {
     expect(parseProfileForm(form({ ...valid, user_id: "someone-else" }), TODAY)).toMatchObject({ ok: true });
+  });
+});
+
+describe("latestBirthDate", () => {
+  it("is the birth date of someone turning 18 on the given day", () => {
+    expect(PROFILE_LIMITS.minAgeYears).toBe(18);
+    expect(latestBirthDate(TODAY)).toBe("2008-10-15");
+  });
+
+  it("falls back to 28 February when today is 29 February", () => {
+    expect(latestBirthDate("2028-02-29")).toBe("2010-02-28");
   });
 });
 

@@ -1,11 +1,14 @@
 import {
   ACTIVITY_LEVELS,
   ageOnDate,
+  applyCalorieFloor,
   calculateBmr,
   calculateTdee,
   calorieTarget,
   GOALS,
   isCalendarDate,
+  MIN_AGE_YEARS,
+  minimumDailyKcal,
   remainingKcal,
   SEXES,
   type ActivityLevel,
@@ -50,13 +53,19 @@ export type TodaySummary =
   | { status: "incomplete"; missing: MissingProfileField[] }
   | {
       status: "ready";
+      /** BMR in whole kcal (a target below it deserves a warning). */
+      bmrKcal: number;
       /** TDEE in whole kcal. */
       tdeeKcal: number;
       goal: Goal;
       goalKgPerWeek: number;
-      /** Daily kcal the goal adds (gain) or removes (lose); tdeeKcal + goalAdjustmentKcal = targetKcal. */
+      /** Daily kcal the goal adds (gain) or removes (lose). */
       goalAdjustmentKcal: number;
-      /** TDEE adjusted for the goal, in whole kcal; never negative. */
+      /** Safe minimum daily target for the user's sex. */
+      minimumKcal: number;
+      /** kcal added to reach minimumKcal; 0 when the goal-adjusted target is already at or above it. */
+      floorRaiseKcal: number;
+      /** tdeeKcal + goalAdjustmentKcal + floorRaiseKcal, in whole kcal; never below minimumKcal. */
       targetKcal: number;
       consumed: Nutrients;
       exerciseKcal: number;
@@ -88,11 +97,11 @@ function toGoal(profile: TodayProfile): { goal: Goal; kgPerWeek: number } {
   return Number.isFinite(rate) && rate > 0 ? { goal, kgPerWeek: rate } : { goal: "maintain", kgPerWeek: 0 };
 }
 
-/** Age on `today`, or null when the birth date is unusable (missing, invalid, or less than a year ago). */
+/** Age on `today`, or null when the birth date is unusable (missing, invalid, or under the minimum age). */
 function toAge(birthDate: string | null, today: CalendarDate): number | null {
   if (birthDate === null || !isCalendarDate(birthDate)) return null;
   const age = ageOnDate(birthDate, today);
-  return age > 0 ? age : null;
+  return age >= MIN_AGE_YEARS ? age : null;
 }
 
 /** Sum in integer hundredths (the column scale), so totals never drift. */
@@ -150,8 +159,9 @@ function resolveEnergyInputs(
 
 /**
  * Today's balance: target (TDEE from the profile and latest weight, adjusted
- * for the weight goal) plus exercise minus food. "incomplete" lists what the
- * profile still needs.
+ * for the weight goal, never below the safe minimum for the user's sex) plus
+ * exercise minus food. "incomplete" lists what the profile still needs
+ * (a birth date under 18 counts as missing).
  */
 export function buildTodaySummary({ today, profile, weightKg, food, exerciseKcal }: TodaySummaryInput): TodaySummary {
   const inputs = resolveEnergyInputs(profile, weightKg, today);
@@ -159,18 +169,21 @@ export function buildTodaySummary({ today, profile, weightKg, food, exerciseKcal
 
   const bmr = calculateBmr(inputs.bmr);
   const tdeeKcal = Math.round(calculateTdee(bmr, inputs.activityLevel));
-  // A deficit larger than TDEE would mean a negative target: floor it at 0.
-  const targetKcal = Math.max(0, Math.round(calorieTarget(bmr, inputs.activityLevel, inputs.goal, inputs.kgPerWeek)));
+  const goalTargetKcal = Math.round(calorieTarget(bmr, inputs.activityLevel, inputs.goal, inputs.kgPerWeek));
+  const targetKcal = applyCalorieFloor(goalTargetKcal, inputs.bmr.sex);
   const burned = sumKcal(exerciseKcal);
   const split = inputs.macroSplit;
 
   return {
     status: "ready",
+    bmrKcal: Math.round(bmr),
     tdeeKcal,
     goal: inputs.goal,
     goalKgPerWeek: inputs.kgPerWeek,
     // Derived from the rounded values so the breakdown always adds up.
-    goalAdjustmentKcal: wholeKcal(targetKcal - tdeeKcal),
+    goalAdjustmentKcal: wholeKcal(goalTargetKcal - tdeeKcal),
+    minimumKcal: minimumDailyKcal(inputs.bmr.sex),
+    floorRaiseKcal: targetKcal - goalTargetKcal,
     targetKcal,
     consumed: food,
     exerciseKcal: burned,

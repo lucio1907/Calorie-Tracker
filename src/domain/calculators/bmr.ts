@@ -1,6 +1,12 @@
 import { Sex } from "../sex";
 import { assertInteger, assertPositive } from "./assert";
 
+/**
+ * Youngest age, in whole years, the app computes targets for: Mifflin-St Jeor
+ * and the safe calorie minimums are adult guidelines.
+ */
+export const MIN_AGE_YEARS = 18;
+
 export interface BmrInput {
   /** Body weight in kilograms. */
   weightKg: number;

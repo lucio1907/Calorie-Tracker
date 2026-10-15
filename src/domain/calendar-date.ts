@@ -23,6 +23,18 @@ export function addDays(date: CalendarDate, days: number): CalendarDate {
   return new Date(Date.UTC(year, month - 1, day) + days * MS_PER_DAY).toISOString().slice(0, 10);
 }
 
+/**
+ * `date` moved by `years` (may be negative), keeping month and day. A 29
+ * February that does not exist in the target year becomes 28 February, so
+ * `addYears(today, -n)` is the latest birth date that is `n` years old today.
+ */
+export function addYears(date: CalendarDate, years: number): CalendarDate {
+  const [year, month, day] = date.split("-");
+  const movedYear = String(Number(year) + years).padStart(4, "0");
+  const moved = `${movedYear}-${month}-${day}`;
+  return isCalendarDate(moved) ? moved : `${movedYear}-${month}-28`;
+}
+
 function zonedParts(instant: Date, timeZone: string): Record<string, string> {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone,
