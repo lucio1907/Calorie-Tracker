@@ -3,6 +3,6 @@ import { ActivityPage, activityStrings } from "@/features/activity";
 
 export const metadata: Metadata = { title: activityStrings.title };
 
-export default function ActivityRoute() {
-  return <ActivityPage />;
+export default function ActivityRoute({ searchParams }: PageProps<"/activity">) {
+  return <ActivityPage searchParams={searchParams} />;
 }
