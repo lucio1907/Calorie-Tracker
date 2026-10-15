@@ -1,6 +1,7 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { ButtonLink } from "@/components/ui";
+import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { ButtonLink, CalendarPopover } from "@/components/ui";
 import { addDays, type CalendarDate } from "@/domain";
+import { APP_TIME_ZONE } from "@/lib/app-time";
 import { formatDiaryDate, MAX_DIARY_DATE, MIN_DIARY_DATE, relativeDay } from "../lib/diary-date";
 import { diaryStrings } from "../strings";
 
@@ -19,16 +20,18 @@ export function diaryHref(date: CalendarDate, today: CalendarDate): string {
 type DateNavProps = {
   date: CalendarDate;
   today: CalendarDate;
-  /** A date picked in the native date input. */
+  /** A day picked in the calendar popover. */
   onPick: (date: CalendarDate) => void;
   /** Screen the links point to (?date=YYYY-MM-DD is appended). Defaults to the diary. */
   basePath?: string;
 };
 
-/** Previous / next day links, the current day's name, a date picker and a jump back to today. */
+/**
+ * Previous / next day links, the current day's name (a button opening a
+ * calendar to jump to any day) and a jump back to today.
+ */
 export function DateNav({ date, today, onPick, basePath = "/diary" }: DateNavProps) {
   const href = (day: CalendarDate) => dayHref(basePath, day, today);
-  const inputId = `${basePath.replace(/[^a-z0-9]/gi, "")}-date`;
   const relative = relativeDay(date, today);
   const formatted = formatDiaryDate(date, today);
   const previous = addDays(date, -1);
@@ -42,9 +45,24 @@ export function DateNav({ date, today, onPick, basePath = "/diary" }: DateNavPro
             <ChevronLeft aria-hidden="true" size={20} />
           </ButtonLink>
         ) : null}
-        <div className="flex min-w-0 flex-1 flex-col items-center text-center" aria-live="polite">
-          <p className="text-body-lg font-semibold text-ink">{relative ? t.relative[relative] : formatted}</p>
-          {relative ? <p className="text-caption text-ink-muted">{formatted}</p> : null}
+        <div className="flex min-w-0 flex-1 justify-center" aria-live="polite">
+          <CalendarPopover
+            value={date}
+            min={MIN_DIARY_DATE}
+            max={MAX_DIARY_DATE}
+            today={today}
+            timeZone={APP_TIME_ZONE}
+            onChange={onPick}
+            label={t.pickDate}
+            triggerClassName="flex min-h-44 min-w-0 items-center gap-8 rounded-buttons px-12 py-4 text-center transition-[background-color,transform] duration-150 hover:bg-surface-alt motion-safe:active:scale-[0.98]"
+          >
+            <span className="flex min-w-0 flex-col items-center">
+              <span className="sr-only">{t.pickDate}: </span>
+              <span className="text-body-lg font-semibold text-ink">{relative ? t.relative[relative] : formatted}</span>
+              {relative ? <span className="text-caption text-ink-muted">{formatted}</span> : null}
+            </span>
+            <CalendarDays aria-hidden="true" size={18} className="shrink-0 text-ink-muted" />
+          </CalendarPopover>
         </div>
         {next <= MAX_DIARY_DATE ? (
           <ButtonLink href={href(next)} aria-label={t.next} className="w-44 shrink-0 px-0">
@@ -52,22 +70,8 @@ export function DateNav({ date, today, onPick, basePath = "/diary" }: DateNavPro
           </ButtonLink>
         ) : null}
       </div>
-      <div className="flex items-center justify-center gap-8">
-        <label htmlFor={inputId} className="sr-only">
-          {t.pickDate}
-        </label>
-        <input
-          id={inputId}
-          type="date"
-          value={date}
-          min={MIN_DIARY_DATE}
-          max={MAX_DIARY_DATE}
-          required
-          onChange={(event) => {
-            if (event.target.value) onPick(event.target.value);
-          }}
-          className="tabular min-h-44 rounded-inputs border border-input-border bg-surface px-12 text-body text-input-text"
-        />
+      {/* Always reserves the row, so moving between today and other days never shifts the page. */}
+      <div className="flex min-h-44 justify-center">
         {date !== today ? (
           <ButtonLink href={basePath} className="shrink-0">
             {t.today}

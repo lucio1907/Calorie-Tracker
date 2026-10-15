@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@fontsource/inter": "5.2.8",
+    "@internationalized/date": "3.12.4",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.117.3",
     "lucide-react": "1.57.0",

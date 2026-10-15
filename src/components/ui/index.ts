@@ -1,6 +1,9 @@
 export { Button, ButtonLink, buttonClassName } from "./button";
+export { Calendar } from "./calendar";
+export { CalendarPopover } from "./calendar-popover";
 export { Card } from "./card";
 export { cn } from "./cn";
+export { DatePicker } from "./date-picker";
 export { EmptyState } from "./empty-state";
 export { PageHeader } from "./page-header";
 export { PillBadge } from "./pill-badge";

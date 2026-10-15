@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, ChevronDown } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Button,
   FieldError,
@@ -61,6 +61,19 @@ export function Select({
 }: SelectProps) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    // Long lists (e.g. 100+ years) open centred on the selected option.
+    const frame = requestAnimationFrame(() => {
+      const list = listRef.current;
+      const selected = list?.querySelector<HTMLElement>('[aria-selected="true"]');
+      if (!list || !selected) return;
+      list.scrollTop = selected.offsetTop - (list.clientHeight - selected.offsetHeight) / 2;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [open]);
 
   return (
     <I18nProvider locale="en-US">
@@ -106,8 +119,12 @@ export function Select({
           </Text>
         ) : null}
         <FieldError className="text-body text-danger-ink">{error}</FieldError>
-        <Popover className={popoverClassName("max-h-320 min-w-(--trigger-width) overflow-y-auto p-4")}>
-          <ListBox className="flex flex-col gap-2 outline-none">
+        {/* The listbox is the scroll container: React Aria scrolls the selected option into view on open. */}
+        <Popover className={popoverClassName("flex min-w-(--trigger-width) flex-col overflow-hidden")}>
+          <ListBox
+            ref={listRef}
+            className="relative flex max-h-320 min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain p-4 outline-none"
+          >
             {options.map((option) => (
               <ListBoxItem
                 key={option.value}

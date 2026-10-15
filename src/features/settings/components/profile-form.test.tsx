@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { chooseOption, formValues } from "@/test-support/choose-option";
@@ -29,9 +29,7 @@ describe("ProfileForm", () => {
     const { container } = render(<ProfileForm defaults={stored} today={TODAY} state={initialProfileFormState} />);
 
     expect(screen.getByLabelText(p.sex)).toHaveTextContent(s.sexes.male);
-    expect(screen.getByLabelText(p.birthDate)).toHaveValue("1996-01-10");
-    // Latest birth date of an 18-year-old.
-    expect(screen.getByLabelText(p.birthDate)).toHaveAttribute("max", "2008-10-15");
+    expect(screen.getByRole("group", { name: p.birthDate })).toHaveTextContent("1/10/1996");
     expect(screen.getByLabelText(p.heightCm)).toHaveValue("180");
     expect(screen.getByLabelText(p.activityLevel)).toHaveTextContent(s.activityLevels.moderate);
     expect(screen.getByLabelText(p.goal)).toHaveTextContent(s.goals.lose);
@@ -41,9 +39,21 @@ describe("ProfileForm", () => {
     // The custom selects submit the same values the native ones did.
     expect(formValues(container.querySelector("form"))).toMatchObject({
       sex: "male",
+      birthDate: "1996-01-10",
       activityLevel: "moderate",
       goal: "lose",
     });
+  });
+
+  it("only lets adults pick a birth date (latest: 18 years before today)", async () => {
+    const user = userEvent.setup();
+    render(<ProfileForm defaults={{ ...stored, birthDate: "2008-10-01" }} today={TODAY} state={initialProfileFormState} />);
+
+    await user.click(screen.getByRole("button", { name: new RegExp(p.birthDate) }));
+    const grid = await screen.findByRole("grid");
+    // Latest birth date of an 18-year-old.
+    expect(within(grid).getByRole("button", { name: /October 15, 2008/ })).not.toHaveAttribute("aria-disabled");
+    expect(within(grid).getByRole("button", { name: /October 16, 2008/ })).toHaveAttribute("aria-disabled", "true");
   });
 
   it("starts empty with the default split before a profile exists", () => {
@@ -53,7 +63,12 @@ describe("ProfileForm", () => {
 
     expect(screen.getByLabelText(p.sex)).toHaveTextContent(p.sexPlaceholder);
     expect(screen.getByLabelText(p.goal)).toHaveTextContent(s.goals.maintain);
-    expect(formValues(container.querySelector("form"))).toMatchObject({ sex: "", activityLevel: "", goal: "maintain" });
+    expect(formValues(container.querySelector("form"))).toMatchObject({
+      sex: "",
+      birthDate: "",
+      activityLevel: "",
+      goal: "maintain",
+    });
     expect(screen.queryByLabelText(p.goalKgPerWeek)).not.toBeInTheDocument();
     expect(screen.getByLabelText(p.carbsPct)).toHaveValue("40");
   });

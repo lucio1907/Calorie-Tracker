@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Select, TextField } from "@/components/ui";
-import { ACTIVITY_LEVELS, dailyAdjustment, GOALS, MIN_DAILY_KCAL, SEXES, type CalendarDate, type Goal } from "@/domain";
+import { Button, DatePicker, Select, TextField } from "@/components/ui";
+import { ACTIVITY_LEVELS, addDays, dailyAdjustment, GOALS, MIN_DAILY_KCAL, SEXES, type CalendarDate, type Goal } from "@/domain";
 import { toDecimal } from "@/features/foods/lib/food-schema";
 import { formatKcal } from "@/features/foods/lib/format";
 import { latestBirthDate, macroSplitTotal, PROFILE_LIMITS } from "../lib/profile-schema";
@@ -15,6 +15,9 @@ const p = settingsStrings.profile;
 const SEX_OPTIONS = SEXES.map((sex) => ({ value: sex, label: s.sexes[sex] }));
 const ACTIVITY_OPTIONS = ACTIVITY_LEVELS.map((level) => ({ value: level, label: s.activityLevels[level] }));
 const GOAL_OPTIONS = GOALS.map((goal: Goal) => ({ value: goal, label: s.goals[goal] }));
+
+/** First valid birth date: the column requires a date after PROFILE_LIMITS.birthDateAfter. */
+const BIRTH_DATE_MIN = addDays(PROFILE_LIMITS.birthDateAfter, 1);
 
 const PERCENT_FIELDS = [
   { name: "proteinPct", label: p.proteinPct },
@@ -91,7 +94,14 @@ export function ProfileForm({ defaults, today, state, action, pending = false }:
         <legend className="mb-12 text-body font-semibold text-ink">{p.bodyLegend}</legend>
         <div className="grid gap-16 sm:grid-cols-2">
           <Select label={p.sex} required options={SEX_OPTIONS} placeholder={p.sexPlaceholder} {...choice("sex")} />
-          <TextField label={p.birthDate} type="date" required max={latestBirthDate(today)} min="1900-01-02" {...field("birthDate")} />
+          <DatePicker
+            label={p.birthDate}
+            required
+            min={BIRTH_DATE_MIN}
+            max={latestBirthDate(today)}
+            disabled={pending}
+            {...choice("birthDate")}
+          />
           <TextField
             label={p.heightCm}
             inputMode="decimal"
