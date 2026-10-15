@@ -33,11 +33,14 @@ export const todayStrings = {
   setupMessage: "Complete your profile to get a daily calorie target.",
   missingFields: {
     sex: "sex",
-    birthDate: "birth date (18 or older)",
+    birthDate: "birth date",
     height: "height",
     activityLevel: "activity level",
     weight: "weight",
   } satisfies Record<MissingProfileField, string>,
   missing: (fields: readonly string[]) => `Missing: ${fields.join(", ")}.`,
   setupAction: "Set up profile",
+  underageMessage: (minAgeYears: number) =>
+    `You must be ${minAgeYears} or older to get a calorie target. Update your birth date in Settings.`,
+  underageAction: "Update birth date",
 } as const;

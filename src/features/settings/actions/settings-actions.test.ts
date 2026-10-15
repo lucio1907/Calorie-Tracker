@@ -126,6 +126,23 @@ describe("saveProfile", () => {
     expect(state.fieldErrors).toEqual({ birthDate: t.validation.minAge(18) });
   });
 
+  it("maps the database minimum-age rejection to the birth date field error", async () => {
+    nextResult = {
+      data: null,
+      error: { code: "23514", message: "profiles_min_age: the profile owner must be at least 18 years old" },
+    };
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const state = await saveProfile(initialProfileFormState, form(fields));
+    expect(state).toEqual({
+      status: "error",
+      fieldErrors: { birthDate: t.validation.minAge(18) },
+      formError: t.validation.fix,
+    });
+    expect(consoleError).not.toHaveBeenCalled();
+    expect(revalidatePath).not.toHaveBeenCalled();
+    expect(refresh).not.toHaveBeenCalled();
+  });
+
   it("reports a database error without revalidating", async () => {
     nextResult = { data: null, error: { code: "23514", message: "check violation" } };
     vi.spyOn(console, "error").mockImplementation(() => {});

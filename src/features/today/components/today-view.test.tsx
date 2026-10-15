@@ -145,4 +145,16 @@ describe("TodayView", () => {
     expect(screen.queryByRole("region", { name: t.remainingLabel })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: t.logFood })).toHaveAttribute("href", "/diary");
   });
+
+  it("says the user is too young for a target and links to the birth date in settings", () => {
+    render(<TodayView dateLabel="Thursday, October 15" summary={{ status: "underage", minAgeYears: 18 }} />);
+
+    expect(
+      screen.getByText("You must be 18 or older to get a calorie target. Update your birth date in Settings."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: t.underageAction })).toHaveAttribute("href", "/settings");
+    expect(screen.queryByText(t.setupMessage)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Missing:/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: t.remainingLabel })).not.toBeInTheDocument();
+  });
 });

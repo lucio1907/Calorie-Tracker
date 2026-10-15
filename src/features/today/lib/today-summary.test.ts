@@ -196,6 +196,12 @@ describe("buildTodaySummary", () => {
     });
   });
 
+  it("treats an invalid stored birth date as missing", () => {
+    const summary = buildTodaySummary(input({ profile: { ...profile, birthDate: "2008-02-30" } }));
+
+    expect(summary).toEqual({ status: "incomplete", missing: ["birthDate"] });
+  });
+
   it("lists only the missing fields", () => {
     const summary = buildTodaySummary(
       input({ profile: { ...profile, heightCm: null, activityLevel: null }, weightKg: null }),
@@ -204,11 +210,25 @@ describe("buildTodaySummary", () => {
     expect(summary).toEqual({ status: "incomplete", missing: ["height", "activityLevel", "weight"] });
   });
 
-  it("treats a stored birth date under 18 years old as missing", () => {
+  it("reports a stored birth date under 18 years old as under age, not as missing", () => {
     // Turns 18 tomorrow.
     const summary = buildTodaySummary(input({ profile: { ...profile, birthDate: "2008-10-16" } }));
 
-    expect(summary).toEqual({ status: "incomplete", missing: ["birthDate"] });
+    expect(summary).toEqual({ status: "underage", minAgeYears: 18 });
+  });
+
+  it("reports under age before any other missing field", () => {
+    const summary = buildTodaySummary(
+      input({ profile: { ...profile, birthDate: "2015-03-01", heightCm: null }, weightKg: null }),
+    );
+
+    expect(summary).toEqual({ status: "underage", minAgeYears: 18 });
+  });
+
+  it("treats a birth date born today as under age", () => {
+    const summary = buildTodaySummary(input({ profile: { ...profile, birthDate: TODAY } }));
+
+    expect(summary).toEqual({ status: "underage", minAgeYears: 18 });
   });
 
   it("computes the target from the 18th birthday on", () => {
@@ -220,7 +240,8 @@ describe("buildTodaySummary", () => {
   it("treats unknown or out-of-range values as missing instead of throwing", () => {
     const summary = buildTodaySummary(
       input({
-        profile: { ...profile, sex: "other", birthDate: "2026-06-01", activityLevel: "extreme", heightCm: 0 },
+        // A birth date after today is unusable, so it is missing rather than under age.
+        profile: { ...profile, sex: "other", birthDate: "2026-10-16", activityLevel: "extreme", heightCm: 0 },
         weightKg: 0,
       }),
     );

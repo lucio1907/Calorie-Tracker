@@ -134,8 +134,8 @@ type TodayViewProps = {
 /**
  * Today dashboard: remaining kcal (target + exercise - food), how the target
  * follows from TDEE, the weight goal and the safe minimum (with a warning when
- * it is below BMR), and macros; or a
- * prompt to finish the profile when the target cannot be computed yet.
+ * it is below BMR), and macros; or, when the target cannot be computed, a
+ * prompt to finish the profile or to fix an under-age birth date.
  */
 export function TodayView({ dateLabel, summary }: TodayViewProps) {
   return (
@@ -156,6 +156,11 @@ export function TodayView({ dateLabel, summary }: TodayViewProps) {
           <BalanceCard summary={summary} />
           <MacrosCard summary={summary} />
         </>
+      ) : summary.status === "underage" ? (
+        <EmptyState
+          message={t.underageMessage(summary.minAgeYears)}
+          action={<ButtonLink href="/settings">{t.underageAction}</ButtonLink>}
+        />
       ) : (
         <EmptyState
           message={t.setupMessage}

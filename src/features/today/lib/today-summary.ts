@@ -51,6 +51,8 @@ export type TodaySummaryInput = {
 
 export type TodaySummary =
   | { status: "incomplete"; missing: MissingProfileField[] }
+  /** The stored birth date is valid but the user is under the minimum age: no target is computed. */
+  | { status: "underage"; minAgeYears: number }
   | {
       status: "ready";
       /** BMR in whole kcal (a target below it deserves a warning). */
@@ -97,11 +99,10 @@ function toGoal(profile: TodayProfile): { goal: Goal; kgPerWeek: number } {
   return Number.isFinite(rate) && rate > 0 ? { goal, kgPerWeek: rate } : { goal: "maintain", kgPerWeek: 0 };
 }
 
-/** Age on `today`, or null when the birth date is unusable (missing, invalid, or under the minimum age). */
+/** Age on `today`, or null when the birth date is unusable (missing, invalid, or after today). */
 function toAge(birthDate: string | null, today: CalendarDate): number | null {
-  if (birthDate === null || !isCalendarDate(birthDate)) return null;
-  const age = ageOnDate(birthDate, today);
-  return age >= MIN_AGE_YEARS ? age : null;
+  if (birthDate === null || !isCalendarDate(birthDate) || birthDate > today) return null;
+  return ageOnDate(birthDate, today);
 }
 
 /** Sum in integer hundredths (the column scale), so totals never drift. */
@@ -122,13 +123,19 @@ type EnergyInputs = {
   macroSplit: Macros;
 };
 
+type Unresolved = Extract<TodaySummary, { status: "incomplete" | "underage" }>;
+
 function resolveEnergyInputs(
   profile: TodayProfile | null,
   weightKg: number | null,
   today: CalendarDate,
-): EnergyInputs | MissingProfileField[] {
+): EnergyInputs | Unresolved {
   const sex = toSex(profile?.sex ?? null);
   const ageYears = toAge(profile?.birthDate ?? null, today);
+  // The target formulas are adult guidelines: an under-age user gets no target
+  // even once every other field is filled in.
+  if (ageYears !== null && ageYears < MIN_AGE_YEARS) return { status: "underage", minAgeYears: MIN_AGE_YEARS };
+
   const heightCm = profile?.heightCm ?? null;
   const activityLevel = toActivityLevel(profile?.activityLevel ?? null);
 
@@ -147,7 +154,7 @@ function resolveEnergyInputs(
     activityLevel === null ||
     !isPositive(weightKg)
   ) {
-    return missing;
+    return { status: "incomplete", missing };
   }
   return {
     bmr: { sex, ageYears, heightCm, weightKg },
@@ -160,12 +167,13 @@ function resolveEnergyInputs(
 /**
  * Today's balance: target (TDEE from the profile and latest weight, adjusted
  * for the weight goal, never below the safe minimum for the user's sex) plus
- * exercise minus food. "incomplete" lists what the profile still needs
- * (a birth date under 18 counts as missing).
+ * exercise minus food. "incomplete" lists what the profile still needs;
+ * "underage" means the stored birth date is under the minimum age (checked
+ * before anything else, since no other field can make a target possible).
  */
 export function buildTodaySummary({ today, profile, weightKg, food, exerciseKcal }: TodaySummaryInput): TodaySummary {
   const inputs = resolveEnergyInputs(profile, weightKg, today);
-  if (Array.isArray(inputs)) return { status: "incomplete", missing: inputs };
+  if ("status" in inputs) return inputs;
 
   const bmr = calculateBmr(inputs.bmr);
   const tdeeKcal = Math.round(calculateTdee(bmr, inputs.activityLevel));

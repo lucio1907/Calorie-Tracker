@@ -4,7 +4,7 @@ import { refresh, revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/features/auth/data/current-user";
 import { appToday } from "@/lib/app-time";
 import { createClient } from "@/lib/supabase/server";
-import { parseProfileForm } from "../lib/profile-schema";
+import { parseProfileForm, PROFILE_LIMITS } from "../lib/profile-schema";
 import type { ProfileFormState, ProfileValues, WeightFormState } from "../lib/types";
 import { parseWeightForm, todayWeightEntry } from "../lib/weight-entry";
 import { settingsStrings as t } from "../strings";
@@ -47,6 +47,16 @@ function profileFailed(formError: string): ProfileFormState {
   return { status: "error", fieldErrors: {}, formError };
 }
 
+/**
+ * The profiles_enforce_min_age trigger (migration profiles_min_age) rejects an
+ * under-18 birth date with a check_violation whose message starts with
+ * "profiles_min_age:". The form validates the same rule first; this catches a
+ * disagreement between the two clocks (defense in depth).
+ */
+function isMinAgeViolation(error: { code?: string; message?: string }): boolean {
+  return error.code === "23514" && (error.message ?? "").startsWith("profiles_min_age:");
+}
+
 /** Form action: creates or updates the caller's profile row. */
 export async function saveProfile(_previous: ProfileFormState, formData: FormData): Promise<ProfileFormState> {
   const user = await getCurrentUser();
@@ -59,6 +69,13 @@ export async function saveProfile(_previous: ProfileFormState, formData: FormDat
   const { error } = await supabase
     .from("profiles")
     .upsert({ user_id: user.id, ...toProfileColumns(parsed.value) }, { onConflict: "user_id" });
+  if (error && isMinAgeViolation(error)) {
+    return {
+      status: "error",
+      fieldErrors: { birthDate: t.validation.minAge(PROFILE_LIMITS.minAgeYears) },
+      formError: t.validation.fix,
+    };
+  }
   if (error) {
     console.error("[settings] profile upsert failed", error.code, error.message);
     return profileFailed(t.errors.profileSaveFailed);
