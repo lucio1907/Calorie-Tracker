@@ -1,0 +1,202 @@
+import {
+  ACTIVITY_LEVELS,
+  ageOnDate,
+  GOALS,
+  isCalendarDate,
+  SEXES,
+  type ActivityLevel,
+  type CalendarDate,
+  type Goal,
+  type Sex,
+} from "@/domain";
+import { toDecimal } from "@/features/foods/lib/food-schema";
+import { settingsStrings } from "../strings";
+import type {
+  ProfileFieldErrors,
+  ProfileFieldName,
+  ProfileFormValues,
+  ProfileValues,
+  StoredProfile,
+} from "./types";
+
+const v = settingsStrings.validation;
+
+/**
+ * Form limits. They sit inside the CHECK constraints on public.profiles
+ * (height 0-300 cm, rate 0-1.5 kg/week, birth date after 1900-01-01,
+ * percentages 0-100 adding up to 100) and are a bit stricter where the
+ * database bound would accept an obvious typo.
+ */
+export const PROFILE_LIMITS = {
+  heightCm: { min: 50, max: 250 },
+  goalKgPerWeek: { min: 0.05, max: 1.5 },
+  /** Exclusive lower bound, as in the column check. */
+  birthDateAfter: "1900-01-01",
+  minAgeYears: 1,
+} as const;
+
+/** profiles column defaults, used before the row exists. */
+const COLUMN_DEFAULTS = { goal: "maintain", proteinPct: 30, carbsPct: 40, fatPct: 30 } as const;
+
+type Parsed<T> = { ok: true; value: T } | { ok: false; error: string };
+
+function text(raw: FormDataEntryValue | null): string {
+  return typeof raw === "string" ? raw.trim() : "";
+}
+
+function oneOf<T extends string>(options: readonly T[], raw: FormDataEntryValue | null): Parsed<T> {
+  const value = options.find((option) => option === raw);
+  return value === undefined ? { ok: false, error: v.required } : { ok: true, value };
+}
+
+/** Text -> number; "" is "required", anything unparseable is "enter a number". */
+function parseNumber(raw: FormDataEntryValue | null): Parsed<number> {
+  const value = toDecimal(typeof raw === "string" ? raw : undefined);
+  if (value === undefined) return { ok: false, error: v.required };
+  return typeof value === "number" && Number.isFinite(value) ? { ok: true, value } : { ok: false, error: v.number };
+}
+
+function inRange(parsed: Parsed<number>, min: number, max: number, error: string): Parsed<number> {
+  if (!parsed.ok) return parsed;
+  return parsed.value >= min && parsed.value <= max ? parsed : { ok: false, error };
+}
+
+function roundTo(value: number, decimals: number): number {
+  const factor = 10 ** decimals;
+  return Math.round(value * factor) / factor;
+}
+
+function parseBirthDate(raw: FormDataEntryValue | null, today: CalendarDate): Parsed<CalendarDate> {
+  const value = text(raw);
+  if (value === "") return { ok: false, error: v.required };
+  if (!isCalendarDate(value)) return { ok: false, error: v.date };
+  const tooOld = value <= PROFILE_LIMITS.birthDateAfter;
+  const tooYoung = ageOnDate(value, today) < PROFILE_LIMITS.minAgeYears;
+  return tooOld || tooYoung ? { ok: false, error: v.birthDateRange } : { ok: true, value };
+}
+
+function parsePercentage(raw: FormDataEntryValue | null): Parsed<number> {
+  const parsed = parseNumber(raw);
+  if (!parsed.ok) return parsed;
+  if (!Number.isInteger(parsed.value)) return { ok: false, error: v.wholeNumber };
+  return inRange(parsed, 0, 100, v.pctRange);
+}
+
+/** Weekly rate for the goal: required for lose/gain, always 0 while maintaining. */
+function parseRate(goal: Parsed<Goal>, raw: FormDataEntryValue | null): Parsed<number> {
+  if (!goal.ok || goal.value === "maintain") return { ok: true, value: 0 };
+  const { min, max } = PROFILE_LIMITS.goalKgPerWeek;
+  const parsed = inRange(parseNumber(raw), min, max, v.rateRange(min, max));
+  return parsed.ok ? { ok: true, value: roundTo(parsed.value, 2) } : parsed;
+}
+
+export type ParseProfileResult =
+  | { ok: true; value: ProfileValues }
+  | { ok: false; fieldErrors: ProfileFieldErrors; formError: string };
+
+/**
+ * Reads and validates the profile form. `today` (the app's calendar day)
+ * bounds the birth date. Unknown fields are ignored.
+ */
+export function parseProfileForm(formData: FormData, today: CalendarDate): ParseProfileResult {
+  const { min: minHeight, max: maxHeight } = PROFILE_LIMITS.heightCm;
+  const goal = oneOf<Goal>(GOALS, formData.get("goal"));
+  const height = inRange(parseNumber(formData.get("heightCm")), minHeight, maxHeight, v.heightRange(minHeight, maxHeight));
+
+  const fields = {
+    sex: oneOf<Sex>(SEXES, formData.get("sex")),
+    birthDate: parseBirthDate(formData.get("birthDate"), today),
+    heightCm: height.ok ? { ok: true as const, value: roundTo(height.value, 1) } : height,
+    activityLevel: oneOf<ActivityLevel>(ACTIVITY_LEVELS, formData.get("activityLevel")),
+    goal,
+    goalKgPerWeek: parseRate(goal, formData.get("goalKgPerWeek")),
+    proteinPct: parsePercentage(formData.get("proteinPct")),
+    carbsPct: parsePercentage(formData.get("carbsPct")),
+    fatPct: parsePercentage(formData.get("fatPct")),
+  } satisfies Record<ProfileFieldName, Parsed<unknown>>;
+
+  const fieldErrors: ProfileFieldErrors = {};
+  for (const [name, parsed] of Object.entries(fields) as Array<[ProfileFieldName, Parsed<unknown>]>) {
+    if (!parsed.ok) fieldErrors[name] = parsed.error;
+  }
+
+  const { sex, birthDate, heightCm, activityLevel, goalKgPerWeek, proteinPct, carbsPct, fatPct } = fields;
+  if (proteinPct.ok && carbsPct.ok && fatPct.ok) {
+    const total = proteinPct.value + carbsPct.value + fatPct.value;
+    if (total !== 100) fieldErrors.macroSplit = v.macroTotal(total);
+  }
+
+  if (
+    Object.keys(fieldErrors).length > 0 ||
+    !sex.ok ||
+    !birthDate.ok ||
+    !heightCm.ok ||
+    !activityLevel.ok ||
+    !goal.ok ||
+    !goalKgPerWeek.ok ||
+    !proteinPct.ok ||
+    !carbsPct.ok ||
+    !fatPct.ok
+  ) {
+    return { ok: false, fieldErrors, formError: v.fix };
+  }
+
+  return {
+    ok: true,
+    value: {
+      sex: sex.value,
+      birthDate: birthDate.value,
+      heightCm: heightCm.value,
+      activityLevel: activityLevel.value,
+      goal: goal.value,
+      goalKgPerWeek: goalKgPerWeek.value,
+      macroSplit: { protein: proteinPct.value, carbs: carbsPct.value, fat: fatPct.value },
+    },
+  };
+}
+
+/** Sum of the percentages as typed (blank counts as 0); null when one is not a number. */
+export function macroSplitTotal(values: Pick<ProfileFormValues, "proteinPct" | "carbsPct" | "fatPct">): number | null {
+  let total = 0;
+  for (const raw of [values.proteinPct, values.carbsPct, values.fatPct]) {
+    const value = toDecimal(raw);
+    if (value === undefined) continue;
+    if (typeof value !== "number" || !Number.isFinite(value)) return null;
+    total += value;
+  }
+  return total;
+}
+
+function known<T extends string>(options: readonly T[], value: string | null): T | "" {
+  return options.find((option) => option === value) ?? "";
+}
+
+/** Initial form text: the stored profile, or the column defaults before the row exists. */
+export function profileFormDefaults(profile: StoredProfile | null): ProfileFormValues {
+  if (profile === null) {
+    return {
+      sex: "",
+      birthDate: "",
+      heightCm: "",
+      activityLevel: "",
+      goal: COLUMN_DEFAULTS.goal,
+      goalKgPerWeek: "",
+      proteinPct: String(COLUMN_DEFAULTS.proteinPct),
+      carbsPct: String(COLUMN_DEFAULTS.carbsPct),
+      fatPct: String(COLUMN_DEFAULTS.fatPct),
+    };
+  }
+
+  const goal = known(GOALS, profile.goal) || COLUMN_DEFAULTS.goal;
+  return {
+    sex: known(SEXES, profile.sex),
+    birthDate: profile.birthDate ?? "",
+    heightCm: profile.heightCm === null ? "" : String(profile.heightCm),
+    activityLevel: known(ACTIVITY_LEVELS, profile.activityLevel),
+    goal,
+    goalKgPerWeek: goal === "maintain" || profile.goalKgPerWeek <= 0 ? "" : String(profile.goalKgPerWeek),
+    proteinPct: String(profile.proteinPct),
+    carbsPct: String(profile.carbsPct),
+    fatPct: String(profile.fatPct),
+  };
+}

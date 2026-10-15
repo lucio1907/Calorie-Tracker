@@ -1,0 +1,46 @@
+# dependencies
+node_modules/
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+*.tsbuildinfo
+
+# build / test output
+/build
+/dist
+/coverage
+
+# env files (keep the template)
+.env
+.env.*
+!.env.example
+
+# supabase local state
+supabase/.branches
+supabase/.temp
+
+# vercel
+.vercel
+
+# secrets / credentials
+*.pem
+*.key
+*.p12
+*.pfx
+.npmrc
+service-account*.json
+
+# local agent settings and installed skills (restore via skills-lock.json)
+.claude/
+.atl/
+
+# python cache
+__pycache__/
+*.pyc
+
+# misc
+*.log
+.DS_Store
+.codegraph/

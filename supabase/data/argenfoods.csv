@@ -1,0 +1,422 @@
+code,name,group,kcal,protein,carbs,fat,fiber,sodium_mg
+1,"Arroz, grano, blanco, pulido, crudo",Cereales y derivados,339,6.9,77.5,0.2,1.7,4
+2,"Arroz, grano, blanco, pulido, hervido",Cereales y derivados,82,1.4,19.1,0.1,0.3,5
+3,"Avena , grano, arrollada, cruda",Cereales y derivados,383,15.6,62.5,7.8,,47
+4,"Avena, grano, arrollada, cruda",Cereales y derivados,343,12.8,56.9,7.1,10.4,65
+5,"Avena, grano, arrollada, hervida",Cereales y derivados,86,3.8,13.4,1.9,2.4,21
+6,"Cebada, grano, mondado, perlado, crudo",Cereales y derivados,317,10.2,65.6,1.5,9.3,6
+7,"Cebada, grano, mondado, perlado, hervido",Cereales y derivados,82,3.8,16.5,0.1,2.8,13
+8,"Cebada, harina ""Genser"", cruda",Cereales y derivados,328,10.2,68,1.7,8,
+9,"Centeno, harina, clara, cruda",Cereales y derivados,332,8.9,72.2,0.9,6.3,
+10,"Centeno, pan",Cereales y derivados,206,8.7,41.5,0.6,7.4,219
+11,"Centeno, pan con harina integral",Cereales y derivados,214,10.4,41,0.9,8,466
+12,"Maiz, choclo",Cereales y derivados,97,3.7,17.8,1.2,2.7,40
+13,"Maiz, grano, entero (Zea mays spp)",Cereales y derivados,346,9.5,67.6,0.9,7.3,
+14,"Maiz, harina amarilla (polenta), cruda",Cereales y derivados,369,11.1,73.9,3.2,,25
+15,"Maiz, harina amarilla (polenta), cruda",Cereales y derivados,338,9.1,64.5,4.9,8.9,35
+16,"Maiz, harina amarilla (polenta), hervida",Cereales y derivados,68,3.2,11.9,0.8,1.8,11
+17,"Maiz, pan",Cereales y derivados,275,9.1,53.2,2.9,,
+18,"Trigo, grano entero, crudo",Cereales y derivados,347,12.4,69.8,2,,9
+19,"Trigo, bizcochos ""Bay Biscuit""",Cereales y derivados,382,5.9,67.1,10.1,1.5,171
+21,"Trigo, bizcochos, vainillas",Cereales y derivados,401,10.2,70,8.9,,111
+22,"Trigo, galleta de campo",Cereales y derivados,300,9.8,63,1,,295
+23,"Trigo, galleta marinera",Cereales y derivados,361,12.8,75.9,0.7,,30
+24,"Trigo, galletitas de agua ""Express""",Cereales y derivados,442,13.5,62,15.5,,323
+25,"Trigo, galletitas de agua ""Traviata""",Cereales y derivados,437,12.2,67.6,13.1,,640
+26,"Trigo, galletitas de harina blanca",Cereales y derivados,410,12.2,64.2,11.6,4.7,141
+27,"Trigo, galletitas de harina integral",Cereales y derivados,411,10.6,56.5,15.8,9.8,141
+28,"Trigo, galletitas dulces ""Manón""",Cereales y derivados,417,8.5,73,10.1,,233
+29,"Trigo, galletitas dulces ""Minue""",Cereales y derivados,419,8.2,67,13.1,,209
+30,"Trigo, galletitas oblea ""Opera""",Cereales y derivados,442,4.9,58,21.1,,208
+31,"Trigo, grisines",Cereales y derivados,342,12.5,72.6,0.2,,628
+32,"Trigo, harina tres cero",Cereales y derivados,340,10.3,68.7,2.7,4.6,10
+33,"Trigo, harina cuatro ceros",Cereales y derivados,348,10.2,70.8,2.6,3.3,3
+34,"Trigo, harina integral",Cereales y derivados,308,11.4,58.8,3,12.6,16
+35,"Trigo, salvado",Cereales y derivados,171,16.3,14,5.5,44.7,27
+36,"Trigo, pan francés",Cereales y derivados,269,9.3,57.4,0.2,,274
+37,"Trigo, pan francés",Cereales y derivados,268,8.4,57,0.7,2.8,136
+38,"Trigo, pan alemán",Cereales y derivados,264,8.9,56.7,0.2,,150
+39,"Trigo, pan criollo",Cereales y derivados,280,8.7,60.7,0.3,,264
+40,"Trigo, pan de Viena",Cereales y derivados,307,9.8,62.6,1.9,,71
+41,"Trigo, pan de salvado",Cereales y derivados,223,9.8,42.3,1.6,9.2,112
+42,"Trigo, pan negro con levadura agria",Cereales y derivados,271,8.4,58.3,0.5,,84
+43,"Trigo, pan negro con levadura comprimida",Cereales y derivados,269,9.5,52.4,2.4,,123
+44,"Trigo, pan negro sin levadura",Cereales y derivados,269,9.6,56.3,0.6,,45
+45,"Trigo, sémola, cruda",Cereales y derivados,349,11.7,73.4,0.9,,11
+46,"Trigo, sémola, hervida",Cereales y derivados,70,2.4,15,,,5
+47,"Trigo, tallarines, frescos, hervidos",Cereales y derivados,98,4.1,16.9,1.5,,
+50,"Achicoria, hoja, fresca, cruda",Vegetales y derivados,21,1.6,2.9,0.3,,7
+51,"Ajo, bulbo, fresco, crudo",Vegetales y derivados,99,4.4,20,0.2,,
+52,"Alcaucil, inflorescencia, fresco, crudo",Vegetales y derivados,63,2.9,11.9,0.4,,
+53,"Alfalfa, hoja, fresca, cruda",Vegetales y derivados,57,6.6,6.8,0.4,,12
+54,"Arveja, semilla, fresca, cruda",Vegetales y derivados,102,8.9,16.6,,,38
+55,"Arveja, semilla, fresca, hervida",Vegetales y derivados,77,5.8,13.4,,,20
+56,"Arveja, semilla, fresca, enlatada",Vegetales y derivados,105,6,18.3,0.8,3.4,88
+57,"Arveja, semilla, seca, entera, cruda",Vegetales y derivados,304,22.5,46.9,2.9,13.5,14
+58,"Arveja, semilla, seca, partida, cruda",Vegetales y derivados,311,22,49.1,2.9,12.2,16
+59,"Arveja, semilla, seca, partida, hervida",Vegetales y derivados,129,8.2,22.5,0.7,,7
+60,"Avellana, pepita, seca",Vegetales y derivados,668,12.7,17.7,60.9,,19
+61,"Batata, raiz, fresca, cruda",Vegetales y derivados,84,1.1,19.8,,,6
+62,"Batata, hervida",Vegetales y derivados,92,1.2,21.7,,,6
+63,"Batata, frita",Vegetales y derivados,212,1.7,35,7.2,,19
+64,"Berenjena, pulpa, fresca, cruda",Vegetales y derivados,28,1.1,5.5,0.2,,3
+65,"Berro (hojas y tallo), fresco, crudo",Vegetales y derivados,23,1.7,3.3,0.3,,60
+66,"Brócoli, tallo de hoja, fresco, crudo",Vegetales y derivados,37,3.3,5.5,0.2,,
+67,"Cardo (penca y hojas), fresco, crudo",Vegetales y derivados,25,1.4,4.4,0.2,,86
+68,"Castaña de Pará, pepita, cruda",Vegetales y derivados,731,18.1,2.4,72.1,,100
+69,"Cebolla blanca, bulbo, cruda",Vegetales y derivados,17,0.8,3.5,,,26
+70,"Cebolla blanca, bulbo, hervida",Vegetales y derivados,10,0.6,1.8,,,26
+71,"Coliflor, pimpollo, fresco, crudo",Vegetales y derivados,31,2.4,4.9,0.2,,41
+72,"Chaucha, vaina y semilla, cruda",Vegetales y derivados,22,2.4,3.2,,,23
+73,"Escarola crespa, hoja, cruda",Vegetales y derivados,24,1.6,4,0.2,,10
+74,"Esparrago, tallo tierno, fresco, crudo",Vegetales y derivados,26,2.2,3.9,0.2,,7
+75,"Espinaca, hoja, fresca, cruda",Vegetales y derivados,24,3.9,2,,,36
+76,"Espinaca, hoja, fresca, hervida",Vegetales y derivados,13,2.5,0.7,,,18
+77,"Garbanzo, grano entero, seco, hervido",Vegetales y derivados,125,6.1,20.2,2.2,,8
+78,"Habas, semilla inmadura, fresca, cruda",Vegetales y derivados,99,6.7,16.3,0.8,,12
+79,"Hinojo, tallo, fresco, crudo",Vegetales y derivados,24,1.9,3.6,0.2,,
+80,"Lenteja, semilla entera, seca, cruda",Vegetales y derivados,350,20.8,64.8,0.8,,12
+81,"Maní, semilla con piel, crudo",Vegetales y derivados,576,33.2,11.1,44.3,,11
+82,"Maní, semilla sin piel, tostado",Vegetales y derivados,592,34.8,10.8,45.5,,11
+83,"Mastuerzo (hoja y pecíolo), fresco, crudo",Vegetales y derivados,51,4.2,5.3,1.4,,
+84,"Nabo, raiz (pulpa), fresco, crudo",Vegetales y derivados,10,1,1.5,,,28
+85,"Nabo, hervido",Vegetales y derivados,11,0.8,1.9,,,23
+86,"Nuez, pepita",Vegetales y derivados,715,13.9,13.2,67.4,,3
+87,"Papa, pulpa sin cáscara, fresca, cruda",Vegetales y derivados,88,2.7,19.3,,,24
+88,"Papa, pulpa sin cáscara, hervida",Vegetales y derivados,88,2.4,19.6,,,17
+89,"Papa, pulpa sin cáscara, frita, bastón",Vegetales y derivados,162,2.9,23.6,6.2,,35
+90,"Pepino, pulpa, fresco, crudo",Vegetales y derivados,15,0.7,2.7,0.1,,13
+91,"Perejil, hoja, fresco, crudo",Vegetales y derivados,60,3.7,9,1,,
+92,"Piñon de araucaria, pepita, crudo",Vegetales y derivados,221,14.6,37.9,1.2,,5
+93,"Pistacho, pepita, crudo",Vegetales y derivados,648,22.3,18.1,54,,
+94,"Poroto, semilla, seco, crudo",Vegetales y derivados,290,23.9,42.3,2.8,16.1,8
+95,"Poroto, semilla, enlatado",Vegetales y derivados,89,8.4,11.9,0.9,6.7,92
+96,"Puerro (bulbo, tallo y hojas), fresco, crudo",Vegetales y derivados,45,2.5,7.9,0.4,,81
+97,"Quinua, semilla, cruda",Vegetales y derivados,354,13.8,63.3,5.1,,6
+98,"Quinua, harina",Vegetales y derivados,341,4.4,78.7,1,,
+99,"Rabanito, raiz, fresco, crudo",Vegetales y derivados,29,1.3,5.8,0.1,,
+101,"Remolacha, tubérculo, fresca, cruda",Vegetales y derivados,54,2.4,11.1,,,51
+102,"Remolacha, tubérculo, hervida",Vegetales y derivados,36,1,7.9,,,63
+103,"Repollito Bruselas, hoja, fresco, crudo",Vegetales y derivados,58,4.4,8.9,0.5,,
+104,"Repollo blanco, hoja, fresco, crudo",Vegetales y derivados,17,2.4,1.9,,,
+105,"Repollo blanco, hoja, hervido",Vegetales y derivados,16,2.2,1.8,,,11
+106,"Salsifí, raiz, fresco, crudo",Vegetales y derivados,85,3.5,15.5,1,,
+107,"Soja, semilla madura, seca, cruda",Vegetales y derivados,356,34.6,11.2,24.2,16,7
+108,"Tapioca, cruda (harina mandioca)",Vegetales y derivados,336,2,82,,,
+109,"Tapioca, hervida",Vegetales y derivados,55,0.1,13.7,,,
+110,"Tomate, fresco, crudo",Vegetales y derivados,20,1,4.1,,,5
+111,"Tomate, hervido",Vegetales y derivados,21,1,4.2,,,7
+112,"Tomate, jugo, fresco",Vegetales y derivados,11,1,1.7,,,8
+113,"Verdolaga, hoja y tallo, fresca, cruda",Vegetales y derivados,23,1.6,3.3,0.4,,
+116,"Zanahoria, jugo, fresco",Vegetales y derivados,22,1,4.4,,,53
+117,"Zapallito, parte tierna, fresco, crudo",Vegetales y derivados,13,0.8,2.4,,,2
+118,"Zapallito, parte tierna, hervido",Vegetales y derivados,16,1.3,2.8,,,4
+119,"Aceituna verde, pulpa, encurtida",Frutas y derivados,144,1.5,4,13.5,,2250
+120,"Ananá, pulpa, fresco",Frutas y derivados,58,0.4,13.7,0.2,,2
+121,"Ananá enlatado, contenido envase",Frutas y derivados,87,0.4,21.1,0.1,,1
+122,"Banana, pulpa, fresca",Frutas y derivados,99,1.2,23,0.2,,1
+123,"Cereza, pulpa, fresca",Frutas y derivados,68,1.1,14.8,0.5,,3
+124,"Ciruela, pulpa, fresca",Frutas y derivados,56,0.7,12.9,0.2,,2
+125,"Ciruela, pasa, cruda",Frutas y derivados,255,1.9,61.6,0.1,,21
+126,"Ciruela, pasa, hervida",Frutas y derivados,165,1,40.1,0.1,,16
+127,"Coco, pulpa, fresco, crudo",Frutas y derivados,382,3.4,14,34.7,,17
+128,"Damasco, pulpa, fresco, crudo",Frutas y derivados,57,1,12.9,0.1,,1
+129,"Durazno, pulpa, fresco, crudo",Frutas y derivados,51,0.5,12,0.1,,3
+130,"Durazno, pulpa, envasado al natural",Frutas y derivados,75,0.4,18.2,0.1,,1
+131,"Durazno orejón, pulpa y piel, hervido",Frutas y derivados,40,2.5,7.5,,,14
+132,"Frutilla pulpa, fresca, cruda",Frutas y derivados,41,0.8,8.1,0.6,,2
+133,"Granada, pulpa, fresca",Frutas y derivados,75,0.6,17.7,0.2,,85
+134,"Higo, pulpa, fresca",Frutas y derivados,88,1.4,19.6,0.4,,2
+135,"Kaki, pulpa, fresco",Frutas y derivados,87,0.8,20,0.4,,
+136,"Kinoto, pulpa y cáscara, fresco, crudo",Frutas y derivados,73,0.9,17.1,0.1,,
+137,"Limón, pulpa, fresco",Frutas y derivados,44,0.9,8.7,0.6,,6
+138,"Manzana, pulpa, fresca, cruda",Frutas y derivados,64,0.3,14.9,0.4,,5
+139,"Manzana, hervida",Frutas y derivados,26,0.5,6,,,4
+140,"Melón, pulpa, fresco",Frutas y derivados,28,0.6,5.9,0.2,,17
+141,"Membrillo, pulpa, fresco, crudo",Frutas y derivados,58,0.3,13.9,0.1,,3
+142,"Mora, fresca",Frutas y derivados,69,1.2,14.6,0.6,,2
+143,"Palta, pulpa, fresca",Frutas y derivados,258,1.7,3.3,26.4,,16
+144,"Pera, pulpa, fresca, cruda",Frutas y derivados,70,0.7,15.8,0.4,,2
+145,"Pera, orejón, crudo",Frutas y derivados,299,2.3,71.6,0.4,,
+146,"Pomelo, pulpa, fresco",Frutas y derivados,26,0.5,5.9,,,37
+147,"Sandía, pulpa, fresca, cruda",Frutas y derivados,31,0.5,6.9,0.2,,8
+148,"Aceite comestible mezcla Lira, 85% girasol, 15% oliva",Grasas y aceites,900,,,100,,
+149,"Aceite comestible mezcla Patito, 94% girasol, 6% maiz",Grasas y aceites,900,,,100,,
+150,Aceite de canola,Grasas y aceites,900,,,100,,
+151,Aceite de girasol Familiar,Grasas y aceites,900,,,100,,
+152,Aceite de girasol Ideal,Grasas y aceites,900,,,100,,
+153,Aceite de girasol Natura,Grasas y aceites,900,,,100,,
+154,Aceite de maiz Arcor,Grasas y aceites,900,,,100,,
+155,Aceite de maiz Cocinero,Grasas y aceites,900,,,100,,
+156,Aceite de maiz Mazzola,Grasas y aceites,900,,,100,,
+157,Aceite de oliva Cocinero,Grasas y aceites,900,,,100,,
+158,Aceite de uva Cocinero,Grasas y aceites,900,,,100,,
+159,Grasa de cerdo,Grasas y aceites,898,,,99.8,,
+160,Grasa Vacuna,Grasas y aceites,899,,,99.9,,
+161,Margarina 100% vegetal Manty (en pote y en pan),Grasas y aceites,747,,,83,,
+162,Margarina 100% vegetal Delicia,Grasas y aceites,747,,,83,,
+163,Margarina reducida en calorias Manty liviana,Grasas y aceites,504,,,56,,
+164,"Abadejo, fresco, crudo, carne","Pescados, mariscos y conservas",72,15.8,0.2,0.9,,
+165,"Anchoa, fresca, cruda, carne","Pescados, mariscos y conservas",92,21.5,0.5,0.4,,80
+166,"Anchoita, fresca, cruda, carne","Pescados, mariscos y conservas",129,19.2,0.8,5.4,,
+167,"Besugo, fresco, crudo, carne","Pescados, mariscos y conservas",100,20.4,0,2,,84
+169,"Bonito, fresco, crudo, carne","Pescados, mariscos y conservas",219,22,,14.5,,
+170,"Brótola, fresca, cruda, carne","Pescados, mariscos y conservas",83,17.6,0.4,1.2,,82
+171,"Caballa, fresca, cruda, carne","Pescados, mariscos y conservas",232,22,0.4,15.8,,
+172,"Castañeta, fresca, cruda, entera","Pescados, mariscos y conservas",170,17,0.5,11.1,,
+173,"Castañeta, fresca, cruda, carne","Pescados, mariscos y conservas",95,18.4,0.3,2.3,,
+174,"Congrio, fresco, crudo, carne","Pescados, mariscos y conservas",107,17.2,0.7,4,,
+175,"Cornalito, fresco, crudo, entero","Pescados, mariscos y conservas",86,16,0.6,2.2,,90
+176,"Corvina blanca, fresca, cruda, carne","Pescados, mariscos y conservas",97,19.5,0.4,1.9,,
+177,"Corvina negra, fresca, cruda, carne","Pescados, mariscos y conservas",84,18.8,0.4,0.8,,
+179,"Dorado, fresco, crudo, carne","Pescados, mariscos y conservas",80,18.8,0.1,0.5,,
+180,"Gatuso, fresco, crudo, carne","Pescados, mariscos y conservas",72,17.4,0.1,0.2,,
+181,"Jurel, fresco, crudo, carne","Pescados, mariscos y conservas",149,19,0.2,8,,
+182,"Lenguado, fresco, crudo, carne","Pescados, mariscos y conservas",78,17.5,0.2,0.8,,
+183,"Lisa, fresca, cruda, carne","Pescados, mariscos y conservas",146,17.9,1.1,7.8,,
+184,"Merluza, fresca, cruda, carne","Pescados, mariscos y conservas",81,17.1,0.1,1.3,,91
+185,"Mero, fresco, crudo, carne","Pescados, mariscos y conservas",83,17.9,0.5,1,,
+186,"Palometa, fresca, cruda, carne","Pescados, mariscos y conservas",215,20.1,0.4,14.8,,
+187,"Pargo, fresco, crudo, carne","Pescados, mariscos y conservas",113,19.1,0.3,3.9,,
+189,"Patí, fresco, crudo, carne","Pescados, mariscos y conservas",90,18.2,0.3,1.8,,68
+190,"Pejerrey agua dulce, fresco, crudo, carne","Pescados, mariscos y conservas",77,18.3,,0.4,,68
+191,"Pejerrey mar, fresco, crudo, carne","Pescados, mariscos y conservas",86,18.6,0.2,1.2,,
+192,"Pescadilla, fresca, crudo, carne","Pescados, mariscos y conservas",97,17.8,0.2,2.8,,90
+193,"Pez Gallo, fresco, crudo, carne","Pescados, mariscos y conservas",84,20.2,,0.4,,
+194,"Pez palo, fresco, crudo, carne","Pescados, mariscos y conservas",96,20.1,0,1.7,,
+195,"Rubio, fresco, crudo, carne","Pescados, mariscos y conservas",109,17.1,,4.5,,
+196,"Sardina fueguina, fresca, cruda, carne","Pescados, mariscos y conservas",136,14,,8.9,,
+199,"Surubí, fresco, crudo, carne","Pescados, mariscos y conservas",110,18.2,0.2,4,,72
+200,"Tararira, fresca, cruda, carne","Pescados, mariscos y conservas",79,18.1,0.4,0.6,,
+201,"Testolin, fresco, crudo, carne","Pescados, mariscos y conservas",98,18.9,0.2,2.4,,
+202,"Calamar, fresco, entero, crudo","Pescados, mariscos y conservas",80,18.5,,0.7,,
+203,"Calamar, fresco, crudo (tubo aletas y tentáculos)","Pescados, mariscos y conservas",79,18.4,,0.6,,
+204,"Camarón, fresco, crudo, carne de cola","Pescados, mariscos y conservas",91,21,0,0.8,,
+205,"Centolla, fresca, carne, cruda","Pescados, mariscos y conservas",66,13.9,0,1.1,,
+206,"Centolla, fresca (carne de pata solamente)","Pescados, mariscos y conservas",83,18.8,0,0.8,,
+207,"Langostino, fresco, crudo, carne de cola","Pescados, mariscos y conservas",97,22,0.2,0.9,,
+208,"Mejillón, fresco, crudo, carne","Pescados, mariscos y conservas",64,11.9,1.7,1.1,,289
+209,"Mejillón, fresco, crudo (capturado en primavera)","Pescados, mariscos y conservas",95,17.6,2.5,1.6,,
+210,"Mejillón, fresco, pre-cocido, carne","Pescados, mariscos y conservas",84,21.1,,,,
+211,"Ancho, pasta","Pescados, mariscos y conservas",202,20.2,4.3,11.6,,
+212,"Caballa, tronco","Pescados, mariscos y conservas",212,26.5,,11.8,,
+213,"Cerdo, costilla flaca, cruda",Carnes y derivados,250,19.9,,18.9,,99
+214,"Cerdo, costilla, a la parrilla",Carnes y derivados,320,25.2,,24.3,,106
+215,"Cerdo, jamón crudo",Carnes y derivados,473,18,,44.6,,2940
+216,"Cerdo, jamón cocido",Carnes y derivados,211,20.3,,14.4,,1900
+217,"Cerdo, panceta",Carnes y derivados,670,8.3,,70.8,,1780
+218,"Cerdo, chorizo, fresco, crudo",Carnes y derivados,454,13,1.1,44.2,,
+219,"Cordero, carne de la paleta, crudo",Carnes y derivados,99,18.7,,2.7,,97
+220,"Cordero, carne de la paleta, flaca, a la parrilla",Carnes y derivados,182,28,,7.8,,122
+221,"Pollo, carne-pellejo-menudos, fresco, crudo",Carnes y derivados,88,16.3,,2.5,,119
+222,"Pollo, hervido",Carnes y derivados,198,23.1,,11.7,,110
+223,"Pollo, asado al horno",Carnes y derivados,162,28.4,,5.4,,129
+224,"Pollo, asado a la parrilla",Carnes y derivados,168,29.8,,5.4,,
+225,"Rana, carne de la pata, fresca, cruda",Carnes y derivados,64,15.5,,0.2,,
+226,"Vacuno, asado, fresco, crudo",Carnes y derivados,170,18.4,,10.7,,
+227,"Vacuno, bife, a la parrilla",Carnes y derivados,189,24.6,,10.1,,97
+228,"Vacuno, caracú (médula de hueso largo), crudo",Carnes y derivados,785,0.5,,87,,
+229,"Vacuno, cuadril y bife angosto flaco, fresco, crudo",Carnes y derivados,111,21,,3,,47
+230,"Vacuno, en conserva, enlatado",Carnes y derivados,224,23.7,,14.4,,895
+231,"Vacuno, hígado, crudo",Carnes y derivados,132,19.7,6,3.2,,86
+232,"Vacuno, jugo de carne",Carnes y derivados,33,6.8,,0.6,,247
+233,"Vacuno, lomo, fresco, crudo",Carnes y derivados,116,20,,4,,79
+234,"Vacuno, nalga, fresco, crudo",Carnes y derivados,97,21.2,,1.4,,63
+235,"Vacuno, pasta de hígado",Carnes y derivados,335,14,,31,,627
+236,"Vacuno, riñon, fresco, crudo",Carnes y derivados,137,15,0.9,8.1,,245
+237,"Vacuno, ternera, costilla flaca, a la parrilla",Carnes y derivados,139,27.2,,3.4,,74
+238,"Vacuno, ternera, costilla flaca, fresco, crudo",Carnes y derivados,95,20,,1.7,,88
+239,"Vacuno, vacío flaco, fresco, crudo",Carnes y derivados,171,23.8,,8.4,,70
+240,"Vacuno, vacío, a la parrilla",Carnes y derivados,258,25.6,,17.3,,91
+241,"Vacuno, vacío, al horno",Carnes y derivados,241,28.1,,14.3,,63
+242,"Vacuno, raza caribú, Bife, cocido",Carnes y derivados,233,36,0.1,9.9,,
+243,"Vacuno, raza caribú, Bife, crudo",Carnes y derivados,120,20.7,4.3,2.2,,
+244,"Vacuno, raza caribú, Nalga, cocida",Carnes y derivados,197,38.6,0.7,4.4,,
+245,"Vacuno, raza caribú, Nalga, cruda",Carnes y derivados,98,19.5,4.9,,,
+246,"Vacuno, raza caribú, Paleta, cocida",Carnes y derivados,207,37,0.4,6.4,,
+247,"Vacuno, raza caribú, Paleta, cruda",Carnes y derivados,107,19,0.2,3.4,,
+248,"Vacuno, raza caribú, Vacío, cocido",Carnes y derivados,231,41.1,1.2,6.8,,
+249,"Vacuno, raza caribú, Vacío, crudo",Carnes y derivados,105,18.4,3.1,2.2,,
+250,"Vacuno, raza criolla, Bife, cocido",Carnes y derivados,236,36.5,0.3,9.8,,
+251,"Vacuno, raza criolla, Bife, crudo",Carnes y derivados,120,21.1,3.2,2.5,,
+252,"Vacuno, raza criolla, Nalga, cocida",Carnes y derivados,177,35.1,0.6,3.8,,
+253,"Vacuno, raza criolla, Nalga, cruda",Carnes y derivados,103,21,2.5,1.1,,
+254,"Vacuno, raza criolla, Paleta, cocida",Carnes y derivados,192,35.5,0.9,5.2,,
+255,"Vacuno, raza criolla, Paleta, cruda",Carnes y derivados,106,18.4,2,2.7,,
+256,"Vacuno, raza criolla, Vacío, cocido",Carnes y derivados,203,38.4,1.2,5,,
+257,"Vacuno, raza criolla, Vacío, crudo",Carnes y derivados,107,18.4,2.7,2.5,,
+296,"Leche de burra, entera, fluida",Leche y derivados,45,1.9,6.2,1.4,,
+297,"Leche de cabra, entera, fluida",Leche y derivados,78,3.3,3,5.9,,27
+298,"Leche de oveja, entera, fluida",Leche y derivados,99,5.5,4.5,6.5,,30
+299,"Leche humana, entera, fluida",Leche y derivados,71,1.1,7.1,4.2,,11
+300,"Leche humana, entera, en polvo",Leche y derivados,520,9.6,49.5,31.5,,114
+301,"Leche de vaca, entera, fluida, pasteurizada",Leche y derivados,57,3.1,4.6,2.9,,57
+302,"Leche de vaca, entera, fluida, adicionada con vitamina A",Leche y derivados,57,3.1,4.6,2.9,,
+303,"Leche de vaca parcialm. descremada, adic. con vit A y D",Leche y derivados,44,3.2,4.6,1.4,,55
+304,Leche en polvo entera,Leche y derivados,489,25.8,40.9,24.8,,404
+305,Leche en polvo descremada,Leche y derivados,370,35.5,52.2,1,,563
+306,"Leche, condensada, Nestlé",Leche y derivados,328,8,55.8,8.1,,
+307,"Manteca, fresca",Leche y derivados,758,0.5,,84,,223
+308,"Queso crema, entero, untable",Leche y derivados,246,6.6,3.9,22.6,,74
+309,"Queso semidescremado, untable",Leche y derivados,104,11.5,5.5,4,,90
+310,"Queso descremado, untable",Leche y derivados,82,13.7,6.1,0.3,,106
+311,"Queso, Petit Suisse",Leche y derivados,182,14.1,,14,,30
+312,Queso Belpaese,Leche y derivados,309,20.3,,25.3,,510
+313,Queso Camembert,Leche y derivados,287,20.1,,23,,1240
+314,Queso mozarella,Leche y derivados,282,23.6,3.3,19.3,,
+315,Queso cremoso,Leche y derivados,302,19.7,4.2,22.9,,
+316,Queso cuartirolo,Leche y derivados,291,20.8,3.9,21.4,,360
+317,Queso doble crema,Leche y derivados,260,18,,20.9,,500
+318,Queso Limburgués,Leche y derivados,324,21.8,,26.3,,800
+319,Queso Por Salut,Leche y derivados,301,20.4,3.7,22.7,,
+320,Queso Cheddar,Leche y derivados,357,29.5,,26.5,,390
+321,Queso Chubut,Leche y derivados,328,25.9,,24.9,,270
+322,Queso Fontina,Leche y derivados,340,24.3,,33.6,,690
+323,Queso Gorgonzola,Leche y derivados,480,21.6,,43.7,,930
+324,Queso Gruyere,Leche y derivados,379,28.6,,29.4,,542
+325,Queso Holanda,Leche y derivados,345,25.1,,27.2,,730
+326,Queso Pategrás,Leche y derivados,410,24.8,,34.5,,720
+327,Queso Roquefort,Leche y derivados,426,19.2,,38.8,,1210
+328,Queso Suizo,Leche y derivados,404,28.6,1.9,31.3,,
+329,Queso Tafí,Leche y derivados,358,21.8,,30.1,,750
+330,Queso Tandil,Leche y derivados,345,25.5,,27,,
+331,Queso tipo Mar del Plata,Leche y derivados,332,25.4,,25.6,,
+332,Queso Goya,Leche y derivados,402,29.7,,31.5,,1020
+333,Queso Parmesano,Leche y derivados,350,32.7,,24.4,,680
+334,Queso Provolone,Leche y derivados,391,32.1,,29.2,,1190
+335,Queso Reggianito,Leche y derivados,365,33.4,3.4,24.2,,1230
+336,Queso Sardo,Leche y derivados,402,30,5,29.1,,
+337,Queso Sbrinz,Leche y derivados,357,29.4,,26.6,,870
+338,Ricota de leche entera,Leche y derivados,168,11.6,4,11.8,,146
+339,Yogur entero natural,Leche y derivados,66,4.6,5.3,3,,
+340,Yogur entero saborizado,Leche y derivados,88,4.4,12.4,2.4,,59
+341,Yogur descremado,Leche y derivados,59,4.3,5.9,0.2,,75
+342,Yogur entero bebible,Leche y derivados,82,2.8,12.7,2.2,,
+343,Yogur descremado bebible,Leche y derivados,30,3.3,4.1,0.1,,
+344,"Huevo de gallina, entero, crudo",Huevos y derivados,156,12,0.4,11.8,,135
+345,"Huevo de gallina, clara, cruda",Huevos y derivados,48,11.6,,0.2,,186
+346,"Huevo de gallina, yema, cruda",Huevos y derivados,325,16.6,,28.7,,65
+347,"Huevo de gallina, clara, cocido",Huevos y derivados,54,12.8,,0.3,,
+348,"Huevo de gallina, frito",Huevos y derivados,196,16.3,,14.5,,220
+349,"Huevo de gallina, poché",Huevos y derivados,152,13.4,,10.9,,183
+350,"Huevo de codorniz, entero, crudo",Huevos y derivados,174,13.6,0.1,13.3,,
+351,"Batata, dulce",Productos azucarados,263,0.9,65,0.1,,19
+352,"Ciruela, mermelada",Productos azucarados,306,3.7,73.1,0.2,,
+353,Chocolatín,Productos azucarados,549,5.4,62.4,31.5,,93
+354,"Durazno, mermelada",Productos azucarados,304,3.5,76.4,0.1,,
+355,"Frutilla, mermelada",Productos azucarados,309,3.8,73.2,0.6,,
+356,"Leche, dulce de leche",Productos azucarados,341,8.1,56.8,9,,122
+357,Mayonesa reducida en calorías,Misceláneas,320,,,32,,
+358,Mayonesa Ri-k,Misceláneas,723,,,79,,
+359,Mortadela,Misceláneas,245,17.5,1,19,,
+395,"Amarillo, fresco, crudo, músculo dorsal","Pescados, mariscos y conservas",141,17.3,,8,,
+396,"Amarillo, fresco, hervido, músculo dorsal","Pescados, mariscos y conservas",180,18.7,,11.7,,
+397,"Amarillo, fresco, al horno, músculo dorsal","Pescados, mariscos y conservas",233,19.9,,17,,
+398,"Amarillo, fresco, a la parrilla, músculo dorsal","Pescados, mariscos y conservas",183,21.3,,10.9,,
+399,"Amarillo, fresco, frito, músculo dorsal","Pescados, mariscos y conservas",232,22.8,,15.6,,
+400,"Armado, fresco, crudo, músculo dorsal","Pescados, mariscos y conservas",75,15.4,,1.5,,
+401,"Armado, fresco, crudo, músculo ventral","Pescados, mariscos y conservas",103,14.6,,4.9,,
+402,"Armado, fresco, hervido, músculo dorsal","Pescados, mariscos y conservas",102,20.8,,2.1,,
+403,"Armado, fresco, al horno, músculo dorsal","Pescados, mariscos y conservas",128,23.7,,3.7,,
+404,"Armado, fresco, frito, músculo dorsal","Pescados, mariscos y conservas",130,21.4,,4.9,,
+405,"Boga, fresca, cruda, músculo ventral","Pescados, mariscos y conservas",180,18.5,,11.8,,
+406,"Boga, fresca, hervida, músculo dorsal","Pescados, mariscos y conservas",158,22.7,,7.5,,
+407,"Boga, fresca, al horno, músculo dorsal","Pescados, mariscos y conservas",150,25.1,,5.5,,
+408,"Boga, fresca, a la parrilla, músculo dorsal","Pescados, mariscos y conservas",150,23.7,,6.1,,
+409,"Boga, fresca, frita, músculo dorsal","Pescados, mariscos y conservas",168,24.3,,7.9,,
+410,"Moncholo, fresco, crudo, músculo dorsal","Pescados, mariscos y conservas",112,17.5,,4.7,,
+411,"Moncholo, fresco, crudo, músculo ventral","Pescados, mariscos y conservas",148,16.7,,9.1,,
+412,"Moncholo, fresco, hervido, músculo dorsal","Pescados, mariscos y conservas",187,16.7,,13.3,,
+413,"Moncholo, fresco, al horno, músculo dorsal","Pescados, mariscos y conservas",189,22,,11.3,,
+414,"Patí, fresco, hervido, músculo dorsal","Pescados, mariscos y conservas",133,19.6,,6.1,,
+415,"Patí, fresco, al horno, músculo dorsal","Pescados, mariscos y conservas",183,20.6,,11.2,,
+416,"Patí, fresco, a la parrilla, músculo dorsal","Pescados, mariscos y conservas",169,22.6,,8.8,,
+417,"Patí, fresco, frito, músculo dorsal","Pescados, mariscos y conservas",215,23,,13.6,,
+418,"Sábalo, fresco, crudo, músculo dorsal","Pescados, mariscos y conservas",145,18,,8.1,,
+419,"Sábalo, fresco, crudo, músculo ventral","Pescados, mariscos y conservas",151,17.5,,9,,
+420,"Sábalo, fresco, hervido, músculo dorsal","Pescados, mariscos y conservas",130,20.5,,5.3,,
+421,"Sábalo, fresco, al horno, músculo dorsal","Pescados, mariscos y conservas",153,25.1,,5.8,,
+422,"Sábalo, fresco, a la parrilla, músculo dorsal","Pescados, mariscos y conservas",130,23.4,,4,,
+423,"Sábalo, fresco, frito, músculo dorsal","Pescados, mariscos y conservas",166,24.9,,7.4,,
+424,"Surubí, fresco, crudo, músculo dorsal","Pescados, mariscos y conservas",187,17.6,,13,,
+425,"Surubí, fresco, hervido, músculo dorsal","Pescados, mariscos y conservas",186,23.4,,10.3,,
+426,"Surubí, fresco, al horno, músculo dorsal","Pescados, mariscos y conservas",255,23.5,,17.9,,
+427,"Surubí, fresco, frito, músculo dorsal","Pescados, mariscos y conservas",269,26.7,,18,,
+428,"Patí, fresco, crudo, músculo dorsal","Pescados, mariscos y conservas",161,15.9,,10.8,,
+429,"Patí, fresco, crudo, músculo ventral","Pescados, mariscos y conservas",159,15.2,,10.9,,
+430,"Zapallo, pulpa, fresco, crudo",Vegetales y derivados,27,0.5,5.8,0.2,,2
+431,"Zapallo, pulpa, hervido",Vegetales y derivados,20,0.4,4.6,,,4
+432,Yogur descremado fortificado con Ca,Leche y derivados,48,4.6,7.1,0.1,,121
+482,"Maiz, blanco perla, grano entero, crudo",Cereales y derivados,335,9,74.8,0.9,,
+483,"Amaranto, semilla, cruda (Amarantus mantegazzianus)",Cereales y derivados,388,15.4,62.7,8.4,,
+484,"Amaranto, semilla, cruda (Amarantus caudatus)",Cereales y derivados,384,15.3,63.6,7.6,,
+485,"Amaranto, semillia, cruda (Amarantus cruentus)",Cereales y derivados,384,15.6,63.4,7.6,,
+486,"Amaranto, semilla, cruda (Amarantus hipochondriacus)",Cereales y derivados,381,14.4,64.3,7.4,,
+487,"Maiz, blanco 8 rayas, grano entero, crudo",Cereales y derivados,340,7.3,77.7,0.9,,
+488,"Maiz, amarillo Leales, grano entero, crudo",Cereales y derivados,346,10.6,74.1,0.8,,
+489,"Maiz, amarillo trópico 327, grano entero, crudo",Cereales y derivados,344,9.8,73.6,1.1,,
+490,"Maiz amarillo, pisingallo, grano entero, crudo",Cereales y derivados,345,10.9,74.6,0.5,,
+491,"Maiz amarillo, sémola, grano entero, crudo",Cereales y derivados,305,9,76.4,1.1,,
+492,"Lupino andino, con cáscara, semilla, crudo",Vegetales y derivados,399,37.8,39.5,10,,
+493,"Lupino andino, sin cáscara, semilla, crudo",Vegetales y derivados,411,38.4,38.3,11.6,,
+494,"Acelga, hoja",Vegetales y derivados,15,2.9,0.4,0.2,3.9,235
+495,"Acelga, tallo",Vegetales y derivados,8,1.2,0.6,0.1,2.9,150
+496,Aceituna de monte,Frutas y derivados,93,1.6,19.4,0.4,,
+497,"Guaraniná, Brumelia obtusifolia",Frutas y derivados,147,1.6,23.7,3.2,,
+498,Achira (raíces),Vegetales y derivados,34,1.7,7.9,0.2,,
+499,Achicoria de Monte,Vegetales y derivados,46,2.8,7.7,1.2,,
+500,"Verdolaga, hoja",Vegetales y derivados,32,2.4,5.7,0.5,,
+501,"Mastuerzo, hoja",Vegetales y derivados,50,3.7,8.1,1.4,,
+502,Ñandapirí,Frutas y derivados,70,1.7,14.3,0.7,,
+503,"Vacuno, bife angosto c/c de novillito, fresco, crudo",Carnes y derivados,190,21,0,12,,42
+504,"Vacuno, bola de lomo de novillito, fresco, crudo",Carnes y derivados,114,22,0,3.2,,44
+505,"Vacuno, brazuelo de novillito, fresco, crudo",Carnes y derivados,120,21,0,3.9,,56
+506,"Vacuno, colita de cuadril de novillito, fresco, crudo",Carnes y derivados,143,21,0,6.7,,36
+507,"Vacuno, corazón de cuadril de novillito, fresco, crudo",Carnes y derivados,116,22,0,2.6,,39
+510,"Vacuno, nalga de novillito, fresco, crudo",Carnes y derivados,106,22,0,1.7,,38
+511,"Vacuno, paleta de novillito, fresco, crudo",Carnes y derivados,125,19,0,5.5,,63
+512,"Vacuno, paletín o marucha de novillito, fresco, crudo",Carnes y derivados,132,20,0,6.1,,80
+513,"Vacuno, palomita de novillito, fresco, crudo",Carnes y derivados,116,20,0,3.7,,61
+514,"Vacuno, peceto de novillito, fresco, crudo",Carnes y derivados,125,23,0,1.9,,50
+515,"Vacuno, pecho de novillito, fresco, crudo",Carnes y derivados,139,20,0,6.5,,170
+516,"Vacuno, tortuguita de novillito, fresco, crudo",Carnes y derivados,154,22,0,7.6,,69
+517,"Vacuno, vacío de novillito, fresco, crudo",Carnes y derivados,174,20,0,11,,53
+521,"Vacuno, tapa de cuadril de novillito, fresco, crudo",Carnes y derivados,211,20,0,15,,53
+522,"Jamon cocido ""Villafranca Novissimo"".El Bierzo. Reducido en colesterol",Carnes y derivados,98,18,0.8,2.5,1.1,486
+523,"Lomo ahumado de cerdo cocido ""Villafranca Novissimo"". El Bierzo. Reducido en sodio y en colesterol",Carnes y derivados,95,19,0.6,2,1,902
+524,"Mortadela"" Villafranca Novissimo"". El Bierzo - reducida en grasa y en sodio",Carnes y derivados,139,16,6.4,5.7,1.7,655
+525,"Pastron ahumado ""Villafranca Novissimo"". El Bierzo. Reducido en sodio y en colesterol",Carnes y derivados,79,16,2.4,0.4,1,658
+526,"Salame ""Villafranca Novissimo"".El Bierzo.Reducido en sodio y en colesterol",Carnes y derivados,134,22,1.5,4.6,0.6,740
+527,Polen de Totora,Misceláneas,288,14.2,60.8,3.2,,
+528,"Poroto Alubia, semilla, seco",Vegetales y derivados,337,19.8,62.8,0.8,,
+529,"Poroto Colorado, semilla, seco",Vegetales y derivados,333,19.6,61,1.2,,
+530,"Poroto Carioca, semilla, seco",Vegetales y derivados,336,20,62,0.9,,
+531,"Poroto Grand Berry, semilla, seco",Vegetales y derivados,336,21.5,60.4,1,,
+532,"Poroto Great Northern, semilla, seco",Vegetales y derivados,326,21,60.6,0.5,,
+533,"Poroto Negro, semilla, seco",Vegetales y derivados,306,20.6,61.5,1,,
+534,"Poroto Novy Bean, semilla, seco",Vegetales y derivados,336,26,55.6,1.1,,
+535,"Poroto Oval, semilla, seco",Vegetales y derivados,328,18.2,63.7,1.1,,
+536,"Poroto Pallares, semilla, seco",Vegetales y derivados,322,16.6,63.3,0.6,,
+537,"Poroto Small Red, semilla, seco",Vegetales y derivados,336,25.3,56.7,0.8,,
+538,"Soja FT11, poroto seco",Vegetales y derivados,368,36.9,39.8,6.8,,
+539,"Diente de león, hoja",Vegetales y derivados,33,2.6,6.6,0.4,,
+540,"Lengua de vaca, hojas, tejido fresco, parte comestible",Vegetales y derivados,43,3.1,7.6,0.8,,
+541,"Yuyo colorado, hoja",Vegetales y derivados,60,4.1,11.1,0.7,,
+542,Doca,Frutas y derivados,49,1.6,11.5,1,,
+545,Ubajay,Frutas y derivados,49,1.1,8.1,1.6,,
+546,Dulce de Leche Light,Productos azucarados,260,6.2,52.9,1.6,,142
+548,Dulce de leche para reposteria,Productos azucarados,317,7.3,55,7.5,,141
+549,Dulce de leche,Productos azucarados,314,6.5,57.4,6.6,,138
+550,Queso azul,Leche y derivados,377,20,4.3,31.1,,
+551,Ricotta semidescremada,Leche y derivados,168,11.6,4,11.7,,160
+552,Queso Blanco Argentino Semimagro,Leche y derivados,104,11.5,5.6,4,,90
+553,"Vacuno, hamburguesas crudas",Carnes y derivados,218,17.3,,16.5,,703
+554,"Vacuno, hamburguesas cocidas",Carnes y derivados,248,20.5,,18.4,,834
+555,"Vacuno, hamburguesas light crudas",Carnes y derivados,175,18.4,,11.3,,754
+556,"Vacuno, hamburguesas light cocidas",Carnes y derivados,199,21,,12.8,,862
+558,Hamburguesas light asada,Carnes y derivados,199,21,0,12.8,0,747
+559,Hamburguesas regulares de carne vacuna asadas,Carnes y derivados,248,20.5,0,18.4,0,769
+560,Salchichas light tipo Viena,Carnes y derivados,136,14.2,9.8,4.4,0,1093
+561,Salchichas light tipo Viena hervidas,Carnes y derivados,139,13.7,9.8,5,0,973
+562,Salchichas tipo Viena,Carnes y derivados,211,11.3,10.8,13.6,0,1292
+563,Salchichas tipo Viena hervidas,Carnes y derivados,209,11.8,10.5,13.4,0,1141

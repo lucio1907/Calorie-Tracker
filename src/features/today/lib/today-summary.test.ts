@@ -1,0 +1,174 @@
+import { describe, expect, it } from "vitest";
+import { ZERO_NUTRIENTS } from "@/domain";
+import { buildTodaySummary, type TodayProfile, type TodaySummaryInput } from "./today-summary";
+
+const TODAY = "2026-10-15";
+
+/** 30-year-old man, 180 cm, 80 kg, moderate: BMR 1780, TDEE 1780 x 1.55 = 2759. */
+const profile: TodayProfile = {
+  sex: "male",
+  birthDate: "1996-01-10",
+  heightCm: 180,
+  activityLevel: "moderate",
+  goal: "maintain",
+  goalKgPerWeek: 0,
+  macroSplit: { protein: 30, carbs: 40, fat: 30 },
+};
+
+function input(overrides: Partial<TodaySummaryInput> = {}): TodaySummaryInput {
+  return {
+    today: TODAY,
+    profile,
+    weightKg: 80,
+    food: ZERO_NUTRIENTS,
+    exerciseKcal: [],
+    ...overrides,
+  };
+}
+
+describe("buildTodaySummary", () => {
+  it("uses TDEE from the profile and latest weight as the target when maintaining", () => {
+    const summary = buildTodaySummary(input());
+
+    expect(summary).toMatchObject({
+      status: "ready",
+      tdeeKcal: 2759,
+      goal: "maintain",
+      goalAdjustmentKcal: 0,
+      targetKcal: 2759,
+      exerciseKcal: 0,
+      remainingKcal: 2759,
+    });
+  });
+
+  it("ignores a stored rate while maintaining", () => {
+    const summary = buildTodaySummary(input({ profile: { ...profile, goalKgPerWeek: 0.5 } }));
+
+    expect(summary).toMatchObject({ status: "ready", goalAdjustmentKcal: 0, targetKcal: 2759 });
+  });
+
+  it("subtracts the daily deficit of a weight-loss goal from TDEE", () => {
+    // 0.5 kg/week x 7700 kcal/kg / 7 days = 550 kcal/day.
+    const summary = buildTodaySummary(input({ profile: { ...profile, goal: "lose", goalKgPerWeek: 0.5 } }));
+
+    expect(summary).toMatchObject({
+      status: "ready",
+      tdeeKcal: 2759,
+      goal: "lose",
+      goalKgPerWeek: 0.5,
+      goalAdjustmentKcal: -550,
+      targetKcal: 2209,
+      remainingKcal: 2209,
+    });
+  });
+
+  it("adds the daily surplus of a weight-gain goal to TDEE", () => {
+    // 0.25 kg/week x 7700 / 7 = 275 kcal/day.
+    const summary = buildTodaySummary(input({ profile: { ...profile, goal: "gain", goalKgPerWeek: 0.25 } }));
+
+    expect(summary).toMatchObject({ status: "ready", goalAdjustmentKcal: 275, targetKcal: 3034 });
+  });
+
+  it("keeps TDEE + adjustment equal to the target after rounding", () => {
+    // 0.3 kg/week = 330 kcal/day; TDEE for 81.3 kg is 2779.15 -> target round(2449.15) = 2449.
+    const summary = buildTodaySummary(input({ profile: { ...profile, goal: "lose", goalKgPerWeek: 0.3 }, weightKg: 81.3 }));
+
+    expect(summary.status).toBe("ready");
+    if (summary.status !== "ready") return;
+    expect(summary.tdeeKcal + summary.goalAdjustmentKcal).toBe(summary.targetKcal);
+    expect(summary).toMatchObject({ tdeeKcal: 2779, targetKcal: 2449, goalAdjustmentKcal: -330 });
+  });
+
+  it("never sets a negative target when the deficit exceeds TDEE", () => {
+    // 45 kg, 150 cm, 80-year-old woman, sedentary: TDEE ~1007; losing 1.5 kg/week is -1650 kcal/day.
+    const summary = buildTodaySummary(
+      input({
+        profile: { ...profile, sex: "female", birthDate: "1946-01-10", heightCm: 150, activityLevel: "sedentary", goal: "lose", goalKgPerWeek: 1.5 },
+        weightKg: 45,
+      }),
+    );
+
+    expect(summary).toMatchObject({ status: "ready", targetKcal: 0 });
+    if (summary.status === "ready") expect(summary.tdeeKcal + summary.goalAdjustmentKcal).toBe(0);
+  });
+
+  it("treats an unknown stored goal as maintain", () => {
+    const summary = buildTodaySummary(input({ profile: { ...profile, goal: "bulk", goalKgPerWeek: 1 } }));
+
+    expect(summary).toMatchObject({ status: "ready", goal: "maintain", goalAdjustmentKcal: 0, targetKcal: 2759 });
+  });
+
+  it("computes remaining = TDEE + exercise - food, from the day's totals", () => {
+    const summary = buildTodaySummary(
+      input({
+        food: { kcal: 1500.4, protein: 90.25, carbs: 150, fat: 50.5 },
+        exerciseKcal: [120.1, 180.2],
+      }),
+    );
+
+    expect(summary).toMatchObject({
+      status: "ready",
+      targetKcal: 2759,
+      consumed: { kcal: 1500.4, protein: 90.25, carbs: 150, fat: 50.5 },
+      // Summed in hundredths: 300.3, not 300.29999999999995.
+      exerciseKcal: 300.3,
+      // 2759 + 300.3 - 1500.4 = 1558.9, shown as whole kcal.
+      remainingKcal: 1559,
+    });
+  });
+
+  it("goes negative when the day is over target", () => {
+    const summary = buildTodaySummary(input({ food: { ...ZERO_NUTRIENTS, kcal: 3000 } }));
+
+    expect(summary).toMatchObject({ status: "ready", remainingKcal: -241 });
+  });
+
+  it("never reports negative zero", () => {
+    const summary = buildTodaySummary(input({ food: { ...ZERO_NUTRIENTS, kcal: 2759.2 } }));
+
+    expect(summary.status === "ready" && Object.is(summary.remainingKcal, -0)).toBe(false);
+  });
+
+  it("splits the target into macro grams (4 kcal/g protein and carbs, 9 kcal/g fat)", () => {
+    const summary = buildTodaySummary(input());
+
+    // 2759 kcal: 30% / 4 = 206.9 g, 40% / 4 = 275.9 g, 30% / 9 = 92 g (rounded to whole grams).
+    expect(summary).toMatchObject({ status: "ready", macroTargets: { protein: 207, carbs: 276, fat: 92 } });
+  });
+
+  it("splits the goal-adjusted target, not TDEE, into macros", () => {
+    const summary = buildTodaySummary(input({ profile: { ...profile, goal: "lose", goalKgPerWeek: 0.5 } }));
+
+    // 2209 kcal: 30% / 4 = 165.7 g, 40% / 4 = 220.9 g, 30% / 9 = 73.6 g.
+    expect(summary).toMatchObject({ status: "ready", macroTargets: { protein: 166, carbs: 221, fat: 74 } });
+  });
+
+  it("asks for every body field when there is no profile row", () => {
+    expect(buildTodaySummary(input({ profile: null, weightKg: null }))).toEqual({
+      status: "incomplete",
+      missing: ["sex", "birthDate", "height", "activityLevel", "weight"],
+    });
+  });
+
+  it("lists only the missing fields", () => {
+    const summary = buildTodaySummary(
+      input({ profile: { ...profile, heightCm: null, activityLevel: null }, weightKg: null }),
+    );
+
+    expect(summary).toEqual({ status: "incomplete", missing: ["height", "activityLevel", "weight"] });
+  });
+
+  it("treats unknown or out-of-range values as missing instead of throwing", () => {
+    const summary = buildTodaySummary(
+      input({
+        profile: { ...profile, sex: "other", birthDate: "2026-06-01", activityLevel: "extreme", heightCm: 0 },
+        weightKg: 0,
+      }),
+    );
+
+    expect(summary).toEqual({
+      status: "incomplete",
+      missing: ["sex", "birthDate", "height", "activityLevel", "weight"],
+    });
+  });
+});

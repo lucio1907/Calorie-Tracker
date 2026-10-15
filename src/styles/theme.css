@@ -1,0 +1,173 @@
+/*
+ * Design tokens from design.md ("Dub" reference + calorie tracker adaptation).
+ * The adaptation appendix wins where the two disagree.
+ *
+ * Spacing note: design.md names spacing steps by their pixel value
+ * (--spacing-16 = 16px). The base --spacing is set to 1px so every numeric
+ * utility follows the same rule (p-16 = 16px, h-44 = 44px, w-240 = 240px).
+ */
+
+@theme {
+  /* Colors — reference palette */
+  --color-canvas-white: #ffffff;
+  --color-paper-mist: #f5f5f5;
+  --color-ash: #e5e5e5;
+  --color-smoke: #d4d4d4;
+  --color-pebble: #c8c8c8;
+  --color-midnight-ink: #0a0a0a;
+  --color-charcoal: #171717;
+  --color-graphite: #262626;
+  --color-slate: #404040;
+  --color-steel: #525252;
+  --color-fog: #737373;
+  --color-silver: #a3a3a3;
+  --color-electric-blue: #2563eb;
+  --color-deep-sapphire: #1e40af;
+  --color-soft-mint: #dcfce7;
+  --color-vivid-green: #16a34a;
+  --color-tangerine: #ea580c;
+  --color-lavender: #7c3aed;
+  --color-conic-spectrum: #8b5cf6;
+  --color-primary-action-fill: #000000;
+
+  /* Typography — scale (line-height pairs make text-* set leading too) */
+  --text-caption: 11px;
+  --text-caption--line-height: 1.5;
+  --text-body: 14px;
+  --text-body--line-height: 1.43;
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 1.5;
+  --text-body-xl: 18px;
+  --text-body-xl--line-height: 1.56;
+  --text-subheading: 20px;
+  --text-subheading--line-height: 1.4;
+  --text-heading-sm: 24px;
+  --text-heading-sm--line-height: 1.33;
+  --text-heading: 30px;
+  --text-heading--line-height: 1.38;
+  --text-heading-lg: 36px;
+  --text-heading-lg--line-height: 1.11;
+  --text-display: 48px;
+  --text-display--line-height: 1;
+
+  --leading-caption: 1.5;
+  --leading-body: 1.43;
+  --leading-body-lg: 1.5;
+  --leading-body-xl: 1.56;
+  --leading-subheading: 1.4;
+  --leading-heading-sm: 1.33;
+  --leading-heading: 1.38;
+  --leading-heading-lg: 1.11;
+  --leading-display: 1;
+
+  /* Spacing */
+  --spacing: 1px;
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-20: 20px;
+  --spacing-24: 24px;
+  --spacing-28: 28px;
+  --spacing-32: 32px;
+  --spacing-36: 36px;
+  --spacing-40: 40px;
+  --spacing-48: 48px;
+  --spacing-56: 56px;
+  --spacing-64: 64px;
+  --spacing-80: 80px;
+  --spacing-96: 96px;
+  --spacing-112: 112px;
+
+  /* Layout */
+  --container-page: 1200px;
+
+  /* Border radius — reference scale */
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-2xl-2: 20px;
+  --radius-full: 9999px;
+
+  /* Border radius — named roles */
+  --radius-tags: 9999px;
+  --radius-cards: 12px;
+  --radius-inputs: 6px;
+  --radius-buttons: 8px;
+  --radius-largecards: 16px;
+
+  /* Shadows */
+  --shadow-subtle: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
+  --shadow-sm: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px;
+  --shadow-sm-2: rgba(0, 0, 0, 0.2) 0px 2px 6px 0px inset;
+  --shadow-subtle-2: rgba(0, 0, 0, 0.1) 0px 0px 0px 4px;
+  --shadow-md: rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.1) 0px 4px 6px -4px;
+  --shadow-lg: rgba(0, 0, 0, 0.09) 0px 20px 20px 0px;
+  --shadow-subtle-3: rgb(255, 255, 255) 0px 0px 0px 3px, rgb(0, 0, 0) 0px 0px 0px 4px;
+}
+
+/*
+ * Font families resolve to the next/font CSS variables set on <html>
+ * (see src/app/fonts.ts), so they use `inline` to reference them at use site.
+ * Satoshi is not self-hosted (Fontshare's EULA forbids redistributing the
+ * files), so display text falls back to Inter 500 with -0.02em tracking.
+ */
+@theme inline {
+  --font-inter: var(--font-inter-next), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-satoshi: var(--font-inter-next), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-geist-mono: var(--font-geist-mono-next), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Role aliases used by components */
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-satoshi);
+  --font-mono: var(--font-geist-mono);
+}
+
+/*
+ * Semantic aliases (design.md "Adaptation for the Calorie Tracker Dashboard").
+ * Components use these, never raw palette names, so meaning stays in one place.
+ */
+@theme {
+  /* Surfaces and lines */
+  --color-canvas: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f5f5f5;
+  --color-surface-muted: #fafafa;
+  --color-border: #e5e5e5;
+  --color-border-strong: #d4d4d4;
+  --color-input-border: #000000;
+
+  /* Text */
+  --color-ink: #171717;
+  --color-ink-strong: #0a0a0a;
+  --color-ink-muted: #525252;
+  --color-ink-subtle: #737373;
+  --color-input-text: #111827;
+
+  /* Brand + interaction */
+  --color-brand: #2563eb;
+  --color-focus: #2563eb;
+  --color-nav-active: #dbeaff;
+  --color-action: #0a0a0a;
+  --color-action-hover: #262626;
+  --color-on-action: #ffffff;
+
+  /* Calorie semantics */
+  --color-consumed: #2563eb;
+  --color-burned: #16a34a;
+  --color-burned-wash: #dcfce7;
+  /* Darker ink for small text on the wash: #16a34a alone is < 4.5:1. */
+  --color-burned-ink: #15803d;
+  --color-over: #ea580c;
+  --color-over-wash: #ffedd5;
+  --color-over-ink: #c2410c;
+
+  /* Macros (fat uses tangerine only inside the macro chart) */
+  --color-protein: #7c3aed;
+  --color-carbs: #2563eb;
+  --color-fat: #ea580c;
+
+  /* Errors reuse the warning accent with a text label, never color alone. */
+  --color-danger-ink: #c2410c;
+  --color-danger-wash: #ffedd5;
+}

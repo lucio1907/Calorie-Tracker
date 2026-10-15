@@ -1,0 +1,49 @@
+import type { ReactNode } from "react";
+import { shellStrings } from "../strings";
+
+type AppShellProps = {
+  sidebar: ReactNode;
+  sidebarFooter?: ReactNode;
+  tabBar: ReactNode;
+  children: ReactNode;
+};
+
+const MAIN_ID = "main-content";
+
+/**
+ * App shell from design.md: fixed 240px sidebar on desktop (lg), icon rail on
+ * tablet (md), bottom tab bar on mobile. Content is capped at 1200px.
+ */
+export function AppShell({ sidebar, sidebarFooter, tabBar, children }: AppShellProps) {
+  return (
+    <div className="min-h-dvh bg-canvas">
+      <a
+        href={`#${MAIN_ID}`}
+        className="sr-only focus:not-sr-only focus:fixed focus:top-8 focus:left-8 focus:z-20 focus:rounded-buttons focus:bg-surface focus:px-16 focus:py-12 focus:shadow-sm"
+      >
+        {shellStrings.skipToContent}
+      </a>
+
+      <aside className="fixed inset-y-0 left-0 z-10 hidden w-72 flex-col justify-between border-r border-border bg-surface p-12 md:flex lg:w-240">
+        <div className="flex flex-col gap-24">
+          <div className="flex min-h-44 items-center gap-8 px-8 md:justify-center lg:justify-start">
+            <span aria-hidden="true" className="size-24 shrink-0 rounded-full bg-[conic-gradient(from_-81deg,#ff0000,#eab308_99deg,#5cff80_162deg,#00fff9_216deg,#3a8bfd_288deg,#855afc)]" />
+            <span className="text-body-lg font-semibold text-ink md:sr-only lg:not-sr-only">{shellStrings.appName}</span>
+          </div>
+          {sidebar}
+        </div>
+        {sidebarFooter}
+      </aside>
+
+      <main
+        id={MAIN_ID}
+        tabIndex={-1}
+        className="px-16 pt-24 pb-[calc(88px+env(safe-area-inset-bottom))] outline-none md:pb-48 md:pl-[calc(72px+24px)] md:pr-24 lg:pl-[calc(240px+32px)] lg:pr-32"
+      >
+        <div className="mx-auto w-full max-w-page">{children}</div>
+      </main>
+
+      {tabBar}
+    </div>
+  );
+}
