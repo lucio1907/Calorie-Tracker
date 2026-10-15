@@ -24,7 +24,7 @@ export function AppShell({ sidebar, sidebarFooter, tabBar, children }: AppShellP
         {shellStrings.skipToContent}
       </a>
 
-      <aside className="fixed inset-y-0 left-0 z-10 hidden w-72 flex-col justify-between border-r border-border bg-surface p-12 md:flex lg:w-240">
+      <aside className="fixed inset-y-0 left-0 z-10 hidden [view-transition-name:sidebar] w-72 flex-col justify-between border-r border-border bg-surface p-12 md:flex lg:w-240">
         <div className="flex flex-col gap-24">
           <div className="flex min-h-44 items-center gap-8 px-8 md:justify-center lg:justify-start">
             <span aria-hidden="true" className="size-24 shrink-0 rounded-full bg-[conic-gradient(from_-81deg,#ff0000,#eab308_99deg,#5cff80_162deg,#00fff9_216deg,#3a8bfd_288deg,#855afc)]" />

@@ -3,7 +3,7 @@
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
-import { Button, PageHeader, Sheet } from "@/components/ui";
+import { AnchoredTransition, Button, dayTransitionType, PageHeader, Sheet } from "@/components/ui";
 import type { CalendarDate, Meal } from "@/domain";
 import { FoodFormContainer } from "@/features/foods/containers/food-form-container";
 import { OffSearchContainer } from "@/features/foods/containers/off-search-container";
@@ -110,18 +110,27 @@ export function DiaryScreenContainer({
 
   return (
     <div className="flex flex-col gap-24">
-      <PageHeader
-        title={t.title}
-        description={t.description}
-        actions={
-          <Button variant="primary" onClick={() => setPanel({ kind: "pick", meal: suggestedMeal })}>
-            <Plus aria-hidden="true" size={18} />
-            <span>{t.logFood}</span>
-          </Button>
-        }
-      />
+      {/* Title and date navigation stay put while the day's content slides. */}
+      <AnchoredTransition name="diary-day-header">
+        <div className="flex flex-col gap-24">
+          <PageHeader
+            title={t.title}
+            description={t.description}
+            actions={
+              <Button variant="primary" onClick={() => setPanel({ kind: "pick", meal: suggestedMeal })}>
+                <Plus aria-hidden="true" size={18} />
+                <span>{t.logFood}</span>
+              </Button>
+            }
+          />
 
-      <DateNav date={date} today={today} onPick={(picked) => router.push(diaryHref(picked, today))} />
+          <DateNav
+            date={date}
+            today={today}
+            onPick={(picked) => router.push(diaryHref(picked, today), { transitionTypes: [dayTransitionType(date, picked)] })}
+          />
+        </div>
+      </AnchoredTransition>
 
       <DayTotals totals={day.totals} />
 

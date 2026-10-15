@@ -1,5 +1,5 @@
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
-import { ButtonLink, CalendarPopover } from "@/components/ui";
+import { ButtonLink, CalendarPopover, DAY_BACK, DAY_FORWARD, dayTransitionType } from "@/components/ui";
 import { addDays, type CalendarDate } from "@/domain";
 import { APP_TIME_ZONE } from "@/lib/app-time";
 import { formatDiaryDate, MAX_DIARY_DATE, MIN_DIARY_DATE, relativeDay } from "../lib/diary-date";
@@ -41,7 +41,12 @@ export function DateNav({ date, today, onPick, basePath = "/diary" }: DateNavPro
     <nav aria-label={t.label} className="flex flex-col gap-8">
       <div className="flex items-center gap-8">
         {previous >= MIN_DIARY_DATE ? (
-          <ButtonLink href={href(previous)} aria-label={t.previous} className="w-44 shrink-0 px-0">
+          <ButtonLink
+            href={href(previous)}
+            transitionTypes={[DAY_BACK]}
+            aria-label={t.previous}
+            className="w-44 shrink-0 px-0"
+          >
             <ChevronLeft aria-hidden="true" size={20} />
           </ButtonLink>
         ) : null}
@@ -65,7 +70,7 @@ export function DateNav({ date, today, onPick, basePath = "/diary" }: DateNavPro
           </CalendarPopover>
         </div>
         {next <= MAX_DIARY_DATE ? (
-          <ButtonLink href={href(next)} aria-label={t.next} className="w-44 shrink-0 px-0">
+          <ButtonLink href={href(next)} transitionTypes={[DAY_FORWARD]} aria-label={t.next} className="w-44 shrink-0 px-0">
             <ChevronRight aria-hidden="true" size={20} />
           </ButtonLink>
         ) : null}
@@ -73,7 +78,7 @@ export function DateNav({ date, today, onPick, basePath = "/diary" }: DateNavPro
       {/* Always reserves the row, so moving between today and other days never shifts the page. */}
       <div className="flex min-h-44 justify-center">
         {date !== today ? (
-          <ButtonLink href={basePath} className="shrink-0">
+          <ButtonLink href={basePath} transitionTypes={[dayTransitionType(date, today)]} className="shrink-0">
             {t.today}
           </ButtonLink>
         ) : null}

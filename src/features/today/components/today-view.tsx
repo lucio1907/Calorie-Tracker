@@ -1,6 +1,6 @@
 import { Plus } from "lucide-react";
 import type { ComponentProps } from "react";
-import { ButtonLink, Card, EmptyState, PageHeader } from "@/components/ui";
+import { ButtonLink, Card, EmptyState, PageHeader, ProgressBar } from "@/components/ui";
 import { formatAmount, formatKcal } from "@/features/foods/lib/format";
 import type { TodaySummary } from "../lib/today-summary";
 import { todayStrings as t } from "../strings";
@@ -50,10 +50,9 @@ function Breakdown({ items, ...props }: { items: BreakdownItem[] } & ComponentPr
   );
 }
 
-/** Share of the target reached, as a CSS width capped at 100%. */
-function barWidth(consumed: number, target: number): string {
-  if (target <= 0) return "0%";
-  return `${Math.min(100, (consumed / target) * 100)}%`;
+/** Share of `target` reached, 0 to 1 (a full bar once reached). */
+function share(consumed: number, target: number): number {
+  return target > 0 ? Math.min(1, consumed / target) : 0;
 }
 
 function BalanceCard({ summary }: { summary: ReadySummary }) {
@@ -79,6 +78,12 @@ function BalanceCard({ summary }: { summary: ReadySummary }) {
           </span>
           <span className="text-body text-ink-muted">{t.kcalUnit}</span>
         </p>
+        {/* Food eaten out of today's budget (target + exercise); the numbers below say the same. */}
+        <ProgressBar
+          value={share(summary.consumed.kcal, summary.targetKcal + summary.exerciseKcal)}
+          fillClassName={over ? "bg-over" : "bg-consumed"}
+          className="mt-8"
+        />
       </div>
       <Breakdown items={equation} />
       <div className="flex flex-col gap-8 border-t border-border pt-12">
@@ -114,9 +119,7 @@ function MacrosCard({ summary }: { summary: ReadySummary }) {
                   {t.macroAmount(formatAmount(consumed), formatKcal(target))}
                 </span>
               </div>
-              <div aria-hidden="true" className="h-8 w-full overflow-hidden rounded-full bg-surface-alt">
-                <div className={`h-full rounded-full ${macro.barClass}`} style={{ width: barWidth(consumed, target) }} />
-              </div>
+              <ProgressBar value={share(consumed, target)} fillClassName={macro.barClass} />
             </li>
           );
         })}

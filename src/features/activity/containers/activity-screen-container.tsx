@@ -3,7 +3,7 @@
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
-import { Button, PageHeader, Sheet } from "@/components/ui";
+import { AnchoredTransition, Button, dayTransitionType, PageHeader, Sheet } from "@/components/ui";
 import type { CalendarDate } from "@/domain";
 import { DateNav, dayHref } from "@/features/diary/components/date-nav";
 import { ActivityDayView, WeightNotice } from "../components/activity-day-view";
@@ -80,25 +80,32 @@ export function ActivityScreenContainer({ date, today, day, catalog, weight }: A
 
   return (
     <div className="flex flex-col gap-24">
-      <PageHeader
-        title={t.title}
-        description={t.description}
-        actions={
-          weight ? (
-            <Button variant="primary" onClick={() => setPanel({ kind: "pick" })}>
-              <Plus aria-hidden="true" size={18} />
-              <span>{t.logActivity}</span>
-            </Button>
-          ) : null
-        }
-      />
+      {/* Title and date navigation stay put while the day's content slides. */}
+      <AnchoredTransition name="activity-day-header">
+        <div className="flex flex-col gap-24">
+          <PageHeader
+            title={t.title}
+            description={t.description}
+            actions={
+              weight ? (
+                <Button variant="primary" onClick={() => setPanel({ kind: "pick" })}>
+                  <Plus aria-hidden="true" size={18} />
+                  <span>{t.logActivity}</span>
+                </Button>
+              ) : null
+            }
+          />
 
-      <DateNav
-        date={date}
-        today={today}
-        basePath={BASE_PATH}
-        onPick={(picked) => router.push(dayHref(BASE_PATH, picked, today))}
-      />
+          <DateNav
+            date={date}
+            today={today}
+            basePath={BASE_PATH}
+            onPick={(picked) =>
+              router.push(dayHref(BASE_PATH, picked, today), { transitionTypes: [dayTransitionType(date, picked)] })
+            }
+          />
+        </div>
+      </AnchoredTransition>
 
       <WeightNotice weight={weight} today={today} />
 

@@ -1,5 +1,7 @@
+"use client";
+
 import { ChevronRight } from "lucide-react";
-import { ButtonLink, Card } from "@/components/ui";
+import { ButtonLink, Card, cn, presenceProps, useListPresence, type Presence } from "@/components/ui";
 import type { CalendarDate } from "@/domain";
 import { formatDiaryDate } from "@/features/diary/lib/diary-date";
 import { formatAmount, formatKcal } from "@/features/foods/lib/format";
@@ -26,13 +28,15 @@ export function WeightNotice({ weight, today }: { weight: ActivityWeight | null;
   );
 }
 
-function EntryRow({ entry, onEdit }: { entry: ActivityEntry; onEdit: (entry: ActivityEntry) => void }) {
+function EntryRow({ row, onEdit }: { row: Presence<ActivityEntry>; onEdit: (entry: ActivityEntry) => void }) {
+  const entry = row.item;
+  const { className, ...presence } = presenceProps(row.phase);
   return (
-    <li className="border-t border-border first:border-t-0">
+    <li className={cn("border-t border-border first:border-t-0", className)} {...presence}>
       <button
         type="button"
         onClick={() => onEdit(entry)}
-        className="flex min-h-56 w-full items-center gap-12 px-16 py-12 text-left transition-colors duration-150 hover:bg-surface-alt"
+        className="flex min-h-56 w-full items-center gap-12 px-16 py-12 text-left transition-colors duration-150 hover:bg-surface-alt active:bg-surface-alt"
       >
         <span className="flex min-w-0 flex-1 flex-col gap-4">
           <span className="line-clamp-2 text-body-lg text-ink">{entry.label}</span>
@@ -48,6 +52,8 @@ function EntryRow({ entry, onEdit }: { entry: ActivityEntry; onEdit: (entry: Act
   );
 }
 
+const entryKey = (entry: ActivityEntry) => entry.id;
+
 type ActivityDayViewProps = {
   day: ActivityDay;
   onEdit: (entry: ActivityEntry) => void;
@@ -55,6 +61,9 @@ type ActivityDayViewProps = {
 
 /** The day's exercise total and its entries (each opens the editor), or an empty message. */
 export function ActivityDayView({ day, onEdit }: ActivityDayViewProps) {
+  // Added entries rise in and deleted ones fade out (after the Server Action refresh).
+  const rows = useListPresence(day.entries, entryKey);
+
   return (
     <div className="flex flex-col gap-16">
       <Card aria-labelledby="activity-day-total" className="flex flex-col gap-4">
@@ -70,10 +79,10 @@ export function ActivityDayView({ day, onEdit }: ActivityDayViewProps) {
         </p>
       </Card>
 
-      {day.entries.length > 0 ? (
+      {rows.length > 0 ? (
         <ul aria-label={t.day.entries} className="rounded-cards border border-border bg-surface">
-          {day.entries.map((entry) => (
-            <EntryRow key={entry.id} entry={entry} onEdit={onEdit} />
+          {rows.map((row) => (
+            <EntryRow key={row.key} row={row} onEdit={onEdit} />
           ))}
         </ul>
       ) : (

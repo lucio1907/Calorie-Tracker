@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { Sheet } from "./sheet";
 
@@ -40,5 +40,26 @@ describe("Sheet", () => {
     const { onClose } = renderSheet();
     fireEvent.click(screen.getByRole("button", { name: "Close" }));
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the last content while sliding out, then drops it", () => {
+    vi.useFakeTimers();
+    const { rerender } = render(
+      <Sheet open onClose={vi.fn()} title="Edit entry" closeLabel="Close">
+        <p>Form</p>
+      </Sheet>,
+    );
+    // Callers clear title and content as they close the sheet.
+    rerender(
+      <Sheet open={false} onClose={vi.fn()} title="" closeLabel="Close">
+        {null}
+      </Sheet>,
+    );
+    expect(screen.getByText("Form")).toBeInTheDocument();
+    expect(screen.getByText("Edit entry")).toBeInTheDocument();
+
+    act(() => vi.advanceTimersByTime(250));
+    expect(screen.queryByText("Form")).not.toBeInTheDocument();
+    vi.useRealTimers();
   });
 });

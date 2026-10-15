@@ -1,3 +1,4 @@
+import { DayTransition } from "@/components/ui";
 import { requireUser } from "@/features/auth/data/current-user";
 import { resolveDiaryDate } from "@/features/diary/lib/diary-date";
 import { getLatestWeight } from "@/features/settings/data/settings";
@@ -27,14 +28,15 @@ export async function ActivityPage({ searchParams }: ActivityPageProps) {
   ]);
 
   return (
-    <ActivityScreenContainer
-      // A new day starts with a closed sheet.
-      key={date}
-      date={date}
-      today={today}
-      day={buildActivityDay(entries)}
-      catalog={catalog}
-      weight={weight}
-    />
+    // A new day remounts the screen (closed sheet) and slides it in from the side it comes from.
+    <DayTransition key={date}>
+      <ActivityScreenContainer
+        date={date}
+        today={today}
+        day={buildActivityDay(entries)}
+        catalog={catalog}
+        weight={weight}
+      />
+    </DayTransition>
   );
 }

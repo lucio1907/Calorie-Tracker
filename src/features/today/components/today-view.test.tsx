@@ -157,4 +157,25 @@ describe("TodayView", () => {
     expect(screen.queryByText(/Missing:/)).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: t.remainingLabel })).not.toBeInTheDocument();
   });
+
+  it("fills the budget and macro bars to their share of the target", () => {
+    const { container } = render(<TodayView dateLabel="Thursday, October 15" summary={ready} />);
+
+    const fills = [...container.querySelectorAll("[data-progress]")].map((fill) => Number(fill.getAttribute("data-progress")));
+    // Food 1500.4 of target 2759 + exercise 300.3; then protein 90.25/207, carbs 150/276, fat 50.5/92.
+    expect(fills.map((value) => value.toFixed(3))).toEqual(["0.490", "0.436", "0.543", "0.549"]);
+  });
+
+  it("shows a full warning-colored budget bar when over", () => {
+    const { container } = render(
+      <TodayView
+        dateLabel="Thursday, October 15"
+        summary={{ ...ready, consumed: { ...ready.consumed, kcal: 3500 }, remainingKcal: -441 }}
+      />,
+    );
+
+    const budget = container.querySelector("[data-progress]");
+    expect(budget).toHaveAttribute("data-progress", "1");
+    expect(budget).toHaveClass("bg-over");
+  });
 });

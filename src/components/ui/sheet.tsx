@@ -1,8 +1,14 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useCallback, useEffect, useId, useRef, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { UNSAFE_PortalProvider } from "react-aria";
+
+/** Matches the exit transition of .sheet-motion (globals.css), plus a frame of slack. */
+const EXIT_MS = 200;
+
+type Content = { title: string; children: ReactNode };
+const EMPTY: Content = { title: "", children: null };
 
 type SheetProps = {
   open: boolean;
@@ -17,11 +23,25 @@ type SheetProps = {
  * come from the browser). Bottom sheet on mobile, right-hand panel from md up.
  * Popovers opened inside (selects, calendars) portal into the dialog: anything
  * outside an open modal dialog is inert and drawn below it.
+ * It slides in and out (.sheet-motion); while it slides out it keeps showing
+ * the last open content, since callers usually clear it on close.
  */
 export function Sheet({ open, onClose, title, closeLabel, children }: SheetProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const portalContainer = useCallback(() => ref.current, []);
+  const [shown, setShown] = useState<Content>(EMPTY);
+
+  // Remember what is open (adjusting state while rendering, not in an effect).
+  if (open && (shown.title !== title || shown.children !== children)) setShown({ title, children });
+
+  useEffect(() => {
+    if (open) return;
+    const timer = setTimeout(() => setShown(EMPTY), EXIT_MS);
+    return () => clearTimeout(timer);
+  }, [open]);
+
+  const content = open ? { title, children } : shown;
 
   useEffect(() => {
     const dialog = ref.current;
@@ -46,24 +66,24 @@ export function Sheet({ open, onClose, title, closeLabel, children }: SheetProps
           event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
         if (!inside) onClose();
       }}
-      className="fixed inset-x-0 bottom-0 top-auto m-0 max-h-[90dvh] w-full max-w-none rounded-t-largecards border border-border bg-surface p-0 text-ink backdrop:bg-ink-strong/40 md:inset-y-0 md:left-auto md:right-0 md:h-dvh md:max-h-dvh md:w-440 md:rounded-none md:border-y-0 md:border-r-0"
+      className="sheet-motion fixed inset-x-0 bottom-0 top-auto m-0 max-h-[90dvh] w-full max-w-none rounded-t-largecards border border-border bg-surface p-0 text-ink backdrop:bg-ink-strong/40 md:inset-y-0 md:left-auto md:right-0 md:h-dvh md:max-h-dvh md:w-440 md:rounded-none md:border-y-0 md:border-r-0"
     >
       <div className="flex max-h-[90dvh] flex-col md:h-full md:max-h-none">
         <header className="flex items-center justify-between gap-12 border-b border-border py-8 pr-8 pl-16">
           <h2 id={titleId} className="min-w-0 truncate text-body-xl font-semibold text-ink">
-            {title}
+            {content.title}
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label={closeLabel}
-            className="inline-flex size-44 shrink-0 items-center justify-center rounded-buttons text-ink hover:bg-surface-alt"
+            className="inline-flex size-44 shrink-0 items-center justify-center rounded-buttons text-ink transition-[background-color,transform] duration-150 hover:bg-surface-alt motion-safe:active:scale-95"
           >
             <X aria-hidden="true" size={20} />
           </button>
         </header>
         <div className="overflow-y-auto overscroll-contain px-16 pt-16 pb-[calc(24px+env(safe-area-inset-bottom))]">
-          <UNSAFE_PortalProvider getContainer={portalContainer}>{children}</UNSAFE_PortalProvider>
+          <UNSAFE_PortalProvider getContainer={portalContainer}>{content.children}</UNSAFE_PortalProvider>
         </div>
       </div>
     </dialog>
