@@ -1,11 +1,13 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
+import { chooseOption, formValues } from "@/test-support/choose-option";
 import { profileFormDefaults } from "../lib/profile-schema";
 import { initialProfileFormState, type ProfileFormValues } from "../lib/types";
 import { settingsStrings } from "../strings";
 import { ProfileForm } from "./profile-form";
 
+const s = settingsStrings;
 const p = settingsStrings.profile;
 const v = settingsStrings.validation;
 const TODAY = "2026-10-15";
@@ -24,25 +26,34 @@ const stored: ProfileFormValues = {
 
 describe("ProfileForm", () => {
   it("prefills every field from the stored profile", () => {
-    render(<ProfileForm defaults={stored} today={TODAY} state={initialProfileFormState} />);
+    const { container } = render(<ProfileForm defaults={stored} today={TODAY} state={initialProfileFormState} />);
 
-    expect(screen.getByLabelText(p.sex)).toHaveValue("male");
+    expect(screen.getByLabelText(p.sex)).toHaveTextContent(s.sexes.male);
     expect(screen.getByLabelText(p.birthDate)).toHaveValue("1996-01-10");
     // Latest birth date of an 18-year-old.
     expect(screen.getByLabelText(p.birthDate)).toHaveAttribute("max", "2008-10-15");
     expect(screen.getByLabelText(p.heightCm)).toHaveValue("180");
-    expect(screen.getByLabelText(p.activityLevel)).toHaveValue("moderate");
-    expect(screen.getByLabelText(p.goal)).toHaveValue("lose");
+    expect(screen.getByLabelText(p.activityLevel)).toHaveTextContent(s.activityLevels.moderate);
+    expect(screen.getByLabelText(p.goal)).toHaveTextContent(s.goals.lose);
     expect(screen.getByLabelText(p.goalKgPerWeek)).toHaveValue("0.5");
     expect(screen.getByLabelText(p.proteinPct)).toHaveValue("30");
     expect(screen.getByText(p.macroTotal("100"))).toBeInTheDocument();
+    // The custom selects submit the same values the native ones did.
+    expect(formValues(container.querySelector("form"))).toMatchObject({
+      sex: "male",
+      activityLevel: "moderate",
+      goal: "lose",
+    });
   });
 
   it("starts empty with the default split before a profile exists", () => {
-    render(<ProfileForm defaults={profileFormDefaults(null)} today={TODAY} state={initialProfileFormState} />);
+    const { container } = render(
+      <ProfileForm defaults={profileFormDefaults(null)} today={TODAY} state={initialProfileFormState} />,
+    );
 
-    expect(screen.getByLabelText(p.sex)).toHaveValue("");
-    expect(screen.getByLabelText(p.goal)).toHaveValue("maintain");
+    expect(screen.getByLabelText(p.sex)).toHaveTextContent(p.sexPlaceholder);
+    expect(screen.getByLabelText(p.goal)).toHaveTextContent(s.goals.maintain);
+    expect(formValues(container.querySelector("form"))).toMatchObject({ sex: "", activityLevel: "", goal: "maintain" });
     expect(screen.queryByLabelText(p.goalKgPerWeek)).not.toBeInTheDocument();
     expect(screen.getByLabelText(p.carbsPct)).toHaveValue("40");
   });
@@ -51,13 +62,13 @@ describe("ProfileForm", () => {
     const user = userEvent.setup();
     render(<ProfileForm defaults={{ ...stored, goal: "maintain", goalKgPerWeek: "" }} today={TODAY} state={initialProfileFormState} />);
 
-    await user.selectOptions(screen.getByLabelText(p.goal), "gain");
+    await chooseOption(user, p.goal, s.goals.gain);
     const rate = screen.getByLabelText(p.goalKgPerWeek);
     await user.type(rate, "0,25");
 
     expect(rate).toHaveAccessibleDescription(`${p.rateHint(0.05, 1.5)} ${p.rateEffect("275", "above")}`);
 
-    await user.selectOptions(screen.getByLabelText(p.goal), "maintain");
+    await chooseOption(user, p.goal, s.goals.maintain);
     expect(screen.queryByLabelText(p.goalKgPerWeek)).not.toBeInTheDocument();
   });
 

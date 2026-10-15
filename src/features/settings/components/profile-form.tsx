@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, SelectField, TextField } from "@/components/ui";
+import { Button, Select, TextField } from "@/components/ui";
 import { ACTIVITY_LEVELS, dailyAdjustment, GOALS, MIN_DAILY_KCAL, SEXES, type CalendarDate, type Goal } from "@/domain";
 import { toDecimal } from "@/features/foods/lib/food-schema";
 import { formatKcal } from "@/features/foods/lib/format";
@@ -11,6 +11,10 @@ import { settingsStrings } from "../strings";
 
 const s = settingsStrings;
 const p = settingsStrings.profile;
+
+const SEX_OPTIONS = SEXES.map((sex) => ({ value: sex, label: s.sexes[sex] }));
+const ACTIVITY_OPTIONS = ACTIVITY_LEVELS.map((level) => ({ value: level, label: s.activityLevels[level] }));
+const GOAL_OPTIONS = GOALS.map((goal: Goal) => ({ value: goal, label: s.goals[goal] }));
 
 const PERCENT_FIELDS = [
   { name: "proteinPct", label: p.proteinPct },
@@ -57,13 +61,22 @@ export function ProfileForm({ defaults, today, state, action, pending = false }:
   const { min: minRate, max: maxRate } = PROFILE_LIMITS.goalKgPerWeek;
   const effect = needsRate ? rateEffect(values.goal, values.goalKgPerWeek) : null;
 
+  function update(name: ProfileFieldName, value: string) {
+    setValues((current) => ({ ...current, [name]: value }));
+  }
+
   function field(name: ProfileFieldName) {
     return {
       name,
       value: values[name],
       error: errors[name],
-      onChange: (event: { target: { value: string } }) => setValues((current) => ({ ...current, [name]: event.target.value })),
+      onChange: (event: { target: { value: string } }) => update(name, event.target.value),
     };
+  }
+
+  /** Same as field() for the custom Select, whose onChange gets the value itself. */
+  function choice(name: ProfileFieldName) {
+    return { name, value: values[name], error: errors[name], onChange: (value: string) => update(name, value) };
   }
 
   return (
@@ -77,16 +90,7 @@ export function ProfileForm({ defaults, today, state, action, pending = false }:
       <fieldset disabled={pending} className="flex flex-col gap-16">
         <legend className="mb-12 text-body font-semibold text-ink">{p.bodyLegend}</legend>
         <div className="grid gap-16 sm:grid-cols-2">
-          <SelectField label={p.sex} required {...field("sex")}>
-            <option value="" disabled>
-              {p.sexPlaceholder}
-            </option>
-            {SEXES.map((sex) => (
-              <option key={sex} value={sex}>
-                {s.sexes[sex]}
-              </option>
-            ))}
-          </SelectField>
+          <Select label={p.sex} required options={SEX_OPTIONS} placeholder={p.sexPlaceholder} {...choice("sex")} />
           <TextField label={p.birthDate} type="date" required max={latestBirthDate(today)} min="1900-01-02" {...field("birthDate")} />
           <TextField
             label={p.heightCm}
@@ -96,29 +100,20 @@ export function ProfileForm({ defaults, today, state, action, pending = false }:
             className="[&_input]:tabular"
             {...field("heightCm")}
           />
-          <SelectField label={p.activityLevel} required {...field("activityLevel")}>
-            <option value="" disabled>
-              {p.activityPlaceholder}
-            </option>
-            {ACTIVITY_LEVELS.map((level) => (
-              <option key={level} value={level}>
-                {s.activityLevels[level]}
-              </option>
-            ))}
-          </SelectField>
+          <Select
+            label={p.activityLevel}
+            required
+            options={ACTIVITY_OPTIONS}
+            placeholder={p.activityPlaceholder}
+            {...choice("activityLevel")}
+          />
         </div>
       </fieldset>
 
       <fieldset disabled={pending} className="flex flex-col gap-16">
         <legend className="mb-12 text-body font-semibold text-ink">{p.goalLegend}</legend>
         <div className="grid gap-16 sm:grid-cols-2">
-          <SelectField label={p.goal} required {...field("goal")}>
-            {GOALS.map((goal: Goal) => (
-              <option key={goal} value={goal}>
-                {s.goals[goal]}
-              </option>
-            ))}
-          </SelectField>
+          <Select label={p.goal} required options={GOAL_OPTIONS} {...choice("goal")} />
           {needsRate ? (
             <TextField
               label={p.goalKgPerWeek}

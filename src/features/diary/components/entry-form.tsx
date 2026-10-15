@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Button, SelectField, TextField } from "@/components/ui";
+import { Button, Select, TextField } from "@/components/ui";
 import { MAX_ENTRY_GRAMS, MEALS, type Meal, type Nutrients } from "@/domain";
 import { formatAmount, formatKcal } from "@/features/foods/lib/format";
 import { GRAMS_UNIT, type PortionOption } from "../lib/entry-amount";
@@ -11,6 +11,8 @@ import { diaryStrings } from "../strings";
 import { MacroLine } from "./macro-line";
 
 const t = diaryStrings;
+
+const MEAL_OPTIONS = MEALS.map((meal) => ({ value: meal, label: t.meals[meal] }));
 
 /** A food's per-100 g nutrients and portions, as the form needs them. */
 export type EntryFormFood = Nutrients & { name: string; portions: readonly PortionOption[] };
@@ -36,6 +38,17 @@ type EntryFormProps = {
   /** Extra controls under the form (e.g. delete). */
   footer?: ReactNode;
 };
+
+/** The food's portions, then grams. */
+function unitOptions(portions: readonly PortionOption[]) {
+  return [
+    ...portions.map((portion) => ({
+      value: String(portion.id),
+      label: t.units.portionOption(portion.label, formatAmount(portion.grams)),
+    })),
+    { value: GRAMS_UNIT, label: t.units.gramsOption },
+  ];
+}
 
 function PreviewPanel({ preview }: { preview: EntryPreview | null }) {
   return (
@@ -118,36 +131,18 @@ export function EntryForm({
         ) : null}
 
         <fieldset disabled={pending} className="flex flex-col gap-16">
-          <SelectField
-            label={t.entryForm.meal}
-            name="meal"
-            value={meal}
-            onChange={(event) => setMeal(event.target.value)}
-            error={errors.meal}
-          >
-            {MEALS.map((option) => (
-              <option key={option} value={option}>
-                {t.meals[option]}
-              </option>
-            ))}
-          </SelectField>
+          <Select label={t.entryForm.meal} name="meal" options={MEAL_OPTIONS} value={meal} onChange={setMeal} error={errors.meal} />
 
           {food ? (
             <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-12">
-              <SelectField
+              <Select
                 label={t.entryForm.unit}
                 name="unit"
+                options={unitOptions(food.portions)}
                 value={unit}
-                onChange={(event) => changeUnit(event.target.value)}
+                onChange={changeUnit}
                 error={errors.unit}
-              >
-                {food.portions.map((portion) => (
-                  <option key={portion.id} value={String(portion.id)}>
-                    {t.units.portionOption(portion.label, formatAmount(portion.grams))}
-                  </option>
-                ))}
-                <option value={GRAMS_UNIT}>{t.units.gramsOption}</option>
-              </SelectField>
+              />
               <TextField
                 label={isGrams ? t.entryForm.grams : t.entryForm.quantity}
                 name="amount"

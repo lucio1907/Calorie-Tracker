@@ -1,6 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
+import { chooseOption } from "@/test-support/choose-option";
 import { initialEntryFormState, type EntryFormState } from "../lib/types";
 import { diaryStrings } from "../strings";
 import { EntryForm, type EntryFormFood } from "./entry-form";
@@ -57,7 +58,7 @@ describe("EntryForm", () => {
   it("switches to grams keeping the same amount of food", async () => {
     const user = userEvent.setup();
     renderForm({ defaults: { meal: "lunch", unit: "1", amount: "2" } });
-    await user.selectOptions(screen.getByLabelText(t.entryForm.unit), "g");
+    await chooseOption(user, t.entryForm.unit, t.units.gramsOption);
     expect(screen.getByLabelText(t.entryForm.grams)).toHaveValue("100");
     expect(preview().getByText("269")).toBeInTheDocument();
   });
