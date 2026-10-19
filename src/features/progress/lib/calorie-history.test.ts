@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildTodaySummary, type TodayProfile } from "@/features/today/lib/today-summary";
 import { buildCalorieHistory, ON_TARGET_TOLERANCE_KCAL } from "./calorie-history";
+import type { ProfileVersion } from "./profile-history";
 import type { WeightEntry } from "./types";
 
 const profile: TodayProfile = {
@@ -13,16 +14,19 @@ const profile: TodayProfile = {
   macroSplit: { protein: 30, carbs: 40, fat: 30 },
 };
 
+/** One version in effect since well before every range below. */
+const profiles: ProfileVersion[] = [{ effectiveDate: "2026-01-01", profile }];
+
 const weights: WeightEntry[] = [
   { id: 1, date: "2026-09-30", kg: 90 },
   { id: 2, date: "2026-10-03", kg: 80 },
 ];
 
 /** Today's target for a day, from the same logic the history must reuse. */
-function targetOn(date: string, weightKg: number): number {
+function targetOn(date: string, weightKg: number, dayProfile: TodayProfile = profile): number {
   const summary = buildTodaySummary({
     today: date,
-    profile,
+    profile: dayProfile,
     weightKg,
     food: { kcal: 0, protein: 0, carbs: 0, fat: 0 },
     exerciseKcal: [],
@@ -43,7 +47,7 @@ describe("buildCalorieHistory", () => {
       { date: "2026-10-02", foodKcal: 0, exerciseKcal: 300 },
       { date: "2026-10-03", foodKcal: targetLight - 500.4, exerciseKcal: 0 },
     ],
-    profile,
+    profiles,
     weights,
   });
 
@@ -81,7 +85,7 @@ describe("buildCalorieHistory", () => {
       from: "2026-10-03",
       to: "2026-10-03",
       totals: [{ date: "2026-10-03", foodKcal: targetLight + ON_TARGET_TOLERANCE_KCAL, exerciseKcal: 0 }],
-      profile,
+      profiles,
       weights,
     });
     expect(close.days[0].status).toBe("on");
@@ -89,7 +93,7 @@ describe("buildCalorieHistory", () => {
   });
 
   it("has a target before any food is logged (nothing to average yet)", () => {
-    const empty = buildCalorieHistory({ from: "2026-10-05", to: "2026-10-06", totals: [], profile, weights });
+    const empty = buildCalorieHistory({ from: "2026-10-05", to: "2026-10-06", totals: [], profiles, weights });
     expect(empty.hasTarget).toBe(true);
     expect(empty.loggedDays).toBe(0);
     expect(empty.averageBalanceKcal).toBeNull();
@@ -101,7 +105,7 @@ describe("buildCalorieHistory", () => {
       from: "2026-10-01",
       to: "2026-10-01",
       totals: [{ date: "2026-10-01", foodKcal: 2000, exerciseKcal: 250 }],
-      profile: null,
+      profiles: [],
       weights,
     });
     expect(noProfile.hasTarget).toBe(false);
@@ -113,9 +117,45 @@ describe("buildCalorieHistory", () => {
       from: "2026-09-29",
       to: "2026-09-29",
       totals: [{ date: "2026-09-29", foodKcal: 2000, exerciseKcal: 0 }],
-      profile,
+      profiles,
       weights,
     });
     expect(beforeFirstWeight.days[0].targetKcal).toBeNull();
+  });
+
+  it("scores each day against the profile version in effect that day", () => {
+    const maintain: TodayProfile = { ...profile, goal: "maintain", goalKgPerWeek: 0 };
+    const history = buildCalorieHistory({
+      from: "2026-10-03",
+      to: "2026-10-05",
+      totals: [
+        { date: "2026-10-03", foodKcal: 2000, exerciseKcal: 0 },
+        { date: "2026-10-05", foodKcal: 2000, exerciseKcal: 0 },
+      ],
+      // Lost weight until the 4th, then switched to maintaining.
+      profiles: [
+        { effectiveDate: "2026-09-01", profile },
+        { effectiveDate: "2026-10-04", profile: maintain },
+      ],
+      weights,
+    });
+
+    expect(history.days.map((day) => day.targetKcal)).toEqual([
+      targetOn("2026-10-03", 80),
+      targetOn("2026-10-04", 80, maintain),
+      targetOn("2026-10-05", 80, maintain),
+    ]);
+    expect(history.days[0].targetKcal).toBeLessThan(history.days[2].targetKcal ?? 0);
+  });
+
+  it("uses the earliest version for days before the profile history starts", () => {
+    const history = buildCalorieHistory({
+      from: "2026-10-03",
+      to: "2026-10-03",
+      totals: [{ date: "2026-10-03", foodKcal: 2000, exerciseKcal: 0 }],
+      profiles: [{ effectiveDate: "2026-10-20", profile }],
+      weights,
+    });
+    expect(history.days[0].targetKcal).toBe(targetOn("2026-10-03", 80));
   });
 });

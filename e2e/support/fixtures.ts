@@ -64,6 +64,14 @@ export class E2EData {
     );
   }
 
+  /** Backdates the user's profile history so its only version took effect on `date`. */
+  async profileEffectiveSince(date: string): Promise<void> {
+    await must(
+      "profile history",
+      this.admin.from("profile_versions").update({ effective_date: date }).eq("user_id", this.userId).select("user_id").single(),
+    );
+  }
+
   async weight(date: string, kg: number): Promise<void> {
     await must("weight", this.admin.from("weight_entries").insert({ user_id: this.userId, entry_date: date, kg }));
   }
@@ -132,6 +140,13 @@ function userIdFor(project: E2EProject): string {
   const id = ids[project];
   if (!id) throw new Error(`E2E: no user id for project ${project}; did global setup run?`);
   return id;
+}
+
+/** Picks `option` in the custom Select labelled `label` (a button opening a listbox). */
+export async function chooseOption(page: Page, label: string, option: string): Promise<void> {
+  await page.getByRole("button", { name: new RegExp(label) }).click();
+  await page.getByRole("option", { name: option, exact: true }).click();
+  await expect(page.getByRole("listbox")).toBeHidden();
 }
 
 /**

@@ -119,6 +119,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"profile_versions": {
+                  Row: {
+                    "activity_level": string | null,"birth_date": string | null,"carbs_pct": number,"created_at": string,"effective_date": string,"fat_pct": number,"goal": string,"goal_kg_per_week": number,"height_cm": number | null,"protein_pct": number,"sex": string | null,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activity_level"?: string | null,"birth_date"?: string | null,"carbs_pct": number,"created_at"?: string,"effective_date": string,"fat_pct": number,"goal": string,"goal_kg_per_week": number,"height_cm"?: number | null,"protein_pct": number,"sex"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "activity_level"?: string | null,"birth_date"?: string | null,"carbs_pct"?: number,"created_at"?: string,"effective_date"?: string,"fat_pct"?: number,"goal"?: string,"goal_kg_per_week"?: number,"height_cm"?: number | null,"protein_pct"?: number,"sex"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "profile_versions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["user_id"]
+    }
+                  ]
                 },"profiles": {
                   Row: {
                     "activity_level": string | null,"birth_date": string | null,"carbs_pct": number,"created_at": string,"fat_pct": number,"goal": string,"goal_kg_per_week": number,"height_cm": number | null,"protein_pct": number,"sex": string | null,"updated_at": string,"user_id": string

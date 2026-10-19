@@ -1,4 +1,12 @@
-import { addDays, appToday, captureScreen, expect, test } from "./support/fixtures";
+import type { Locator } from "@playwright/test";
+import { addDays, appToday, captureScreen, chooseOption, expect, test } from "./support/fixtures";
+
+/** The "Target N" kcal shown in a day row of the balance list. */
+async function targetIn(row: Locator): Promise<number> {
+  const match = /Target ([\d,]+)/.exec(await row.innerText());
+  if (!match) throw new Error("day row has no target");
+  return Number(match[1].replaceAll(",", ""));
+}
 
 test.describe("Progress", () => {
   test("logs a weight and charts it", async ({ page, data }, testInfo) => {
@@ -73,5 +81,33 @@ test.describe("Progress", () => {
     await expect(page.getByRole("img", { name: "Daily balance chart: 1 day under target, 1 over target." })).toBeVisible();
 
     await captureScreen(page, testInfo, "progress-calories");
+  });
+
+  test("keeps past days on the target they had when the goal changes", async ({ page, data }) => {
+    const today = appToday();
+    await data.profile();
+    // The maintain profile has been in effect for a month.
+    await data.profileEffectiveSince(addDays(today, -30));
+    await data.weight(addDays(today, -10), 80);
+    await data.foodEntry({ date: addDays(today, -2), meal: "lunch", label: "Past lunch", grams: 300, kcal: 2000 });
+    await data.foodEntry({ date: today, meal: "lunch", label: "Today lunch", grams: 300, kcal: 2000 });
+
+    await page.goto("/progress?range=7");
+    const days = page.getByRole("list", { name: "Daily balance by day" });
+    await expect(days.getByRole("listitem")).toHaveCount(2);
+    const pastTarget = await targetIn(days.getByRole("listitem").nth(1));
+    expect(await targetIn(days.getByRole("listitem").first())).toBe(pastTarget);
+
+    await page.goto("/settings");
+    await chooseOption(page, "Weight goal", "Lose weight");
+    await page.getByLabel("Rate (kg per week)").fill("0.5");
+    await page.getByRole("button", { name: "Save profile" }).click();
+    await expect(page.getByText("Profile saved. Today now uses these values.")).toBeVisible();
+
+    await page.goto("/progress?range=7");
+    await expect(days.getByRole("listitem")).toHaveCount(2);
+    // Today follows the new goal; two days ago keeps the maintain target.
+    await expect.poll(() => targetIn(days.getByRole("listitem").first())).toBeLessThan(pastTarget);
+    expect(await targetIn(days.getByRole("listitem").nth(1))).toBe(pastTarget);
   });
 });

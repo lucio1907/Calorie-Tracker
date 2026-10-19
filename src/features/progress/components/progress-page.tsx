@@ -1,10 +1,9 @@
 import { addDays } from "@/domain";
 import { requireUser } from "@/features/auth/data/current-user";
-import { getTodayProfile } from "@/features/today/data/today";
 import { appToday } from "@/lib/app-time";
 import { requestNow } from "@/lib/request-time";
 import { ProgressScreenContainer } from "../containers/progress-screen-container";
-import { getDailyEnergyTotals, getWeightBefore, getWeightEntries } from "../data/progress";
+import { getDailyEnergyTotals, getProfileVersions, getWeightBefore, getWeightEntries } from "../data/progress";
 import { buildCalorieHistory } from "../lib/calorie-history";
 import { rangeBounds, resolveProgressRange } from "../lib/progress-range";
 import { buildWeightTrend, MOVING_AVERAGE_DAYS, weightOnOrBefore, withChangeFromPrevious } from "../lib/weight-trend";
@@ -27,11 +26,12 @@ export async function ProgressPage({ searchParams }: ProgressPageProps) {
   // weight before that gives early days a target and the first entry a change.
   const since = addDays(from, -(MOVING_AVERAGE_DAYS - 1));
 
-  const [recent, before, totals, profile] = await Promise.all([
+  const [recent, before, totals, profiles] = await Promise.all([
     getWeightEntries(user.id, since, to),
     getWeightBefore(user.id, since),
     getDailyEnergyTotals(from, to),
-    getTodayProfile(user.id),
+    // Past days are scored against the profile as it was then, not today's.
+    getProfileVersions(user.id, from, to),
   ]);
   const weights = before ? [before, ...recent] : recent;
 
@@ -44,7 +44,7 @@ export async function ProgressPage({ searchParams }: ProgressPageProps) {
       trend={buildWeightTrend(weights, from, to)}
       log={withChangeFromPrevious(weights).filter((entry) => entry.date >= from)}
       latestKg={weightOnOrBefore(weights, today)?.kg ?? null}
-      history={buildCalorieHistory({ from, to, totals, profile, weights })}
+      history={buildCalorieHistory({ from, to, totals, profiles, weights })}
     />
   );
 }

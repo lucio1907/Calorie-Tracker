@@ -1,12 +1,5 @@
 import type { Page } from "@playwright/test";
-import { appToday, captureScreen, expect, test } from "./support/fixtures";
-
-/** Picks `option` in the custom Select labelled `label` (a button opening a listbox). */
-async function choose(page: Page, label: string, option: string): Promise<void> {
-  await page.getByRole("button", { name: new RegExp(label) }).click();
-  await page.getByRole("option", { name: option, exact: true }).click();
-  await expect(page.getByRole("listbox")).toBeHidden();
-}
+import { appToday, captureScreen, chooseOption as choose, expect, test } from "./support/fixtures";
 
 /** Types MM DD YYYY into the DatePicker segments labelled `label`. */
 async function typeDate(page: Page, label: string, mmddyyyy: string): Promise<void> {

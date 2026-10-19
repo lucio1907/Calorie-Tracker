@@ -1,6 +1,8 @@
 import "server-only";
 import type { CalendarDate } from "@/domain";
+import { TARGET_PROFILE_COLUMNS, toTodayProfile } from "@/features/today/data/today";
 import { createClient } from "@/lib/supabase/server";
+import type { ProfileVersion } from "../lib/profile-history";
 import type { DailyEnergy, WeightEntry } from "../lib/types";
 
 /*
@@ -52,4 +54,31 @@ export async function getDailyEnergyTotals(from: CalendarDate, to: CalendarDate)
     foodKcal: Number(row.food_kcal),
     exerciseKcal: Number(row.exercise_kcal),
   }));
+}
+
+const VERSION_COLUMNS = `effective_date, ${TARGET_PROFILE_COLUMNS}` as const;
+
+/**
+ * The profile versions that apply from `from` to `to`, oldest first: the one
+ * in effect on `from`, every one that starts inside the range, and the
+ * earliest one (the fallback for days before any version). Each query reads
+ * at most a range's worth of rows through the (user_id, effective_date) key.
+ */
+export async function getProfileVersions(userId: string, from: CalendarDate, to: CalendarDate): Promise<ProfileVersion[]> {
+  const supabase = await createClient();
+  const versions = () => supabase.from("profile_versions").select(VERSION_COLUMNS).eq("user_id", userId);
+  const [inEffect, inRange, earliest] = await Promise.all([
+    versions().lte("effective_date", from).order("effective_date", { ascending: false }).limit(1).maybeSingle(),
+    versions().gt("effective_date", from).lte("effective_date", to).order("effective_date", { ascending: true }),
+    versions().order("effective_date", { ascending: true }).limit(1).maybeSingle(),
+  ]);
+  if (inEffect.error) throw new Error(`profile on ${from}: ${inEffect.error.message}`);
+  if (inRange.error) throw new Error(`profiles ${from}..${to}: ${inRange.error.message}`);
+  if (earliest.error) throw new Error(`earliest profile: ${earliest.error.message}`);
+
+  const rows = [earliest.data, inEffect.data, ...inRange.data].filter((row) => row !== null);
+  const byDate = new Map(rows.map((row) => [row.effective_date, row]));
+  return [...byDate.values()]
+    .sort((a, b) => (a.effective_date < b.effective_date ? -1 : 1))
+    .map((row) => ({ effectiveDate: row.effective_date, profile: toTodayProfile(row) }));
 }

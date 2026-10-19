@@ -1,5 +1,6 @@
 import type { CalendarDate } from "@/domain";
-import { buildTodaySummary, type TodayProfile } from "@/features/today/lib/today-summary";
+import { buildTodaySummary } from "@/features/today/lib/today-summary";
+import { profileOnDate, type ProfileVersion } from "./profile-history";
 import { daysInRange } from "./progress-range";
 import type { DailyEnergy, WeightEntry } from "./types";
 import { weightOnOrBefore } from "./weight-trend";
@@ -13,7 +14,7 @@ export type CalorieDay = {
   exerciseKcal: number;
   /** Food minus exercise, whole kcal. */
   netKcal: number;
-  /** The day's target (current profile, weight on or before that day); null when it can't be computed. */
+  /** The day's target (the profile as it was that day, weight on or before it); null when it can't be computed. */
   targetKcal: number | null;
   /** Net minus target, whole kcal: negative under target, positive over; null without a target or food. */
   balanceKcal: number | null;
@@ -40,8 +41,8 @@ export type CalorieHistoryInput = {
   to: CalendarDate;
   /** Per-day totals from daily_energy_totals (days without entries are absent). */
   totals: readonly DailyEnergy[];
-  /** Current profile; null before one exists. */
-  profile: TodayProfile | null;
+  /** Profile history oldest first, covering the range (empty before a profile exists). */
+  profiles: readonly ProfileVersion[];
   /** Weights oldest first, including the latest one before `from` when there is one. */
   weights: readonly WeightEntry[];
 };
@@ -67,11 +68,11 @@ function statusOf(balance: number | null, logged: boolean): BalanceStatus {
 /**
  * Daily calorie balance over a range, using Today's target logic for each day
  * (buildTodaySummary with that day as "today": age on that day, the weight
- * logged on or before it, exercise added back). The profile is the current
- * one: profile history is not stored, so a changed goal recolors past days.
+ * logged on or before it, exercise added back). The profile is the version
+ * that applied that day, so changing the goal later does not rewrite history.
  * A day counts as logged once it has food; exercise alone is not a full day.
  */
-export function buildCalorieHistory({ from, to, totals, profile, weights }: CalorieHistoryInput): CalorieHistory {
+export function buildCalorieHistory({ from, to, totals, profiles, weights }: CalorieHistoryInput): CalorieHistory {
   const byDate = new Map(totals.map((total) => [total.date, total]));
 
   const days = daysInRange(from, to).map((date): CalorieDay => {
@@ -82,7 +83,7 @@ export function buildCalorieHistory({ from, to, totals, profile, weights }: Calo
 
     const summary = buildTodaySummary({
       today: date,
-      profile,
+      profile: profileOnDate(profiles, date),
       weightKg: weightOnOrBefore(weights, date)?.kg ?? null,
       food: { kcal: foodKcal, protein: 0, carbs: 0, fat: 0 },
       exerciseKcal: [exerciseKcal],
