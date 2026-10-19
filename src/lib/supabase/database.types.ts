@@ -196,6 +196,11 @@ isOneToOne: false
             "copy_food_entries":
 { Args: { "only_meal"?: string,"source_date": string,"target_date": string }; Returns: number
                            },
+"daily_energy_totals":
+{ Args: { "end_date": string,"start_date": string }; Returns: {
+              "entry_date": string,"exercise_kcal": number,"food_kcal": number
+            }[]
+                           },
 "recent_foods":
 { Args: { "result_limit"?: number }; Returns: {
               "barcode": string,"brand": string,"carbs_per_100g": number,"fat_per_100g": number,"food_group": string,"id": number,"is_favorite": boolean,"is_own": boolean,"kcal_per_100g": number,"name": string,"protein_per_100g": number,"source": string

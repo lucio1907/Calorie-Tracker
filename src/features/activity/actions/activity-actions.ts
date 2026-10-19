@@ -27,8 +27,8 @@ import { activityStrings as t } from "../strings";
  *
  * Today sums activity_entries.kcal per request (nothing is cached with
  * "use cache"), so after a write:
- * - revalidatePath("/today") drops Today's client-cache entry, so navigating
- *   there shows the new exercise kcal;
+ * - revalidatePath("/today") and revalidatePath("/progress") drop those
+ *   client-cache entries, so navigating there shows the new exercise kcal;
  * - refresh() re-renders the current Activity route in the same round trip.
  * Docs: node_modules/next/dist/docs/01-app/03-api-reference/04-functions/revalidatePath.md
  *       node_modules/next/dist/docs/01-app/03-api-reference/04-functions/refresh.md
@@ -36,6 +36,7 @@ import { activityStrings as t } from "../strings";
 
 function revalidateTargets() {
   revalidatePath("/today");
+  revalidatePath("/progress");
   refresh();
 }
 

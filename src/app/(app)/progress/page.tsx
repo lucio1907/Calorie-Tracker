@@ -4,10 +4,10 @@ import { ProgressPage, progressStrings } from "@/features/progress";
 
 export const metadata: Metadata = { title: progressStrings.title };
 
-export default function ProgressRoute() {
+export default function ProgressRoute({ searchParams }: PageProps<"/progress">) {
   return (
     <PageTransition>
-      <ProgressPage />
+      <ProgressPage searchParams={searchParams} />
     </PageTransition>
   );
 }

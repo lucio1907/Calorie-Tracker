@@ -18,7 +18,8 @@ import { settingsStrings as t } from "../strings";
  * Today and Settings read this data per request (nothing is cached with
  * "use cache"), so there is no server cache to invalidate. After a write:
  * - revalidatePath("/today") drops Today's client-cache entry and refreshes
- *   its prefetch, so navigating there shows the new target;
+ *   its prefetch, so navigating there shows the new target (likewise
+ *   "/progress", which charts the weight and each day's target);
  * - refresh() re-renders the current Settings route in the same round trip.
  * Docs: node_modules/next/dist/docs/01-app/03-api-reference/04-functions/revalidatePath.md
  *       node_modules/next/dist/docs/01-app/03-api-reference/04-functions/refresh.md
@@ -26,6 +27,7 @@ import { settingsStrings as t } from "../strings";
 
 function revalidateTargets() {
   revalidatePath("/today");
+  revalidatePath("/progress");
   refresh();
 }
 
