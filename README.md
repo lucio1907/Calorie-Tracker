@@ -56,6 +56,12 @@ the login form and saves the session; every test starts by deleting that account
 owner account is never touched. The service key comes from `SUPABASE_SERVICE_ROLE_KEY` or, when
 unset, from `npx supabase status`; setup refuses any non-local Supabase URL.
 
+`e2e/instant-navigation.spec.ts` uses `instant()` from `@next/playwright` to assert that every
+screen paints its shell (heading + skeleton) before per-user data arrives, on a direct load and on
+a client navigation. It needs a build made with `EXPOSE_TESTING_API=1` (the npm script sets it;
+`next start` gets it from `playwright.config.ts`), so a reused `E2E_SKIP_BUILD=1` build must come
+from `npm run test:e2e` too. Never set it for a deployment.
+
 ```bash
 npx playwright install chromium   # once
 npm run test:e2e                  # E2E_SKIP_BUILD=1 reuses the last build

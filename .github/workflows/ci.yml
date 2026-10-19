@@ -99,9 +99,12 @@ jobs:
             echo "publishable_key=$(jq -r '.PUBLISHABLE_KEY' <<<"$status")"
             echo "service_role_key=$service_key"
           } >> "$GITHUB_OUTPUT"
+      # The testing API lets @next/playwright's instant() hold back request-time
+      # content; it is compiled in at build time and only for this test build.
       - name: Build
         run: npm run build
         env:
+          EXPOSE_TESTING_API: "1"
           NEXT_PUBLIC_SUPABASE_URL: ${{ steps.supabase.outputs.api_url }}
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ steps.supabase.outputs.publishable_key }}
       - name: Install Playwright Chromium

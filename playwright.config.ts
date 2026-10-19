@@ -9,6 +9,9 @@ import { storageStatePath } from "./e2e/support/users";
  *
  * Locally `npm run test:e2e` builds first; CI builds in its own step and sets
  * E2E_SKIP_BUILD=1. Set E2E_BASE_URL to test a server you started yourself.
+ * The instant-navigation specs need EXPOSE_TESTING_API=1 for both `next build`
+ * (the npm script and the CI build step set it) and `next start`, which reads
+ * next.config.ts again at runtime (set below).
  */
 
 const PORT = Number(process.env.E2E_PORT ?? 3210);
@@ -59,6 +62,7 @@ export default defineConfig({
     ? undefined
     : {
         command: process.env.E2E_SKIP_BUILD ? start : `npm run build && ${start}`,
+        env: { EXPOSE_TESTING_API: "1" },
         url: `${baseURL}/login`,
         reuseExistingServer: !process.env.CI,
         timeout: 240_000,
