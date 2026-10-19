@@ -72,6 +72,71 @@ jobs:
         if: always()
         run: npx supabase stop --no-backup
 
+  e2e:
+    name: e2e (Playwright, mobile + desktop)
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck, test]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: "npm" }
+      - run: npm ci
+      # Postgres + Auth + REST behind the API gateway; the rest is not needed.
+      - name: Start local Supabase
+        run: npx supabase start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      # The workflow-level env holds placeholders; the local stack's real keys
+      # are passed to the steps that need them (the service key stays masked
+      # and never reaches the browser bundle).
+      - name: Read local Supabase keys
+        id: supabase
+        run: |
+          status="$(npx supabase status -o json 2>/dev/null)"
+          service_key="$(jq -r '.SERVICE_ROLE_KEY' <<<"$status")"
+          echo "::add-mask::$service_key"
+          {
+            echo "api_url=$(jq -r '.API_URL' <<<"$status")"
+            echo "publishable_key=$(jq -r '.PUBLISHABLE_KEY' <<<"$status")"
+            echo "service_role_key=$service_key"
+          } >> "$GITHUB_OUTPUT"
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ steps.supabase.outputs.api_url }}
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ steps.supabase.outputs.publishable_key }}
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      # Playwright starts `next start` itself (webServer) and skips the build.
+      - name: Run Playwright
+        run: npm run test:e2e
+        env:
+          E2E_SKIP_BUILD: "1"
+          NEXT_PUBLIC_SUPABASE_URL: ${{ steps.supabase.outputs.api_url }}
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ steps.supabase.outputs.publishable_key }}
+          SUPABASE_URL: ${{ steps.supabase.outputs.api_url }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ steps.supabase.outputs.service_role_key }}
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-screenshots
+          path: test-results/screenshots/
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Stop Supabase
+        if: always()
+        run: npx supabase stop --no-backup
+
   audit:
     runs-on: ubuntu-latest
     steps:

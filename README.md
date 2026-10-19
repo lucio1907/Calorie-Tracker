@@ -45,6 +45,25 @@ production use the project's secret key. Never give it a `NEXT_PUBLIC_` prefix. 
 | `npm run foods:import-argenfoods` | Upserts `supabase/data/argenfoods.csv` as shared foods (service key; idempotent) |
 | `npx supabase db advisors --local` | Security/performance lints |
 | `npx supabase test db` | pgTAP RLS proofs in `supabase/tests/` (rolled back; needs the local stack) |
+| `npm run test:e2e` | Playwright E2E (mobile + desktop Chromium); builds, starts `next start` on :3210 |
+
+## End-to-end tests
+
+`e2e/*.spec.ts` drive a production build against the local Supabase stack (`npx supabase start`,
+seeded activities; no food import needed). Global setup creates two dedicated accounts
+(`e2e-mobile@local.test`, `e2e-desktop@local.test`) with the Auth admin API, signs each in through
+the login form and saves the session; every test starts by deleting that account's data, so the
+owner account is never touched. The service key comes from `SUPABASE_SERVICE_ROLE_KEY` or, when
+unset, from `npx supabase status`; setup refuses any non-local Supabase URL.
+
+```bash
+npx playwright install chromium   # once
+npm run test:e2e                  # E2E_SKIP_BUILD=1 reuses the last build
+npx playwright show-report
+```
+
+Full-page screenshots of each screen land in `test-results/screenshots/<project>/` (records, not
+pixel assertions). CI runs the same suite in the `e2e` job and uploads screenshots and the report.
 
 ## Food data
 

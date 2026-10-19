@@ -14,6 +14,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "user:create": "node --env-file-if-exists=.env.local scripts/create-user.mjs",
     "foods:import-argenfoods": "node --env-file-if-exists=.env.local scripts/import-argenfoods.mjs"
   },
@@ -32,6 +34,7 @@
     "zod": "4.6.5"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.0",
     "@tailwindcss/postcss": "4.3.3",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "7.0.1",
