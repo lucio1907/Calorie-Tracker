@@ -124,6 +124,11 @@ function MacrosCard({ summary }: { summary: ReadySummary }) {
           );
         })}
       </ul>
+      {summary.proteinCapped ? (
+        <p className="rounded-inputs bg-over-wash px-12 py-8 text-body text-over-ink">
+          {t.proteinCappedWarning(rateFormat.format(summary.proteinGPerKg))}
+        </p>
+      ) : null}
     </Card>
   );
 }
@@ -137,7 +142,8 @@ type TodayViewProps = {
 /**
  * Today dashboard: remaining kcal (target + exercise - food), how the target
  * follows from TDEE, the weight goal and the safe minimum (with a warning when
- * it is below BMR), and macros; or, when the target cannot be computed, a
+ * it is below BMR), and macros (with a warning when the protein setting takes
+ * the whole target); or, when the target cannot be computed, a
  * prompt to finish the profile or to fix an under-age birth date.
  */
 export function TodayView({ dateLabel, summary }: TodayViewProps) {

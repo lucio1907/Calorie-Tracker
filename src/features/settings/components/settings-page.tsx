@@ -66,7 +66,11 @@ async function SettingsCards() {
           </h2>
           <p className="text-body text-ink-muted">{s.profile.description}</p>
         </div>
-        <ProfileFormContainer defaults={profileFormDefaults(profile)} today={today} />
+        <ProfileFormContainer
+          defaults={profileFormDefaults(profile)}
+          today={today}
+          weightKg={latestWeight?.kg ?? null}
+        />
       </Card>
     </>
   );

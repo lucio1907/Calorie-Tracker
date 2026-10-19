@@ -18,6 +18,8 @@ const ready: TodaySummary = {
   exerciseKcal: 300.3,
   remainingKcal: 1559,
   macroTargets: { protein: 207, carbs: 276, fat: 92 },
+  proteinGPerKg: 1.8,
+  proteinCapped: false,
 };
 
 describe("TodayView", () => {
@@ -118,6 +120,20 @@ describe("TodayView", () => {
     expect(within(macros).getByText(t.macros.protein).nextSibling).toHaveTextContent("90.3 / 207 g");
     expect(within(macros).getByText(t.macros.carbs).nextSibling).toHaveTextContent("150 / 276 g");
     expect(within(macros).getByText(t.macros.fat).nextSibling).toHaveTextContent("50.5 / 92 g");
+    expect(screen.queryByText(t.proteinCappedWarning("1.8"))).not.toBeInTheDocument();
+  });
+
+  it("warns when the protein setting takes the whole target", () => {
+    render(
+      <TodayView
+        dateLabel="Thursday, October 15"
+        summary={{ ...ready, targetKcal: 1200, macroTargets: { protein: 300, carbs: 0, fat: 0 }, proteinGPerKg: 3, proteinCapped: true }}
+      />,
+    );
+
+    const macros = screen.getByRole("region", { name: t.macrosHeading });
+    expect(within(macros).getByText(t.macros.protein).nextSibling).toHaveTextContent("90.3 / 300 g");
+    expect(within(macros).getByText(t.proteinCappedWarning("3"))).toBeInTheDocument();
   });
 
   it("says how far over target the day is", () => {

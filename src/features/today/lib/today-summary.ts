@@ -5,15 +5,19 @@ import {
   calculateBmr,
   calculateTdee,
   calorieTarget,
+  DEFAULT_CARB_FAT_SPLIT,
   GOALS,
   isCalendarDate,
+  macroTargets,
   MIN_AGE_YEARS,
   minimumDailyKcal,
+  PROTEIN_G_PER_KG,
   remainingKcal,
   SEXES,
   type ActivityLevel,
   type BmrInput,
   type CalendarDate,
+  type CarbFatSplit,
   type Goal,
   type Nutrients,
   type Sex,
@@ -30,8 +34,10 @@ export type TodayProfile = {
   goal: string;
   /** Magnitude of the weekly weight change (the goal gives the sign). */
   goalKgPerWeek: number;
-  /** Percent of the target per macro (sums to 100). */
-  macroSplit: Macros;
+  /** Daily protein in grams per kg of the latest weight. */
+  proteinGPerKg: number;
+  /** How the kcal left after protein are split between carbs and fat, in percent (sums to 100). */
+  carbFatSplit: CarbFatSplit;
 };
 
 /** Profile data the target needs, in display order. */
@@ -73,11 +79,16 @@ export type TodaySummary =
       exerciseKcal: number;
       /** target + exercise - food, in whole kcal; negative when over target. */
       remainingKcal: number;
-      /** Target split into grams per macro, whole grams. */
+      /**
+       * Whole grams per macro: protein from the latest weight x proteinGPerKg,
+       * carbs and fat from the kcal left after protein.
+       */
       macroTargets: Macros;
+      /** The protein setting the protein target comes from, in g/kg. */
+      proteinGPerKg: number;
+      /** Protein alone reaches the target: it is capped there and carbs and fat are 0. */
+      proteinCapped: boolean;
     };
-
-const KCAL_PER_GRAM: Macros = { protein: 4, carbs: 4, fat: 9 };
 
 function isPositive(value: number | null): value is number {
   return value !== null && Number.isFinite(value) && value > 0;
@@ -97,6 +108,17 @@ function toGoal(profile: TodayProfile): { goal: Goal; kgPerWeek: number } {
   if (goal === undefined || goal === "maintain") return { goal: "maintain", kgPerWeek: 0 };
   const rate = profile.goalKgPerWeek;
   return Number.isFinite(rate) && rate > 0 ? { goal, kgPerWeek: rate } : { goal: "maintain", kgPerWeek: 0 };
+}
+
+/** The stored macro settings; anything unusable falls back to the defaults. */
+function toMacroSettings(profile: TodayProfile): { proteinGPerKg: number; carbFatSplit: CarbFatSplit } {
+  const rate = profile.proteinGPerKg;
+  const { carbs, fat } = profile.carbFatSplit;
+  const splitUsable = Number.isFinite(carbs) && Number.isFinite(fat) && carbs >= 0 && fat >= 0 && carbs + fat > 0;
+  return {
+    proteinGPerKg: Number.isFinite(rate) && rate > 0 ? rate : PROTEIN_G_PER_KG.default,
+    carbFatSplit: splitUsable ? { carbs, fat } : DEFAULT_CARB_FAT_SPLIT,
+  };
 }
 
 /** Age on `today`, or null when the birth date is unusable (missing, invalid, or after today). */
@@ -120,7 +142,8 @@ type EnergyInputs = {
   activityLevel: ActivityLevel;
   goal: Goal;
   kgPerWeek: number;
-  macroSplit: Macros;
+  proteinGPerKg: number;
+  carbFatSplit: CarbFatSplit;
 };
 
 type Unresolved = Extract<TodaySummary, { status: "incomplete" | "underage" }>;
@@ -160,14 +183,15 @@ function resolveEnergyInputs(
     bmr: { sex, ageYears, heightCm, weightKg },
     activityLevel,
     ...toGoal(profile),
-    macroSplit: profile.macroSplit,
+    ...toMacroSettings(profile),
   };
 }
 
 /**
  * Today's balance: target (TDEE from the profile and latest weight, adjusted
  * for the weight goal, never below the safe minimum for the user's sex) plus
- * exercise minus food. "incomplete" lists what the profile still needs;
+ * exercise minus food, and the macro targets (protein from the latest weight,
+ * carbs and fat from the rest of the target). "incomplete" lists what the profile still needs;
  * "underage" means the stored birth date is under the minimum age (checked
  * before anything else, since no other field can make a target possible).
  */
@@ -180,7 +204,12 @@ export function buildTodaySummary({ today, profile, weightKg, food, exerciseKcal
   const goalTargetKcal = Math.round(calorieTarget(bmr, inputs.activityLevel, inputs.goal, inputs.kgPerWeek));
   const targetKcal = applyCalorieFloor(goalTargetKcal, inputs.bmr.sex);
   const burned = sumKcal(exerciseKcal);
-  const split = inputs.macroSplit;
+  const macros = macroTargets({
+    targetKcal,
+    weightKg: inputs.bmr.weightKg,
+    proteinGPerKg: inputs.proteinGPerKg,
+    split: inputs.carbFatSplit,
+  });
 
   return {
     status: "ready",
@@ -196,10 +225,8 @@ export function buildTodaySummary({ today, profile, weightKg, food, exerciseKcal
     consumed: food,
     exerciseKcal: burned,
     remainingKcal: wholeKcal(remainingKcal(targetKcal, food.kcal, burned)),
-    macroTargets: {
-      protein: Math.round((targetKcal * split.protein) / 100 / KCAL_PER_GRAM.protein),
-      carbs: Math.round((targetKcal * split.carbs) / 100 / KCAL_PER_GRAM.carbs),
-      fat: Math.round((targetKcal * split.fat) / 100 / KCAL_PER_GRAM.fat),
-    },
+    macroTargets: macros.grams,
+    proteinGPerKg: inputs.proteinGPerKg,
+    proteinCapped: macros.proteinCapped,
   };
 }

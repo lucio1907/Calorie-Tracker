@@ -9,11 +9,12 @@ import { initialProfileFormState, type ProfileFormValues } from "../lib/types";
 type ProfileFormContainerProps = {
   defaults: ProfileFormValues;
   today: CalendarDate;
+  weightKg: number | null;
 };
 
 /** Wires ProfileForm to the saveProfile Server Action. */
-export function ProfileFormContainer({ defaults, today }: ProfileFormContainerProps) {
+export function ProfileFormContainer({ defaults, today, weightKg }: ProfileFormContainerProps) {
   const [state, formAction, pending] = useActionState(saveProfile, initialProfileFormState);
 
-  return <ProfileForm defaults={defaults} today={today} state={state} action={formAction} pending={pending} />;
+  return <ProfileForm defaults={defaults} today={today} weightKg={weightKg} state={state} action={formAction} pending={pending} />;
 }

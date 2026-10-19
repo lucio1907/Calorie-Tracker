@@ -30,6 +30,8 @@ export const todayStrings = {
     fat: "Fat",
   },
   macroAmount: (consumed: string, target: string) => `${consumed} / ${target} g`,
+  proteinCappedWarning: (gPerKg: string) =>
+    `Your protein setting (${gPerKg} g/kg) needs more calories than your daily target, so protein is capped at the target and carbs and fat are 0. Lower it in Settings.`,
   setupMessage: "Complete your profile to get a daily calorie target.",
   missingFields: {
     sex: "sex",

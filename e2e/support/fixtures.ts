@@ -30,9 +30,9 @@ export const ADULT_PROFILE = {
   activity_level: "moderate",
   goal: "maintain",
   goal_kg_per_week: 0,
-  protein_pct: 30,
-  carbs_pct: 40,
-  fat_pct: 30,
+  protein_g_per_kg: 1.8,
+  carbs_share_pct: 60,
+  fat_share_pct: 40,
 } as const;
 
 type Unwrap<T> = T extends PromiseLike<{ data: infer D; error: { message: string } | null }> ? D : never;
@@ -70,6 +70,19 @@ export class E2EData {
       "profile history",
       this.admin.from("profile_versions").update({ effective_date: date }).eq("user_id", this.userId).select("user_id").single(),
     );
+  }
+
+  /** The user's stored macro settings, with the numeric column as a number. */
+  async macroSettings(): Promise<{ protein_g_per_kg: number; carbs_share_pct: number; fat_share_pct: number }> {
+    const row = await must(
+      "macro settings",
+      this.admin
+        .from("profiles")
+        .select("protein_g_per_kg, carbs_share_pct, fat_share_pct")
+        .eq("user_id", this.userId)
+        .single(),
+    );
+    return { ...row, protein_g_per_kg: Number(row.protein_g_per_kg) };
   }
 
   async weight(date: string, kg: number): Promise<void> {

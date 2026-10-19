@@ -12,11 +12,19 @@ import type { TodayProfile } from "../lib/today-summary";
 
 /** The columns the target depends on, shared by public.profiles and public.profile_versions. */
 export const TARGET_PROFILE_COLUMNS =
-  "sex, birth_date, height_cm, activity_level, goal, goal_kg_per_week, protein_pct, carbs_pct, fat_pct";
+  "sex, birth_date, height_cm, activity_level, goal, goal_kg_per_week, protein_g_per_kg, carbs_share_pct, fat_share_pct";
 
 type TargetProfileRow = Pick<
   Database["public"]["Tables"]["profiles"]["Row"],
-  "sex" | "birth_date" | "height_cm" | "activity_level" | "goal" | "goal_kg_per_week" | "protein_pct" | "carbs_pct" | "fat_pct"
+  | "sex"
+  | "birth_date"
+  | "height_cm"
+  | "activity_level"
+  | "goal"
+  | "goal_kg_per_week"
+  | "protein_g_per_kg"
+  | "carbs_share_pct"
+  | "fat_share_pct"
 >;
 
 /** A profile (or profile version) row as the target logic reads it. */
@@ -28,7 +36,9 @@ export function toTodayProfile(row: TargetProfileRow): TodayProfile {
     activityLevel: row.activity_level,
     goal: row.goal,
     goalKgPerWeek: Number(row.goal_kg_per_week),
-    macroSplit: { protein: row.protein_pct, carbs: row.carbs_pct, fat: row.fat_pct },
+    // numeric columns arrive as numbers or strings depending on the client.
+    proteinGPerKg: Number(row.protein_g_per_kg),
+    carbFatSplit: { carbs: row.carbs_share_pct, fat: row.fat_share_pct },
   };
 }
 

@@ -10,7 +10,8 @@ function profile(goal: string): TodayProfile {
     activityLevel: "moderate",
     goal,
     goalKgPerWeek: goal === "maintain" ? 0 : 0.5,
-    macroSplit: { protein: 30, carbs: 40, fat: 30 },
+    proteinGPerKg: 1.8,
+    carbFatSplit: { carbs: 60, fat: 40 },
   };
 }
 

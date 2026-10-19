@@ -12,7 +12,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(22);
+select plan(28);
 
 select has_table('public', 'profile_versions', 'profile_versions exists');
 select has_trigger('public', 'profiles', 'profiles_record_version_on_insert', 'profiles has the insert version trigger');
@@ -23,6 +23,15 @@ select is(
   'RLS is enabled on profile_versions'
 );
 select col_is_pk('public', 'profile_versions', array['user_id', 'effective_date'], 'one version per user per day');
+select col_type_is('public', 'profile_versions', 'protein_g_per_kg', 'numeric(2,1)', 'versions keep the protein setting');
+select columns_are(
+  'public', 'profile_versions',
+  array[
+    'user_id', 'effective_date', 'sex', 'birth_date', 'height_cm', 'activity_level', 'goal', 'goal_kg_per_week',
+    'protein_g_per_kg', 'carbs_share_pct', 'fat_share_pct', 'created_at'
+  ],
+  'versions snapshot the new macro columns and no longer the old percentages'
+);
 
 -- Fixtures (as postgres, bypassing RLS) -------------------------------------
 
@@ -33,8 +42,14 @@ values
 
 -- Backfill: B's profile predates the history table ---------------------------
 
-insert into public.profiles (user_id, sex, birth_date, height_cm, activity_level, goal, goal_kg_per_week, created_at)
-values ('00000000-0000-4000-a000-0000000000e2', 'female', '1988-02-03', 165, 'light', 'lose', 0.25, '2026-10-10 12:00:00+00');
+insert into public.profiles (
+  user_id, sex, birth_date, height_cm, activity_level, goal, goal_kg_per_week,
+  protein_g_per_kg, carbs_share_pct, fat_share_pct, created_at
+)
+values (
+  '00000000-0000-4000-a000-0000000000e2', 'female', '1988-02-03', 165, 'light', 'lose', 0.25,
+  2.0, 55, 45, '2026-10-10 12:00:00+00'
+);
 
 insert into public.food_entries (user_id, entry_date, meal, label, grams, kcal)
 values ('00000000-0000-4000-a000-0000000000e2', '2026-09-25', 'lunch', 'B lunch', 100, 500);
@@ -49,9 +64,11 @@ delete from public.profile_versions where user_id = '00000000-0000-4000-a000-000
 select is(private.backfill_profile_versions(), 1, 'the backfill adds one version per profile without history');
 
 select results_eq(
-  $$select effective_date, sex, birth_date, height_cm, activity_level, goal, goal_kg_per_week
+  $$select effective_date, sex, birth_date, height_cm, activity_level, goal, goal_kg_per_week,
+      protein_g_per_kg, carbs_share_pct, fat_share_pct
     from public.profile_versions where user_id = '00000000-0000-4000-a000-0000000000e2'$$,
-  $$values ('2026-09-20'::date, 'female'::text, '1988-02-03'::date, 165::numeric(5, 1), 'light'::text, 'lose'::text, 0.25::numeric(3, 2))$$,
+  $$values ('2026-09-20'::date, 'female'::text, '1988-02-03'::date, 165::numeric(5, 1), 'light'::text, 'lose'::text,
+      0.25::numeric(3, 2), 2.0::numeric(2, 1), 55::smallint, 45::smallint)$$,
   'the backfilled version holds the current values from the earliest data day'
 );
 
@@ -113,9 +130,40 @@ select results_eq(
   'a change on a later day adds a version and keeps the earlier one'
 );
 
+select results_eq(
+  $$select protein_g_per_kg, carbs_share_pct, fat_share_pct from public.profile_versions order by effective_date$$,
+  $$values (1.8::numeric(2, 1), 60::smallint, 40::smallint), (1.8::numeric(2, 1), 60::smallint, 40::smallint)$$,
+  'versions copy the protein setting and the carbs/fat split (defaults here)'
+);
+
+update public.profiles set protein_g_per_kg = 2.4 where user_id = '00000000-0000-4000-a000-0000000000e1';
+
+select results_eq(
+  $$select protein_g_per_kg, carbs_share_pct, fat_share_pct from public.profile_versions
+    where effective_date = (now() at time zone 'America/Argentina/Buenos_Aires')::date$$,
+  $$values (2.4::numeric(2, 1), 60::smallint, 40::smallint)$$,
+  'changing only the protein setting updates today''s version'
+);
+
+update public.profiles set carbs_share_pct = 50, fat_share_pct = 50 where user_id = '00000000-0000-4000-a000-0000000000e1';
+
+select results_eq(
+  $$select protein_g_per_kg, carbs_share_pct, fat_share_pct from public.profile_versions
+    where effective_date = (now() at time zone 'America/Argentina/Buenos_Aires')::date$$,
+  $$values (2.4::numeric(2, 1), 50::smallint, 50::smallint)$$,
+  'changing only the carbs/fat split updates today''s version'
+);
+
+select results_eq(
+  $$select protein_g_per_kg from public.profile_versions
+    where effective_date = (now() at time zone 'America/Argentina/Buenos_Aires')::date - 30$$,
+  array[1.8::numeric(2, 1)],
+  'the earlier version keeps the protein setting it had'
+);
+
 select throws_ok(
-  $$insert into public.profile_versions (user_id, effective_date, goal, goal_kg_per_week, protein_pct, carbs_pct, fat_pct)
-    values ('00000000-0000-4000-a000-0000000000e1', '2026-01-01', 'gain', 1, 30, 40, 30)$$,
+  $$insert into public.profile_versions (user_id, effective_date, goal, goal_kg_per_week, protein_g_per_kg, carbs_share_pct, fat_share_pct)
+    values ('00000000-0000-4000-a000-0000000000e1', '2026-01-01', 'gain', 1, 1.8, 60, 40)$$,
   '42501', null,
   'A cannot insert a version directly'
 );

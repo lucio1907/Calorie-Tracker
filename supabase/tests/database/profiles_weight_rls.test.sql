@@ -30,28 +30,30 @@ set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-a000-0000000000c1","role":"authenticated"}', true);
 
 select lives_ok(
-  $$insert into public.profiles (user_id, sex, birth_date, height_cm, activity_level, goal, goal_kg_per_week, protein_pct, carbs_pct, fat_pct)
-    values ('00000000-0000-4000-a000-0000000000c1', 'male', '1996-01-10', 180, 'moderate', 'lose', 0.5, 30, 40, 30)
+  $$insert into public.profiles (user_id, sex, birth_date, height_cm, activity_level, goal, goal_kg_per_week, protein_g_per_kg, carbs_share_pct, fat_share_pct)
+    values ('00000000-0000-4000-a000-0000000000c1', 'male', '1996-01-10', 180, 'moderate', 'lose', 0.5, 1.8, 60, 40)
     on conflict (user_id) do update set
       sex = excluded.sex, birth_date = excluded.birth_date, height_cm = excluded.height_cm,
       activity_level = excluded.activity_level, goal = excluded.goal, goal_kg_per_week = excluded.goal_kg_per_week,
-      protein_pct = excluded.protein_pct, carbs_pct = excluded.carbs_pct, fat_pct = excluded.fat_pct$$,
+      protein_g_per_kg = excluded.protein_g_per_kg, carbs_share_pct = excluded.carbs_share_pct,
+      fat_share_pct = excluded.fat_share_pct$$,
   'A can create their profile with an upsert'
 );
 
 select lives_ok(
-  $$insert into public.profiles (user_id, sex, birth_date, height_cm, activity_level, goal, goal_kg_per_week, protein_pct, carbs_pct, fat_pct)
-    values ('00000000-0000-4000-a000-0000000000c1', 'male', '1996-01-10', 181.5, 'active', 'gain', 0.25, 35, 40, 25)
+  $$insert into public.profiles (user_id, sex, birth_date, height_cm, activity_level, goal, goal_kg_per_week, protein_g_per_kg, carbs_share_pct, fat_share_pct)
+    values ('00000000-0000-4000-a000-0000000000c1', 'male', '1996-01-10', 181.5, 'active', 'gain', 0.25, 2.2, 55, 45)
     on conflict (user_id) do update set
       sex = excluded.sex, birth_date = excluded.birth_date, height_cm = excluded.height_cm,
       activity_level = excluded.activity_level, goal = excluded.goal, goal_kg_per_week = excluded.goal_kg_per_week,
-      protein_pct = excluded.protein_pct, carbs_pct = excluded.carbs_pct, fat_pct = excluded.fat_pct$$,
+      protein_g_per_kg = excluded.protein_g_per_kg, carbs_share_pct = excluded.carbs_share_pct,
+      fat_share_pct = excluded.fat_share_pct$$,
   'A can update their profile with the same upsert'
 );
 
 select results_eq(
-  $$select height_cm, activity_level, goal, goal_kg_per_week, protein_pct from public.profiles$$,
-  $$values (181.5::numeric(5, 1), 'active'::text, 'gain'::text, 0.25::numeric(3, 2), 35::smallint)$$,
+  $$select height_cm, activity_level, goal, goal_kg_per_week, protein_g_per_kg, carbs_share_pct from public.profiles$$,
+  $$values (181.5::numeric(5, 1), 'active'::text, 'gain'::text, 0.25::numeric(3, 2), 2.2::numeric(2, 1), 55::smallint)$$,
   'A sees only their own profile, with the upserted values'
 );
 
@@ -70,9 +72,9 @@ select results_eq(
 );
 
 select throws_ok(
-  $$update public.profiles set fat_pct = 20 where user_id = '00000000-0000-4000-a000-0000000000c1'$$,
+  $$update public.profiles set fat_share_pct = 20 where user_id = '00000000-0000-4000-a000-0000000000c1'$$,
   '23514', null,
-  'a macro split that does not add up to 100 is rejected'
+  'a carbs/fat split that does not add up to 100 is rejected'
 );
 
 select throws_ok(

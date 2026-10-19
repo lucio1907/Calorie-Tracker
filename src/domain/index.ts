@@ -11,3 +11,4 @@ export * from "./calculators/daily-balance";
 export * from "./nutrition";
 export * from "./meal-schedule";
 export * from "./calendar-date";
+export * from "./calculators/macro-targets";

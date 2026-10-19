@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { settingsStrings } from "../strings";
-import { latestBirthDate, macroSplitTotal, parseProfileForm, profileFormDefaults, PROFILE_LIMITS } from "./profile-schema";
+import { carbFatSplitTotal, latestBirthDate, parseProfileForm, profileFormDefaults, PROFILE_LIMITS } from "./profile-schema";
 import type { ProfileFormValues } from "./types";
 
 const v = settingsStrings.validation;
@@ -13,9 +13,9 @@ const valid: ProfileFormValues = {
   activityLevel: "light",
   goal: "lose",
   goalKgPerWeek: "0,5",
-  proteinPct: "30",
-  carbsPct: "45",
-  fatPct: "25",
+  proteinGPerKg: "1,6",
+  carbsSharePct: "55",
+  fatSharePct: "45",
 };
 
 function form(fields: Partial<ProfileFormValues> & Record<string, string>): FormData {
@@ -35,7 +35,8 @@ describe("parseProfileForm", () => {
         activityLevel: "light",
         goal: "lose",
         goalKgPerWeek: 0.5,
-        macroSplit: { protein: 30, carbs: 45, fat: 25 },
+        proteinGPerKg: 1.6,
+        carbFatSplit: { carbs: 55, fat: 45 },
       },
     });
   });
@@ -136,28 +137,72 @@ describe("parseProfileForm", () => {
     });
   });
 
-  it.each([["101"], ["-1"]])("rejects a macro percentage of %s", (proteinPct) => {
-    expect(parseProfileForm(form({ ...valid, proteinPct }), TODAY)).toMatchObject({
+  it.each([["0.8"], ["3"], ["3.0"], ["2.2"], ["1,8"]])("accepts a protein setting of %s g/kg", (proteinGPerKg) => {
+    expect(parseProfileForm(form({ ...valid, proteinGPerKg }), TODAY)).toMatchObject({ ok: true });
+  });
+
+  it("stores the protein setting with one decimal", () => {
+    expect(parseProfileForm(form({ ...valid, proteinGPerKg: "2.20" }), TODAY)).toMatchObject({
+      ok: true,
+      value: { proteinGPerKg: 2.2 },
+    });
+  });
+
+  it.each([["0.7"], ["3.1"], ["0"], ["-1.8"], ["1.85"], ["2.25"]])(
+    "rejects a protein setting of %s g/kg (0.8-3.0 in steps of 0.1)",
+    (proteinGPerKg) => {
+      const { min, max } = PROFILE_LIMITS.proteinGPerKg;
+      expect(parseProfileForm(form({ ...valid, proteinGPerKg }), TODAY)).toMatchObject({
+        ok: false,
+        fieldErrors: { proteinGPerKg: v.proteinRange(min, max) },
+      });
+    },
+  );
+
+  it("requires the protein setting", () => {
+    expect(parseProfileForm(form({ ...valid, proteinGPerKg: "" }), TODAY)).toMatchObject({
       ok: false,
-      fieldErrors: { proteinPct: v.pctRange },
+      fieldErrors: { proteinGPerKg: v.required },
+    });
+    expect(parseProfileForm(form({ ...valid, proteinGPerKg: "lots" }), TODAY)).toMatchObject({
+      ok: false,
+      fieldErrors: { proteinGPerKg: v.number },
+    });
+  });
+
+  it("limits the protein setting to the database range", () => {
+    expect(PROFILE_LIMITS.proteinGPerKg).toEqual({ min: 0.8, max: 3 });
+  });
+
+  it.each([["101"], ["-1"]])("rejects a carbs or fat percentage of %s", (carbsSharePct) => {
+    expect(parseProfileForm(form({ ...valid, carbsSharePct }), TODAY)).toMatchObject({
+      ok: false,
+      fieldErrors: { carbsSharePct: v.pctRange },
     });
   });
 
   it("requires whole-number percentages (the columns are integers)", () => {
-    expect(parseProfileForm(form({ ...valid, proteinPct: "30.5", carbsPct: "44.5" }), TODAY)).toMatchObject({
+    expect(parseProfileForm(form({ ...valid, carbsSharePct: "55.5", fatSharePct: "44.5" }), TODAY)).toMatchObject({
       ok: false,
-      fieldErrors: { proteinPct: v.wholeNumber, carbsPct: v.wholeNumber },
+      fieldErrors: { carbsSharePct: v.wholeNumber, fatSharePct: v.wholeNumber },
     });
   });
 
-  it("requires the macro split to add up to 100", () => {
-    const result = parseProfileForm(form({ ...valid, proteinPct: "30", carbsPct: "40", fatPct: "25" }), TODAY);
-    expect(result).toEqual({ ok: false, fieldErrors: { macroSplit: v.macroTotal(95) }, formError: v.fix });
+  it("accepts a split that gives everything to one macro", () => {
+    expect(parseProfileForm(form({ ...valid, carbsSharePct: "0", fatSharePct: "100" }), TODAY)).toMatchObject({
+      ok: true,
+      value: { carbFatSplit: { carbs: 0, fat: 100 } },
+    });
+  });
+
+  it("requires the carbs/fat split to add up to 100", () => {
+    const result = parseProfileForm(form({ ...valid, carbsSharePct: "50", fatSharePct: "45" }), TODAY);
+    expect(result).toEqual({ ok: false, fieldErrors: { carbFatSplit: v.splitTotal(95) }, formError: v.fix });
   });
 
   it("checks the total only once every percentage is valid", () => {
-    const result = parseProfileForm(form({ ...valid, fatPct: "" }), TODAY);
-    expect(result).toEqual({ ok: false, fieldErrors: { fatPct: v.required }, formError: v.fix });
+    const result = parseProfileForm(form({ ...valid, fatSharePct: "" }), TODAY);
+    expect(result).toEqual({ ok: false, fieldErrors: { fatSharePct: v.required }, formError: v.fix });
   });
 
   it("ignores fields it does not know (e.g. a forged user_id)", () => {
@@ -176,14 +221,14 @@ describe("latestBirthDate", () => {
   });
 });
 
-describe("macroSplitTotal", () => {
-  it("adds the three percentages as typed", () => {
-    expect(macroSplitTotal({ proteinPct: "30", carbsPct: "45", fatPct: "25" })).toBe(100);
+describe("carbFatSplitTotal", () => {
+  it("adds the two percentages as typed", () => {
+    expect(carbFatSplitTotal({ carbsSharePct: "55", fatSharePct: "45" })).toBe(100);
   });
 
   it("counts blank fields as 0 and returns null for text that is not a number", () => {
-    expect(macroSplitTotal({ proteinPct: "30", carbsPct: "", fatPct: " " })).toBe(30);
-    expect(macroSplitTotal({ proteinPct: "30", carbsPct: "x", fatPct: "10" })).toBeNull();
+    expect(carbFatSplitTotal({ carbsSharePct: "60", fatSharePct: " " })).toBe(60);
+    expect(carbFatSplitTotal({ carbsSharePct: "x", fatSharePct: "10" })).toBeNull();
   });
 });
 
@@ -196,9 +241,9 @@ describe("profileFormDefaults", () => {
       activityLevel: "",
       goal: "maintain",
       goalKgPerWeek: "",
-      proteinPct: "30",
-      carbsPct: "40",
-      fatPct: "30",
+      proteinGPerKg: "1.8",
+      carbsSharePct: "60",
+      fatSharePct: "40",
     });
   });
 
@@ -211,9 +256,9 @@ describe("profileFormDefaults", () => {
         activityLevel: "moderate",
         goal: "lose",
         goalKgPerWeek: 0.25,
-        proteinPct: 35,
-        carbsPct: 35,
-        fatPct: 30,
+        proteinGPerKg: 2.2,
+        carbsSharePct: 57,
+        fatSharePct: 43,
       }),
     ).toEqual({
       sex: "male",
@@ -222,9 +267,9 @@ describe("profileFormDefaults", () => {
       activityLevel: "moderate",
       goal: "lose",
       goalKgPerWeek: "0.25",
-      proteinPct: "35",
-      carbsPct: "35",
-      fatPct: "30",
+      proteinGPerKg: "2.2",
+      carbsSharePct: "57",
+      fatSharePct: "43",
     });
   });
 
@@ -236,9 +281,9 @@ describe("profileFormDefaults", () => {
       activityLevel: "extreme",
       goal: "maintain",
       goalKgPerWeek: 0,
-      proteinPct: 30,
-      carbsPct: 40,
-      fatPct: 30,
+      proteinGPerKg: 1.8,
+      carbsSharePct: 60,
+      fatSharePct: 40,
     });
     expect(defaults).toMatchObject({ sex: "", activityLevel: "", goal: "maintain", goalKgPerWeek: "" });
   });

@@ -11,7 +11,8 @@ const profile: TodayProfile = {
   activityLevel: "moderate",
   goal: "lose",
   goalKgPerWeek: 0.5,
-  macroSplit: { protein: 30, carbs: 40, fat: 30 },
+  proteinGPerKg: 1.8,
+  carbFatSplit: { carbs: 60, fat: 40 },
 };
 
 /** One version in effect since well before every range below. */

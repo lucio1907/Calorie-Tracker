@@ -39,9 +39,9 @@ function toProfileColumns(profile: ProfileValues) {
     activity_level: profile.activityLevel,
     goal: profile.goal,
     goal_kg_per_week: profile.goalKgPerWeek,
-    protein_pct: profile.macroSplit.protein,
-    carbs_pct: profile.macroSplit.carbs,
-    fat_pct: profile.macroSplit.fat,
+    protein_g_per_kg: profile.proteinGPerKg,
+    carbs_share_pct: profile.carbFatSplit.carbs,
+    fat_share_pct: profile.carbFatSplit.fat,
   };
 }
 

@@ -1,9 +1,11 @@
 import {
   ACTIVITY_LEVELS,
   addYears,
+  DEFAULT_CARB_FAT_SPLIT,
   GOALS,
   isCalendarDate,
   MIN_AGE_YEARS,
+  PROTEIN_G_PER_KG,
   SEXES,
   type ActivityLevel,
   type CalendarDate,
@@ -25,13 +27,15 @@ const v = settingsStrings.validation;
 /**
  * Form limits. They sit inside the CHECK constraints on public.profiles
  * (height 0-300 cm, rate 0-1.5 kg/week, birth date after 1900-01-01,
- * percentages 0-100 adding up to 100) and are a bit stricter where the
- * database bound would accept an obvious typo. Users must be adults
+ * protein 0.8-3.0 g/kg with one decimal, carbs/fat percentages 0-100 adding
+ * up to 100) and are a bit stricter where the database bound would accept an
+ * obvious typo. Users must be adults
  * (MIN_AGE_YEARS): the target formulas are adult guidelines.
  */
 export const PROFILE_LIMITS = {
   heightCm: { min: 50, max: 250 },
   goalKgPerWeek: { min: 0.05, max: 1.5 },
+  proteinGPerKg: { min: PROTEIN_G_PER_KG.min, max: PROTEIN_G_PER_KG.max },
   /** Exclusive lower bound, as in the column check. */
   birthDateAfter: "1900-01-01",
   minAgeYears: MIN_AGE_YEARS,
@@ -43,7 +47,12 @@ export function latestBirthDate(today: CalendarDate): CalendarDate {
 }
 
 /** profiles column defaults, used before the row exists. */
-const COLUMN_DEFAULTS = { goal: "maintain", proteinPct: 30, carbsPct: 40, fatPct: 30 } as const;
+const COLUMN_DEFAULTS = {
+  goal: "maintain",
+  proteinGPerKg: PROTEIN_G_PER_KG.default,
+  carbsSharePct: DEFAULT_CARB_FAT_SPLIT.carbs,
+  fatSharePct: DEFAULT_CARB_FAT_SPLIT.fat,
+} as const;
 
 type Parsed<T> = { ok: true; value: T } | { ok: false; error: string };
 
@@ -89,6 +98,20 @@ function parsePercentage(raw: FormDataEntryValue | null): Parsed<number> {
   return inRange(parsed, 0, 100, v.pctRange);
 }
 
+/**
+ * Protein in g/kg: within the range and with at most one decimal (the column
+ * is numeric(2, 1), which would silently round a second decimal).
+ */
+function parseProteinGPerKg(raw: FormDataEntryValue | null): Parsed<number> {
+  const { min, max } = PROFILE_LIMITS.proteinGPerKg;
+  const parsed = inRange(parseNumber(raw), min, max, v.proteinRange(min, max));
+  if (!parsed.ok) return parsed;
+  const tenths = parsed.value * 10;
+  return Math.abs(tenths - Math.round(tenths)) < 1e-9
+    ? { ok: true, value: roundTo(parsed.value, 1) }
+    : { ok: false, error: v.proteinRange(min, max) };
+}
+
 /** Weekly rate for the goal: required for lose/gain, always 0 while maintaining. */
 function parseRate(goal: Parsed<Goal>, raw: FormDataEntryValue | null): Parsed<number> {
   if (!goal.ok || goal.value === "maintain") return { ok: true, value: 0 };
@@ -117,9 +140,9 @@ export function parseProfileForm(formData: FormData, today: CalendarDate): Parse
     activityLevel: oneOf<ActivityLevel>(ACTIVITY_LEVELS, formData.get("activityLevel")),
     goal,
     goalKgPerWeek: parseRate(goal, formData.get("goalKgPerWeek")),
-    proteinPct: parsePercentage(formData.get("proteinPct")),
-    carbsPct: parsePercentage(formData.get("carbsPct")),
-    fatPct: parsePercentage(formData.get("fatPct")),
+    proteinGPerKg: parseProteinGPerKg(formData.get("proteinGPerKg")),
+    carbsSharePct: parsePercentage(formData.get("carbsSharePct")),
+    fatSharePct: parsePercentage(formData.get("fatSharePct")),
   } satisfies Record<ProfileFieldName, Parsed<unknown>>;
 
   const fieldErrors: ProfileFieldErrors = {};
@@ -127,10 +150,10 @@ export function parseProfileForm(formData: FormData, today: CalendarDate): Parse
     if (!parsed.ok) fieldErrors[name] = parsed.error;
   }
 
-  const { sex, birthDate, heightCm, activityLevel, goalKgPerWeek, proteinPct, carbsPct, fatPct } = fields;
-  if (proteinPct.ok && carbsPct.ok && fatPct.ok) {
-    const total = proteinPct.value + carbsPct.value + fatPct.value;
-    if (total !== 100) fieldErrors.macroSplit = v.macroTotal(total);
+  const { sex, birthDate, heightCm, activityLevel, goalKgPerWeek, proteinGPerKg, carbsSharePct, fatSharePct } = fields;
+  if (carbsSharePct.ok && fatSharePct.ok) {
+    const total = carbsSharePct.value + fatSharePct.value;
+    if (total !== 100) fieldErrors.carbFatSplit = v.splitTotal(total);
   }
 
   if (
@@ -141,9 +164,9 @@ export function parseProfileForm(formData: FormData, today: CalendarDate): Parse
     !activityLevel.ok ||
     !goal.ok ||
     !goalKgPerWeek.ok ||
-    !proteinPct.ok ||
-    !carbsPct.ok ||
-    !fatPct.ok
+    !proteinGPerKg.ok ||
+    !carbsSharePct.ok ||
+    !fatSharePct.ok
   ) {
     return { ok: false, fieldErrors, formError: v.fix };
   }
@@ -157,15 +180,16 @@ export function parseProfileForm(formData: FormData, today: CalendarDate): Parse
       activityLevel: activityLevel.value,
       goal: goal.value,
       goalKgPerWeek: goalKgPerWeek.value,
-      macroSplit: { protein: proteinPct.value, carbs: carbsPct.value, fat: fatPct.value },
+      proteinGPerKg: proteinGPerKg.value,
+      carbFatSplit: { carbs: carbsSharePct.value, fat: fatSharePct.value },
     },
   };
 }
 
-/** Sum of the percentages as typed (blank counts as 0); null when one is not a number. */
-export function macroSplitTotal(values: Pick<ProfileFormValues, "proteinPct" | "carbsPct" | "fatPct">): number | null {
+/** Sum of the carbs and fat percentages as typed (blank counts as 0); null when one is not a number. */
+export function carbFatSplitTotal(values: Pick<ProfileFormValues, "carbsSharePct" | "fatSharePct">): number | null {
   let total = 0;
-  for (const raw of [values.proteinPct, values.carbsPct, values.fatPct]) {
+  for (const raw of [values.carbsSharePct, values.fatSharePct]) {
     const value = toDecimal(raw);
     if (value === undefined) continue;
     if (typeof value !== "number" || !Number.isFinite(value)) return null;
@@ -188,9 +212,9 @@ export function profileFormDefaults(profile: StoredProfile | null): ProfileFormV
       activityLevel: "",
       goal: COLUMN_DEFAULTS.goal,
       goalKgPerWeek: "",
-      proteinPct: String(COLUMN_DEFAULTS.proteinPct),
-      carbsPct: String(COLUMN_DEFAULTS.carbsPct),
-      fatPct: String(COLUMN_DEFAULTS.fatPct),
+      proteinGPerKg: String(COLUMN_DEFAULTS.proteinGPerKg),
+      carbsSharePct: String(COLUMN_DEFAULTS.carbsSharePct),
+      fatSharePct: String(COLUMN_DEFAULTS.fatSharePct),
     };
   }
 
@@ -202,8 +226,8 @@ export function profileFormDefaults(profile: StoredProfile | null): ProfileFormV
     activityLevel: known(ACTIVITY_LEVELS, profile.activityLevel),
     goal,
     goalKgPerWeek: goal === "maintain" || profile.goalKgPerWeek <= 0 ? "" : String(profile.goalKgPerWeek),
-    proteinPct: String(profile.proteinPct),
-    carbsPct: String(profile.carbsPct),
-    fatPct: String(profile.fatPct),
+    proteinGPerKg: String(profile.proteinGPerKg),
+    carbsSharePct: String(profile.carbsSharePct),
+    fatSharePct: String(profile.fatSharePct),
   };
 }
