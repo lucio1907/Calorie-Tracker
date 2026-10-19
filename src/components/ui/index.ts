@@ -9,6 +9,7 @@ export { PageHeader } from "./page-header";
 export { PillBadge } from "./pill-badge";
 export { popoverClassName } from "./popover";
 export { ProgressBar } from "./progress-bar";
+export { SearchParamsSuspense } from "./search-params-suspense";
 export { Select, type SelectOption } from "./select";
 export { Sheet } from "./sheet";
 export { TextField } from "./text-field";
