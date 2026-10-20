@@ -43,6 +43,8 @@ describe("fetchOffProduct", () => {
     expect(url.searchParams.get("fields")).toContain("nutriments");
     expect(new Headers(init.headers).get("User-Agent")).toBe(`contador-calorias/0.1.0 (${OFF_CONTACT_EMAIL})`);
     expect(init.signal).toBeInstanceOf(AbortSignal);
+    // A redirect could point the server anywhere; OFF's API never redirects.
+    expect(init.redirect).toBe("error");
   });
 
   it("maps OFF's 404 { status: 0 } to not_found", async () => {
@@ -59,6 +61,49 @@ describe("fetchOffProduct", () => {
   ])("throws OffUnavailableError on %s", async (_label, respond) => {
     fetchMock.mockImplementation(respond);
     await expect(fetchOffProduct("7790580660000")).rejects.toBeInstanceOf(OffUnavailableError);
+  });
+});
+
+describe("response size cap", () => {
+  /** A 200 response streaming `chunks` blocks of 256 KiB; records whether the reader cancelled it. */
+  function streamed(chunks: number, block = new Uint8Array(256 * 1024).fill(0x20)) {
+    const state = { cancelled: false, sent: 0 };
+    const body = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        if (state.sent === chunks) return controller.close();
+        state.sent += 1;
+        controller.enqueue(block);
+      },
+      cancel() {
+        state.cancelled = true;
+      },
+    });
+    return { state, response: new Response(body, { status: 200 }) };
+  }
+
+  it("throws OffUnavailableError and stops reading past about 2 MB", async () => {
+    const { state, response } = streamed(1_000);
+    fetchMock.mockResolvedValue(response);
+    await expect(fetchOffProduct("7790580660000")).rejects.toThrow(/too large/);
+    expect(state.cancelled).toBe(true);
+    expect(state.sent).toBeLessThanOrEqual(10);
+  });
+
+  it("parses a body that arrives in several chunks under the cap", async () => {
+    const product = JSON.stringify({
+      status: 1,
+      product: { code: "7790580660000", product_name: "Polenta", nutriments: { "energy-kcal_100g": 340 } },
+    });
+    const bytes = new TextEncoder().encode(product);
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(bytes.slice(0, 10));
+        controller.enqueue(bytes.slice(10));
+        controller.close();
+      },
+    });
+    fetchMock.mockResolvedValue(new Response(body, { status: 200 }));
+    await expect(fetchOffProduct("7790580660000")).resolves.toMatchObject({ ok: true });
   });
 });
 

@@ -26,6 +26,8 @@ const SEARCH_URL = "https://search.openfoodfacts.org/search";
 const PRODUCT_FIELDS = "code,product_name,product_name_es,product_name_en,brands,nutriments";
 const SEARCH_FIELDS = "code,product_name,product_name_es,product_name_en,brands,nutriments";
 const TIMEOUT_MS = 8000;
+/** Product and search payloads are a few KB; anything this large is not a real answer. */
+const MAX_BODY_BYTES = 2 * 1024 * 1024;
 const SEARCH_PAGE_SIZE = 30;
 const MAX_SEARCH_RESULTS = 20;
 
@@ -49,6 +51,8 @@ async function getJson(url: URL, acceptStatuses: number[] = []): Promise<unknown
       headers: { "User-Agent": userAgent(), Accept: "application/json" },
       signal: AbortSignal.timeout(TIMEOUT_MS),
       cache: "no-store",
+      // OFF's API answers directly; a redirect (to another host, or http) is rejected.
+      redirect: "error",
     });
   } catch (error) {
     throw new OffUnavailableError(`OFF request failed: ${url.host}`, { cause: error });
@@ -57,11 +61,41 @@ async function getJson(url: URL, acceptStatuses: number[] = []): Promise<unknown
   if (!response.ok && !acceptStatuses.includes(response.status)) {
     throw new OffUnavailableError(`OFF responded ${response.status}: ${url.host}`);
   }
+  const text = await readCappedText(response, url.host);
   try {
-    return await response.json();
+    return JSON.parse(text);
   } catch (error) {
     throw new OffUnavailableError(`OFF sent invalid JSON: ${url.host}`, { cause: error });
   }
+}
+
+/**
+ * Reads the body as text, at most MAX_BODY_BYTES: past that the stream is
+ * cancelled instead of buffering whatever OFF (or anything in between) sends.
+ * The request's timeout signal still applies while the body streams in.
+ */
+async function readCappedText(response: Response, host: string): Promise<string> {
+  if (!response.body) return "";
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let size = 0;
+  let text = "";
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > MAX_BODY_BYTES) {
+        await reader.cancel();
+        throw new OffUnavailableError(`OFF response too large: ${host}`);
+      }
+      text += decoder.decode(value, { stream: true });
+    }
+  } catch (error) {
+    if (error instanceof OffUnavailableError) throw error;
+    throw new OffUnavailableError(`OFF request failed: ${host}`, { cause: error });
+  }
+  return text + decoder.decode();
 }
 
 /** Fetches and maps one product. Unknown barcodes map to `not_found`. */
