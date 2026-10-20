@@ -7,7 +7,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(25);
+select plan(23);
 
 -- Fixtures (as postgres, bypassing RLS) -------------------------------------
 
@@ -108,18 +108,6 @@ select results_eq(
   'recent_foods() lists only foods A logged'
 );
 
-select is(
-  public.copy_food_entries('2026-10-14', '2026-10-15', null),
-  3,
-  'copy_food_entries() copies only A''s 3 entries'
-);
-
-select results_eq(
-  $$select count(*) from public.food_entries where entry_date = '2026-10-15'$$,
-  array[3::bigint],
-  'the copies belong to A'
-);
-
 select results_eq(
   $$with removed as (delete from public.food_entries where id = 900101 returning id) select count(*) from removed$$,
   array[1::bigint],
@@ -133,7 +121,7 @@ select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-a000-0000000
 select results_eq(
   'select id from public.food_entries order by id',
   array[900102::bigint],
-  'B sees only their own entry (none of A''s, nor A''s copies)'
+  'B sees only their own entry (none of A''s)'
 );
 
 select results_eq(
@@ -160,12 +148,6 @@ select results_eq(
   'recent_foods() never shows B the foods A logged'
 );
 
-select is(
-  public.copy_food_entries('2026-10-15', '2026-10-16', null),
-  0,
-  'copy_food_entries() cannot copy A''s day into B''s diary'
-);
-
 -- Anonymous ------------------------------------------------------------------
 
 reset role;
@@ -186,6 +168,11 @@ select throws_ok('select * from public.recent_foods(10)', '42501', null, 'anon c
 -- Ground truth (as postgres) -------------------------------------------------
 
 reset role;
+
+select hasnt_function(
+  'public', 'copy_food_entries', array['date', 'date', 'text'],
+  'copy_food_entries() is gone: no one can multiply their diary rows with it'
+);
 
 select results_eq(
   $$select meal, kcal::numeric from public.food_entries where id = 900102$$,

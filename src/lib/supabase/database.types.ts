@@ -213,10 +213,7 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "copy_food_entries":
-{ Args: { "only_meal"?: string,"source_date": string,"target_date": string }; Returns: number
-                           },
-"daily_energy_totals":
+            "daily_energy_totals":
 { Args: { "end_date": string,"start_date": string }; Returns: {
               "entry_date": string,"exercise_kcal": number,"food_kcal": number
             }[]
