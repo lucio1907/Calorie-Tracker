@@ -37,13 +37,16 @@ Public sign-ups are disabled (`[auth] enable_signup = false`), so the only accou
 `scripts/create-user.mjs`, which calls the Auth admin API:
 
 ```bash
-npm run user:create -- --email you@example.com [--password 'Str0ngPassphrase']
+npm run user:create -- --email you@example.com                     # generates a password
+pass show calorie-tracker | npm run user:create -- --email you@example.com --password-stdin
 ```
 
 It reads `SUPABASE_URL` (or `NEXT_PUBLIC_SUPABASE_URL`) and `SUPABASE_SERVICE_ROLE_KEY` from the
 shell or `.env.local`. Locally the key is the **Secret** key from `npx supabase status`; in
 production use the project's secret key. Never give it a `NEXT_PUBLIC_` prefix. Without
-`--password`, a random password (12+ chars, upper/lower/digit) is generated and printed once.
+`--password-stdin`, a random password (12+ chars, upper/lower/digit) is generated and printed once.
+With it, the password is read from stdin (pipe it in from a password manager or a file), so it
+never appears in the process list or the shell history; there is no `--password <value>` flag.
 
 ## Scripts
 
@@ -54,7 +57,7 @@ production use the project's secret key. Never give it a `NEXT_PUBLIC_` prefix. 
 | `npm run lint` | ESLint |
 | `npm run typecheck` | `next typegen` + `tsc --noEmit` |
 | `npx supabase db reset` | Re-applies migrations and `supabase/seed.sql` |
-| `npm run foods:import-argenfoods` | Upserts `supabase/data/argenfoods.csv` as shared foods (service key; idempotent) |
+| `npm run foods:import-argenfoods` | Upserts `supabase/data/argenfoods.csv` as shared foods (service key; idempotent). Prints the target host; a non-local one needs `-- --yes` |
 | `npx supabase db advisors --local` | Security/performance lints |
 | `npx supabase test db` | pgTAP RLS proofs in `supabase/tests/` (rolled back; needs the local stack) |
 | `npm run test:e2e` | Playwright E2E (mobile + desktop Chromium); builds, starts `next start` on :3210 |
@@ -81,7 +84,9 @@ npx playwright show-report
 ```
 
 Full-page screenshots of each screen land in `test-results/screenshots/<project>/` (records, not
-pixel assertions). CI runs the same suite in the `e2e` job and uploads screenshots and the report.
+pixel assertions). CI runs the same suite in the `e2e` job and uploads the screenshots; the report
+and traces (which hold the E2E users' session cookies) are uploaded only when a test fails, and
+kept for 7 days.
 
 ## Food data
 
@@ -101,7 +106,7 @@ src/
                   actions (Server Actions), data (server-only reads), strings.ts (UI copy)
   components/ui   shared atoms (Button, TextField, Card, PageHeader, EmptyState)
   domain/         pure calculators: BMR, TDEE/target, exercise kcal, daily balance
-  lib/supabase/   browser, server and proxy clients
+  lib/supabase/   server and proxy clients (the browser never talks to Supabase)
   proxy.ts        session refresh + optimistic auth redirect
 supabase/         config.toml, migrations, seed.sql (MET activities)
 ```

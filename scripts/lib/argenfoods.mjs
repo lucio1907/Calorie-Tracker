@@ -41,6 +41,9 @@ const QUALIFYING_SUBGROUPS = new Set(["Vacuno, raza caribú", "Vacuno, raza crio
 /** Cells ARGENFOODS uses for "no data". */
 const MISSING_VALUES = new Set(["", "...", "..", "-", "—"]);
 
+/** Control (Cc) and invisible format (Cf: zero-width, bidi overrides) characters. */
+const CONTROL_OR_FORMAT = /[\p{Cc}\p{Cf}]/u;
+
 const LIMITS = {
   kcal: [0, 900],
   protein: [0, 100],
@@ -227,6 +230,8 @@ export function validateArgenfoodsRows(rows) {
     else if (seenCodes.has(code)) rowErrors.push(`duplicate code ${code}`);
     if (name.length < 1 || name.length > 200) rowErrors.push("name must be 1-200 characters");
     if (group.length < 1 || group.length > 100) rowErrors.push("group must be 1-100 characters");
+    if (CONTROL_OR_FORMAT.test(name)) rowErrors.push("name has control or format characters");
+    if (CONTROL_OR_FORMAT.test(group)) rowErrors.push("group has control or format characters");
 
     /** @type {Record<string, number | null>} */
     const values = {};

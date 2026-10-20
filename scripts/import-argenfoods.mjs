@@ -20,7 +20,11 @@
  * attribution (see scripts/lib/argenfoods.mjs for the terms).
  *
  * Usage:
- *   npm run foods:import-argenfoods [-- --file path/to.csv] [-- --dry-run]
+ *   npm run foods:import-argenfoods [-- --file path/to.csv] [-- --dry-run] [-- --yes]
+ *
+ * Before writing, it prints the target host. Anything but the local stack
+ * (127.0.0.1 / localhost) needs --yes, so a hosted project is never written
+ * to by accident (e.g. a production key left in .env.local).
  *
  * Environment (shell or .env.local), server-side only:
  *   SUPABASE_URL or NEXT_PUBLIC_SUPABASE_URL
@@ -32,6 +36,7 @@ import { parseArgs } from "node:util";
 import { createClient } from "@supabase/supabase-js";
 import { toFoodRecord, validateArgenfoodsRows } from "./lib/argenfoods.mjs";
 import { parseCsv } from "./lib/csv.mjs";
+import { remoteWriteRefusal } from "./lib/operator.mjs";
 
 const BATCH_SIZE = 200;
 
@@ -44,6 +49,7 @@ const { values } = parseArgs({
   options: {
     file: { type: "string", default: "supabase/data/argenfoods.csv" },
     "dry-run": { type: "boolean", default: false },
+    yes: { type: "boolean", default: false },
   },
 });
 
@@ -61,6 +67,10 @@ const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!url) fail("set SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL).");
 if (!serviceRoleKey) fail("set SUPABASE_SERVICE_ROLE_KEY.");
+
+console.log(`Target: ${new URL(url).host}`);
+const refusal = remoteWriteRefusal(url, values.yes);
+if (refusal) fail(refusal);
 
 const supabase = createClient(url, serviceRoleKey, {
   auth: { autoRefreshToken: false, persistSession: false },

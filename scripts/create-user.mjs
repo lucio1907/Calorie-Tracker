@@ -7,17 +7,21 @@
  * exposed to the browser: keep it in SUPABASE_SERVICE_ROLE_KEY (no NEXT_PUBLIC_ prefix).
  *
  * Usage:
- *   npm run user:create -- --email owner@local.test [--password '...']
+ *   npm run user:create -- --email owner@local.test
+ *   pass show calorie-tracker | npm run user:create -- --email you@example.com --password-stdin
  *
  * Environment (read from the shell or .env.local):
  *   SUPABASE_URL or NEXT_PUBLIC_SUPABASE_URL  API URL, e.g. http://127.0.0.1:54321
  *   SUPABASE_SERVICE_ROLE_KEY                 local: the "Secret" key from `npx supabase status`
  *
- * When --password is omitted, a random password is generated and printed once.
+ * Without --password-stdin, a random password is generated and printed once.
+ * There is no --password <value> flag: a password on the command line shows up
+ * in the process list and the shell history.
  */
 import { randomBytes } from "node:crypto";
 import { parseArgs } from "node:util";
 import { createClient } from "@supabase/supabase-js";
+import { readSecret } from "./lib/operator.mjs";
 
 const PASSWORD_RULE = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{12,}$/;
 
@@ -36,7 +40,7 @@ function fail(message) {
 const { values } = parseArgs({
   options: {
     email: { type: "string" },
-    password: { type: "string" },
+    "password-stdin": { type: "boolean", default: false },
   },
 });
 
@@ -47,8 +51,11 @@ if (!url) fail("set SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL).");
 if (!serviceRoleKey) fail("set SUPABASE_SERVICE_ROLE_KEY.");
 if (!values.email) fail("pass --email <address>.");
 
-const generated = values.password === undefined;
-const password = values.password ?? generatePassword();
+const generated = !values["password-stdin"];
+if (!generated && process.stdin.isTTY) {
+  console.error("Type the password, then press Ctrl-D (it is echoed; prefer piping it in).");
+}
+const password = generated ? generatePassword() : await readSecret(process.stdin);
 
 if (!PASSWORD_RULE.test(password)) {
   fail("password needs 12+ characters with lowercase, uppercase and a digit.");
