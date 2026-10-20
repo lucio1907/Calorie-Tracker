@@ -17,6 +17,16 @@ export const E2E_USERS: Record<E2EProject, { email: string }> = {
   desktop: { email: "e2e-desktop@local.test" },
 };
 
+/*
+ * Two more accounts per project for the sign-out spec. Signing out ends the
+ * user's sessions on the server, so that spec never signs out the project
+ * account whose saved session every other test reuses.
+ */
+export const E2E_SIGN_OUT_USERS: Record<E2EProject, readonly [{ email: string }, { email: string }]> = {
+  mobile: [{ email: "e2e-mobile-sign-out-a@local.test" }, { email: "e2e-mobile-sign-out-b@local.test" }],
+  desktop: [{ email: "e2e-desktop-sign-out-a@local.test" }, { email: "e2e-desktop-sign-out-b@local.test" }],
+};
+
 const AUTH_DIR = path.join(import.meta.dirname, "..", ".auth");
 
 /** Authenticated storage state written by global setup for a project. */

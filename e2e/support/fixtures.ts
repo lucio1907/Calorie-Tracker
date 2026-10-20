@@ -3,10 +3,10 @@ import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { test as base, expect, type Page, type TestInfo } from "@playwright/test";
 import type { Database } from "../../src/lib/supabase/database.types";
-import { adminClient, resetUserData, type AdminClient } from "./supabase-admin";
+import { adminClient, ensureUser, resetUserData, type AdminClient } from "./supabase-admin";
 
 type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];
-import { isE2EProject, USER_IDS_PATH, type E2EProject } from "./users";
+import { E2E_PASSWORD, isE2EProject, USER_IDS_PATH, type E2EProject } from "./users";
 
 /** The app's time zone (src/lib/app-time.ts): "today" in tests must match the server's. */
 export const APP_TIME_ZONE = "America/Argentina/Buenos_Aires";
@@ -175,6 +175,17 @@ export async function captureScreen(page: Page, testInfo: TestInfo, name: string
 }
 
 let admin: AdminClient | null = null;
+
+/**
+ * An extra E2E account (password E2E_PASSWORD), created on first use and
+ * emptied, for tests that need a user other than the project's own.
+ */
+export async function extraAccount(email: string): Promise<E2EData> {
+  admin ??= adminClient();
+  const data = new E2EData(admin, await ensureUser(admin, email, E2E_PASSWORD));
+  await data.reset();
+  return data;
+}
 
 export const test = base.extend<{ data: E2EData }>({
   // Every test starts from an empty account (cleaned before, not after, so a
