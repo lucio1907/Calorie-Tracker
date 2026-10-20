@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Button, Select, TextField } from "@/components/ui";
+import { Button, formActionProps, Select, TextField } from "@/components/ui";
 import { MAX_ENTRY_GRAMS, MEALS, type Meal, type Nutrients } from "@/domain";
 import { formatAmount, formatKcal } from "@/features/foods/lib/format";
 import { GRAMS_UNIT, type PortionOption } from "../lib/entry-amount";
@@ -110,7 +110,7 @@ export function EntryForm({
 
   return (
     <div className="flex flex-col gap-24">
-      <form action={action} noValidate className="flex flex-col gap-16" aria-busy={pending || undefined}>
+      <form {...formActionProps(action)} noValidate className="flex flex-col gap-16" aria-busy={pending || undefined}>
         {Object.entries(hidden).map(([name, value]) => (
           <input key={name} type="hidden" name={name} value={value} />
         ))}

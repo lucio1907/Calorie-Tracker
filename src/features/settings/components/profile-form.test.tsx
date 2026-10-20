@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { chooseOption, formValues } from "@/test-support/choose-option";
@@ -176,6 +176,41 @@ describe("ProfileForm", () => {
     expect(screen.getByLabelText(p.heightCm)).toHaveAttribute("aria-invalid", "true");
     expect(screen.getByLabelText(p.heightCm)).toHaveAccessibleDescription(v.heightRange(50, 250));
     expect(screen.getByText(v.splitTotal(95))).toBeInTheDocument();
+  });
+
+  it("keeps the submitted choices after the action finishes", async () => {
+    const user = userEvent.setup();
+    const submitted: FormData[] = [];
+    const { container } = render(
+      <ProfileForm
+        defaults={stored}
+        today={TODAY}
+        weightKg={80}
+        state={initialProfileFormState}
+        action={async (formData) => {
+          submitted.push(formData);
+        }}
+      />,
+    );
+
+    await chooseOption(user, p.sex, s.sexes.female);
+    await chooseOption(user, p.activityLevel, s.activityLevels.active);
+    await chooseOption(user, p.goal, s.goals.maintain);
+    await user.click(screen.getByRole("button", { name: p.save }));
+
+    await waitFor(() => expect(submitted).toHaveLength(1));
+    expect(submitted[0].get("sex")).toBe("female");
+    // React resets a form after its action; the custom selects must not fall back to the page-load values.
+    expect(screen.getByLabelText(p.sex)).toHaveTextContent(s.sexes.female);
+    expect(screen.getByLabelText(p.activityLevel)).toHaveTextContent(s.activityLevels.active);
+    expect(screen.getByLabelText(p.goal)).toHaveTextContent(s.goals.maintain);
+    expect(screen.getByRole("group", { name: p.birthDate })).toHaveTextContent("1/10/1996");
+    expect(formValues(container.querySelector("form"))).toMatchObject({
+      sex: "female",
+      birthDate: "1996-01-10",
+      activityLevel: "active",
+      goal: "maintain",
+    });
   });
 
   it("confirms a save and disables the form while saving", () => {

@@ -36,6 +36,15 @@ test.describe("Settings", () => {
     await expect(page.getByText("Profile saved. Today now uses these values.")).toBeVisible();
     await captureScreen(page, testInfo, "settings");
 
+    // The form keeps what was just saved, so saving again needs nothing re-entered.
+    await expect(page.getByRole("button", { name: /Sex/ })).toContainText("Female");
+    await expect(page.getByRole("button", { name: /Activity level/ })).toContainText("Light");
+    await expect(page.getByRole("button", { name: /Weight goal/ })).toContainText("Lose weight");
+    await expect(page.getByRole("group", { name: "Birth date" })).toContainText("3/14/1992");
+    await page.getByRole("button", { name: "Save profile" }).click();
+    await expect(page.getByText("Profile saved. Today now uses these values.")).toBeVisible();
+    await expect(page.getByText("Required")).toHaveCount(0);
+
     await expect.poll(() => data.count("weight_entries")).toBe(1);
     await expect.poll(() => data.macroSettings()).toEqual({ protein_g_per_kg: 2, carbs_share_pct: 55, fat_share_pct: 45 });
 

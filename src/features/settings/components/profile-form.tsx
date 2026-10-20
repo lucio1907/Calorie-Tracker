@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, DatePicker, Select, TextField } from "@/components/ui";
+import { Button, DatePicker, formActionProps, Select, TextField } from "@/components/ui";
 import { ACTIVITY_LEVELS, addDays, dailyAdjustment, GOALS, MIN_DAILY_KCAL, SEXES, type CalendarDate, type Goal } from "@/domain";
 import { toDecimal } from "@/features/foods/lib/food-schema";
 import { formatAmount, formatKcal } from "@/features/foods/lib/format";
@@ -110,7 +110,7 @@ export function ProfileForm({ defaults, today, weightKg, state, action, pending 
   }
 
   return (
-    <form action={action} noValidate className="flex flex-col gap-24" aria-busy={pending || undefined}>
+    <form {...formActionProps(action)} noValidate className="flex flex-col gap-24" aria-busy={pending || undefined}>
       {state.formError ? (
         <p role="alert" className="rounded-inputs bg-danger-wash px-12 py-8 text-body text-danger-ink">
           {state.formError}

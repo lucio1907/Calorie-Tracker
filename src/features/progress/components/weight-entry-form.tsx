@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Button, DatePicker, TextField } from "@/components/ui";
+import { Button, DatePicker, formActionProps, TextField } from "@/components/ui";
 import type { CalendarDate } from "@/domain";
 import { MIN_DIARY_DATE } from "@/features/diary/lib/diary-date";
 import type { WeightEntryFormState } from "../lib/types";
@@ -43,7 +43,7 @@ export function WeightEntryForm({
 
   return (
     <div className="flex flex-col gap-24">
-      <form action={action} noValidate className="flex flex-col gap-16" aria-busy={pending || undefined}>
+      <form {...formActionProps(action)} noValidate className="flex flex-col gap-16" aria-busy={pending || undefined}>
         {Object.entries(hidden).map(([name, value]) => (
           <input key={name} type="hidden" name={name} value={value} />
         ))}
