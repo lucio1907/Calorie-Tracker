@@ -6,11 +6,11 @@ Personal, single-user calorie tracker. Next.js 16 (App Router) on Vercel + Supab
 
 ```bash
 npm ci
-npx supabase start              # local stack (Docker); prints URLs and keys
+npm run db:start                # local stack (Docker), ports on 127.0.0.1 only; prints URLs and keys
 cp .env.example .env.local      # fill with values from `npx supabase status`
 npm run user:create -- --email owner@local.test   # prints a generated password
 npm run foods:import-argenfoods                    # shared ARGENFOODS catalog (run after every db reset)
-npm run dev                     # http://localhost:3000
+npm run dev                     # http://127.0.0.1:3000 (loopback only)
 ```
 
 | Service | URL |
@@ -18,6 +18,18 @@ npm run dev                     # http://localhost:3000
 | API | http://127.0.0.1:54321 |
 | Studio | http://127.0.0.1:54323 |
 | Mailpit | http://127.0.0.1:54324 |
+
+### Local network exposure
+
+A plain `npx supabase start` publishes the stack's ports (54321-54327) on every interface, so any
+peer on the same network could reach Studio and Mailpit (no auth) and Postgres (default
+credentials). `npm run db:start` (`scripts/supabase-start.mjs`) instead starts it on a Docker
+network whose default host binding is 127.0.0.1, as the
+[Supabase local development guide](https://supabase.com/docs/guides/local-development) recommends.
+The network keeps the CLI's default name, so `npx supabase test db` and `npx supabase db reset`
+use it too. If the stack is already running from a plain start, run `npx supabase stop` first.
+Check with `ss -ltn | grep ':543'`: every listener should be on 127.0.0.1. When you do not need
+Studio or Mailpit, skip them: `npm run db:start -- -x studio,mailpit,logflare,postgres-meta`.
 
 ## Creating the owner account
 
@@ -49,7 +61,7 @@ production use the project's secret key. Never give it a `NEXT_PUBLIC_` prefix. 
 
 ## End-to-end tests
 
-`e2e/*.spec.ts` drive a production build against the local Supabase stack (`npx supabase start`,
+`e2e/*.spec.ts` drive a production build against the local Supabase stack (`npm run db:start`,
 seeded activities; no food import needed). Global setup creates two dedicated accounts
 (`e2e-mobile@local.test`, `e2e-desktop@local.test`) with the Auth admin API, signs each in through
 the login form and saves the session; every test starts by deleting that account's data, so the
