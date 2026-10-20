@@ -31,4 +31,15 @@ describe("parseCredentials", () => {
       errors: { email: authStrings.emailInvalid },
     });
   });
+
+  it("rejects an oversized email without running the pattern on it", () => {
+    // About 1 MB: the shape makes the email pattern backtrack quadratically.
+    const email = `a@${".".repeat(1_000_000)}@`;
+    const startedAt = performance.now();
+    const result = parseCredentials(form({ email, password: "x" }));
+    const elapsed = performance.now() - startedAt;
+
+    expect(result).toMatchObject({ ok: false, errors: { email: authStrings.emailInvalid } });
+    expect(elapsed).toBeLessThan(50);
+  });
 });
