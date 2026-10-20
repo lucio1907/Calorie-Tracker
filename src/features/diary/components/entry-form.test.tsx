@@ -1,6 +1,7 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
+import { chooseOption } from "@/test-support/choose-option";
 import { initialEntryFormState, type EntryFormState } from "../lib/types";
 import { diaryStrings } from "../strings";
 import { EntryForm, type EntryFormFood } from "./entry-form";
@@ -57,9 +58,30 @@ describe("EntryForm", () => {
   it("switches to grams keeping the same amount of food", async () => {
     const user = userEvent.setup();
     renderForm({ defaults: { meal: "lunch", unit: "1", amount: "2" } });
-    await user.selectOptions(screen.getByLabelText(t.entryForm.unit), "g");
+    await chooseOption(user, t.entryForm.unit, t.units.gramsOption);
     expect(screen.getByLabelText(t.entryForm.grams)).toHaveValue("100");
     expect(preview().getByText("269")).toBeInTheDocument();
+  });
+
+  it("keeps the chosen meal and unit after a submit, so a resubmit sends the same food amount", async () => {
+    const user = userEvent.setup();
+    const submitted: FormData[] = [];
+    const { container } = renderForm({
+      defaults: { meal: "lunch", unit: "1", amount: "2" },
+      action: async (formData) => {
+        submitted.push(formData);
+      },
+    });
+    await chooseOption(user, t.entryForm.meal, t.meals.dinner);
+    await chooseOption(user, t.entryForm.unit, t.units.gramsOption);
+    await user.click(screen.getByRole("button", { name: t.entryForm.save }));
+
+    await waitFor(() => expect(submitted).toHaveLength(1));
+    expect(Object.fromEntries(new FormData(container.querySelector("form") ?? undefined))).toMatchObject({
+      meal: "dinner",
+      unit: "g",
+      amount: "100",
+    });
   });
 
   it("asks for an amount instead of showing a stale preview", async () => {

@@ -7,12 +7,12 @@ export type ProfileFieldName =
   | "activityLevel"
   | "goal"
   | "goalKgPerWeek"
-  | "proteinPct"
-  | "carbsPct"
-  | "fatPct";
+  | "proteinGPerKg"
+  | "carbsSharePct"
+  | "fatSharePct";
 
-/** Field errors, plus `macroSplit` for a split that does not add up to 100. */
-export type ProfileFieldErrors = Partial<Record<ProfileFieldName | "macroSplit", string>>;
+/** Field errors, plus `carbFatSplit` for a carbs/fat split that does not add up to 100. */
+export type ProfileFieldErrors = Partial<Record<ProfileFieldName | "carbFatSplit", string>>;
 
 /** The profile form's fields as text (what the inputs hold). */
 export type ProfileFormValues = Record<ProfileFieldName, string>;
@@ -26,7 +26,10 @@ export type ProfileValues = {
   goal: Goal;
   /** Magnitude in kg/week; 0 while maintaining. */
   goalKgPerWeek: number;
-  macroSplit: { protein: number; carbs: number; fat: number };
+  /** Daily protein in grams per kg of the latest weight, one decimal. */
+  proteinGPerKg: number;
+  /** Percent of the kcal left after protein for carbs and fat (sums to 100). */
+  carbFatSplit: { carbs: number; fat: number };
 };
 
 /** The stored profile row, as the settings screen reads it. */
@@ -37,9 +40,9 @@ export type StoredProfile = {
   activityLevel: string | null;
   goal: string;
   goalKgPerWeek: number;
-  proteinPct: number;
-  carbsPct: number;
-  fatPct: number;
+  proteinGPerKg: number;
+  carbsSharePct: number;
+  fatSharePct: number;
 };
 
 /** useActionState state for the profile form (its inputs are controlled, so no values echo). */

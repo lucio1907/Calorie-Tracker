@@ -1,6 +1,6 @@
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/components/ui";
+import { cn, PAGE_TRANSITION } from "@/components/ui";
 import { isActive, type NavItem } from "../nav-items";
 import { shellStrings } from "../strings";
 
@@ -18,9 +18,10 @@ function TabLink({ item, pathname }: { item: NavItem; pathname: string }) {
     <li className="flex-1">
       <Link
         href={item.href}
+        transitionTypes={[PAGE_TRANSITION]}
         aria-current={active ? "page" : undefined}
         className={cn(
-          "flex min-h-56 flex-col items-center justify-center gap-4 rounded-buttons text-caption font-medium",
+          "flex min-h-56 flex-col items-center justify-center gap-4 rounded-buttons text-caption font-medium transition-[color,transform] duration-150 ease-out motion-safe:active:scale-95",
           active ? "text-brand" : "text-ink-muted",
         )}
       >
@@ -36,7 +37,8 @@ export function BottomTabBar({ leading, trailing, logHref, pathname }: BottomTab
   return (
     <nav
       aria-label={shellStrings.tabBarNav}
-      className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
+      // Stays on top and still while page content transitions (see globals.css).
+      className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] [view-transition-name:tab-bar] md:hidden"
     >
       <ul className="mx-auto flex max-w-[480px] items-center px-8">
         {leading.map((item) => (
@@ -45,8 +47,9 @@ export function BottomTabBar({ leading, trailing, logHref, pathname }: BottomTab
         <li className="flex flex-1 justify-center">
           <Link
             href={logHref}
+            transitionTypes={[PAGE_TRANSITION]}
             aria-label={shellStrings.logAccessible}
-            className="flex min-h-44 min-w-44 items-center justify-center gap-4 rounded-full bg-action px-16 text-body font-medium text-on-action shadow-subtle"
+            className="flex min-h-44 min-w-44 items-center justify-center gap-4 rounded-full bg-action px-16 text-body font-medium text-on-action shadow-subtle transition-[background-color,transform] duration-150 ease-out active:bg-action-hover motion-safe:active:scale-95"
           >
             <Plus aria-hidden="true" size={18} />
             <span>{shellStrings.log}</span>

@@ -31,12 +31,166 @@
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
-    *::after {
+    *::after,
+    *::backdrop {
       animation-duration: 0.01ms !important;
+      animation-delay: 0s !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
+      transition-delay: 0s !important;
       scroll-behavior: auto !important;
     }
+
+    /* View transition pseudo-elements are not matched by `*`. */
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+      animation-duration: 0s !important;
+      animation-delay: 0s !important;
+    }
+  }
+}
+
+/*
+ * Sheet (components/ui/sheet): slides up from the bottom on phones and in
+ * from the right from md up, over a fading backdrop. The exit is shorter
+ * than the enter and accelerates away. `display` and `overlay` transition
+ * discretely so the closing dialog stays in the top layer until it is gone;
+ * browsers without that support simply close it instantly.
+ */
+@layer components {
+  .sheet-motion {
+    --sheet-offset: translateY(100%);
+    transform: var(--sheet-offset);
+    transition:
+      transform 180ms var(--ease-exit),
+      overlay 180ms var(--ease-exit) allow-discrete,
+      display 180ms var(--ease-exit) allow-discrete;
+  }
+
+  .sheet-motion[open] {
+    transform: none;
+    transition-duration: 280ms;
+    transition-timing-function: var(--ease-enter);
+  }
+
+  @starting-style {
+    .sheet-motion[open] {
+      transform: var(--sheet-offset);
+    }
+  }
+
+  .sheet-motion::backdrop {
+    opacity: 0;
+    transition:
+      opacity 180ms var(--ease-exit),
+      overlay 180ms var(--ease-exit) allow-discrete,
+      display 180ms var(--ease-exit) allow-discrete;
+  }
+
+  .sheet-motion[open]::backdrop {
+    opacity: 1;
+    transition-duration: 280ms;
+    transition-timing-function: var(--ease-enter);
+  }
+
+  @starting-style {
+    .sheet-motion[open]::backdrop {
+      opacity: 0;
+    }
+  }
+
+  @media (width >= 48rem) {
+    .sheet-motion {
+      --sheet-offset: translateX(100%);
+    }
+  }
+}
+
+/*
+ * View transitions (React <ViewTransition>, see components/ui/view-transitions.tsx).
+ * Clicks pass through to the live page while one runs.
+ */
+::view-transition {
+  pointer-events: none;
+}
+
+/* Tab and sidebar navigation: the old page fades out quickly, the new one fades up. */
+::view-transition-old(.page-exit) {
+  animation: 120ms var(--ease-exit) both vt-fade-out;
+}
+::view-transition-new(.page-enter) {
+  animation: 220ms var(--ease-enter) 60ms both vt-rise-in;
+}
+
+/* Day navigation: later days come in from the right, earlier days from the left. */
+::view-transition-old(.day-forward) {
+  --vt-shift: -24px;
+  animation: 150ms var(--ease-exit) both vt-slide-out;
+}
+::view-transition-new(.day-forward) {
+  --vt-shift: 24px;
+  animation: 240ms var(--ease-enter) both vt-slide-in;
+}
+::view-transition-old(.day-back) {
+  --vt-shift: 24px;
+  animation: 150ms var(--ease-exit) both vt-slide-out;
+}
+::view-transition-new(.day-back) {
+  --vt-shift: -24px;
+  animation: 240ms var(--ease-enter) both vt-slide-in;
+}
+
+/*
+ * Anchored content does not move while its page transitions: the page title
+ * and date navigation (class from <AnchoredTransition>) and the app chrome
+ * (fixed tab bar and sidebar, named in their own components), which also
+ * stays above the moving content.
+ */
+::view-transition-group(.anchored),
+::view-transition-group(tab-bar),
+::view-transition-group(sidebar) {
+  animation: none;
+}
+::view-transition-group(tab-bar),
+::view-transition-group(sidebar) {
+  z-index: 10;
+}
+::view-transition-old(.anchored),
+::view-transition-old(tab-bar),
+::view-transition-old(sidebar) {
+  display: none;
+}
+::view-transition-new(.anchored),
+::view-transition-new(tab-bar),
+::view-transition-new(sidebar) {
+  animation: none;
+}
+
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes vt-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes vt-slide-out {
+  to {
+    opacity: 0;
+    transform: translateX(var(--vt-shift));
+  }
+}
+
+@keyframes vt-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(var(--vt-shift));
   }
 }
 

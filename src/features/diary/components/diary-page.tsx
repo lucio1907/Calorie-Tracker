@@ -1,3 +1,4 @@
+import { DayTransition } from "@/components/ui";
 import { requireUser } from "@/features/auth/data/current-user";
 import { getRecentFoods, searchFoods } from "@/features/foods/data/foods";
 import { appToday, suggestMealAt } from "@/lib/app-time";
@@ -28,16 +29,17 @@ export async function DiaryPage({ searchParams }: DiaryPageProps) {
   ]);
 
   return (
-    <DiaryScreenContainer
-      // A new day starts with a closed sheet.
-      key={date}
-      date={date}
-      today={today}
-      day={buildDiaryDay(entries)}
-      // Time-of-day suggestions only make sense for today; other days start at breakfast.
-      suggestedMeal={date === today ? suggestMealAt(now) : Meal.Breakfast}
-      recentFoods={recentFoods}
-      initialFoods={initialFoods}
-    />
+    // A new day remounts the screen (closed sheet) and slides it in from the side it comes from.
+    <DayTransition key={date}>
+      <DiaryScreenContainer
+        date={date}
+        today={today}
+        day={buildDiaryDay(entries)}
+        // Time-of-day suggestions only make sense for today; other days start at breakfast.
+        suggestedMeal={date === today ? suggestMealAt(now) : Meal.Breakfast}
+        recentFoods={recentFoods}
+        initialFoods={initialFoods}
+      />
+    </DayTransition>
   );
 }

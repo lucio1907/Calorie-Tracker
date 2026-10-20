@@ -4,7 +4,7 @@ import { refresh, revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/features/auth/data/current-user";
 import { appToday } from "@/lib/app-time";
 import { createClient } from "@/lib/supabase/server";
-import { parseProfileForm } from "../lib/profile-schema";
+import { parseProfileForm, PROFILE_LIMITS } from "../lib/profile-schema";
 import type { ProfileFormState, ProfileValues, WeightFormState } from "../lib/types";
 import { parseWeightForm, todayWeightEntry } from "../lib/weight-entry";
 import { settingsStrings as t } from "../strings";
@@ -18,7 +18,8 @@ import { settingsStrings as t } from "../strings";
  * Today and Settings read this data per request (nothing is cached with
  * "use cache"), so there is no server cache to invalidate. After a write:
  * - revalidatePath("/today") drops Today's client-cache entry and refreshes
- *   its prefetch, so navigating there shows the new target;
+ *   its prefetch, so navigating there shows the new target (likewise
+ *   "/progress", which charts the weight and each day's target);
  * - refresh() re-renders the current Settings route in the same round trip.
  * Docs: node_modules/next/dist/docs/01-app/03-api-reference/04-functions/revalidatePath.md
  *       node_modules/next/dist/docs/01-app/03-api-reference/04-functions/refresh.md
@@ -26,6 +27,7 @@ import { settingsStrings as t } from "../strings";
 
 function revalidateTargets() {
   revalidatePath("/today");
+  revalidatePath("/progress");
   refresh();
 }
 
@@ -37,14 +39,24 @@ function toProfileColumns(profile: ProfileValues) {
     activity_level: profile.activityLevel,
     goal: profile.goal,
     goal_kg_per_week: profile.goalKgPerWeek,
-    protein_pct: profile.macroSplit.protein,
-    carbs_pct: profile.macroSplit.carbs,
-    fat_pct: profile.macroSplit.fat,
+    protein_g_per_kg: profile.proteinGPerKg,
+    carbs_share_pct: profile.carbFatSplit.carbs,
+    fat_share_pct: profile.carbFatSplit.fat,
   };
 }
 
 function profileFailed(formError: string): ProfileFormState {
   return { status: "error", fieldErrors: {}, formError };
+}
+
+/**
+ * The profiles_enforce_min_age trigger (migration profiles_min_age) rejects an
+ * under-18 birth date with a check_violation whose message starts with
+ * "profiles_min_age:". The form validates the same rule first; this catches a
+ * disagreement between the two clocks (defense in depth).
+ */
+function isMinAgeViolation(error: { code?: string; message?: string }): boolean {
+  return error.code === "23514" && (error.message ?? "").startsWith("profiles_min_age:");
 }
 
 /** Form action: creates or updates the caller's profile row. */
@@ -59,6 +71,13 @@ export async function saveProfile(_previous: ProfileFormState, formData: FormDat
   const { error } = await supabase
     .from("profiles")
     .upsert({ user_id: user.id, ...toProfileColumns(parsed.value) }, { onConflict: "user_id" });
+  if (error && isMinAgeViolation(error)) {
+    return {
+      status: "error",
+      fieldErrors: { birthDate: t.validation.minAge(PROFILE_LIMITS.minAgeYears) },
+      formError: t.validation.fix,
+    };
+  }
   if (error) {
     console.error("[settings] profile upsert failed", error.code, error.message);
     return profileFailed(t.errors.profileSaveFailed);

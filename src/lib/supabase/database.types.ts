@@ -119,16 +119,36 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
-                },"profiles": {
+                },"profile_versions": {
                   Row: {
-                    "activity_level": string | null,"birth_date": string | null,"carbs_pct": number,"created_at": string,"fat_pct": number,"goal": string,"goal_kg_per_week": number,"height_cm": number | null,"protein_pct": number,"sex": string | null,"updated_at": string,"user_id": string
+                    "activity_level": string | null,"birth_date": string | null,"carbs_share_pct": number,"created_at": string,"effective_date": string,"fat_share_pct": number,"goal": string,"goal_kg_per_week": number,"height_cm": number | null,"protein_g_per_kg": number,"sex": string | null,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "activity_level"?: string | null,"birth_date"?: string | null,"carbs_pct"?: number,"created_at"?: string,"fat_pct"?: number,"goal"?: string,"goal_kg_per_week"?: number,"height_cm"?: number | null,"protein_pct"?: number,"sex"?: string | null,"updated_at"?: string,"user_id": string
+                    "activity_level"?: string | null,"birth_date"?: string | null,"carbs_share_pct": number,"created_at"?: string,"effective_date": string,"fat_share_pct": number,"goal": string,"goal_kg_per_week": number,"height_cm"?: number | null,"protein_g_per_kg": number,"sex"?: string | null,"user_id": string
                   }
                   Update: {
-                    "activity_level"?: string | null,"birth_date"?: string | null,"carbs_pct"?: number,"created_at"?: string,"fat_pct"?: number,"goal"?: string,"goal_kg_per_week"?: number,"height_cm"?: number | null,"protein_pct"?: number,"sex"?: string | null,"updated_at"?: string,"user_id"?: string
+                    "activity_level"?: string | null,"birth_date"?: string | null,"carbs_share_pct"?: number,"created_at"?: string,"effective_date"?: string,"fat_share_pct"?: number,"goal"?: string,"goal_kg_per_week"?: number,"height_cm"?: number | null,"protein_g_per_kg"?: number,"sex"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "profile_versions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["user_id"]
+    }
+                  ]
+                },"profiles": {
+                  Row: {
+                    "activity_level": string | null,"birth_date": string | null,"carbs_share_pct": number,"created_at": string,"fat_share_pct": number,"goal": string,"goal_kg_per_week": number,"height_cm": number | null,"protein_g_per_kg": number,"sex": string | null,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activity_level"?: string | null,"birth_date"?: string | null,"carbs_share_pct"?: number,"created_at"?: string,"fat_share_pct"?: number,"goal"?: string,"goal_kg_per_week"?: number,"height_cm"?: number | null,"protein_g_per_kg"?: number,"sex"?: string | null,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "activity_level"?: string | null,"birth_date"?: string | null,"carbs_share_pct"?: number,"created_at"?: string,"fat_share_pct"?: number,"goal"?: string,"goal_kg_per_week"?: number,"height_cm"?: number | null,"protein_g_per_kg"?: number,"sex"?: string | null,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
@@ -195,6 +215,11 @@ isOneToOne: false
           Functions: {
             "copy_food_entries":
 { Args: { "only_meal"?: string,"source_date": string,"target_date": string }; Returns: number
+                           },
+"daily_energy_totals":
+{ Args: { "end_date": string,"start_date": string }; Returns: {
+              "entry_date": string,"exercise_kcal": number,"food_kcal": number
+            }[]
                            },
 "recent_foods":
 { Args: { "result_limit"?: number }; Returns: {

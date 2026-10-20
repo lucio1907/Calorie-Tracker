@@ -13,7 +13,9 @@ export async function getStoredProfile(userId: string): Promise<StoredProfile | 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("profiles")
-    .select("sex, birth_date, height_cm, activity_level, goal, goal_kg_per_week, protein_pct, carbs_pct, fat_pct")
+    .select(
+      "sex, birth_date, height_cm, activity_level, goal, goal_kg_per_week, protein_g_per_kg, carbs_share_pct, fat_share_pct",
+    )
     .eq("user_id", userId)
     .maybeSingle();
   if (error) throw new Error(`profile: ${error.message}`);
@@ -26,9 +28,9 @@ export async function getStoredProfile(userId: string): Promise<StoredProfile | 
     activityLevel: data.activity_level,
     goal: data.goal,
     goalKgPerWeek: Number(data.goal_kg_per_week),
-    proteinPct: data.protein_pct,
-    carbsPct: data.carbs_pct,
-    fatPct: data.fat_pct,
+    proteinGPerKg: Number(data.protein_g_per_kg),
+    carbsSharePct: data.carbs_share_pct,
+    fatSharePct: data.fat_share_pct,
   };
 }
 

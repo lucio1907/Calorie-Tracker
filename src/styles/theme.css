@@ -107,6 +107,50 @@
 }
 
 /*
+ * Motion tokens. Arrivals decelerate (--ease-enter), departures accelerate
+ * (--ease-exit) and take about 65% of the matching enter duration. Only
+ * transform and opacity animate; globals.css turns everything off under
+ * prefers-reduced-motion.
+ */
+@theme {
+  --ease-enter: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  --animate-popover-in: popover-in 160ms var(--ease-enter) both;
+  --animate-popover-out: popover-out 100ms var(--ease-exit) both;
+  --animate-list-enter: list-enter 220ms var(--ease-enter) both;
+  --animate-list-exit: list-exit 140ms var(--ease-exit) both;
+
+  @keyframes popover-in {
+    from {
+      opacity: 0;
+      transform: translateY(var(--popover-shift, -4px)) scale(0.98);
+    }
+  }
+
+  @keyframes list-enter {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+
+  @keyframes list-exit {
+    to {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+  }
+
+  @keyframes popover-out {
+    to {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+  }
+}
+
+/*
  * Font families resolve to the next/font CSS variables set on <html>
  * (see src/app/fonts.ts), so they use `inline` to reference them at use site.
  * Satoshi is not self-hosted (Fontshare's EULA forbids redistributing the

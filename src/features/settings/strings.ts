@@ -3,7 +3,7 @@ import type { ActivityLevel, Goal, Sex } from "@/domain";
 /** User-facing copy for the settings feature. Translate here. */
 export const settingsStrings = {
   title: "Settings",
-  description: "Body data, goal and macro split.",
+  description: "Body data, goal and macros.",
   accountHeading: "Account",
 
   profile: {
@@ -22,12 +22,22 @@ export const settingsStrings = {
     goalKgPerWeek: "Rate (kg per week)",
     rateHint: (min: number, max: number) => `Between ${min} and ${max} kg.`,
     rateEffect: (kcal: string, direction: "below" | "above") => `≈ ${kcal} kcal/day ${direction} TDEE.`,
-    macrosLegend: "Macro split",
-    macrosHint: "Percent of the daily target. Must add up to 100%.",
-    proteinPct: "Protein (%)",
-    carbsPct: "Carbs (%)",
-    fatPct: "Fat (%)",
-    macroTotal: (total: string) => `Total: ${total}%`,
+    floorHint: (female: string, male: string) =>
+      `The daily target never goes below ${female} kcal (women) or ${male} kcal (men).`,
+    macrosLegend: "Macros",
+    proteinGPerKg: "Protein (g per kg)",
+    proteinHint: (min: number, max: number) =>
+      `Grams per kg of your latest weight, ${min}–${max}. Protein stays the same when you cut calories.`,
+    splitHint: "Carbs and fat share the calories left after protein. Must add up to 100%.",
+    carbsSharePct: "Carbs (%)",
+    fatSharePct: "Fat (%)",
+    splitTotal: (total: string) => `Total: ${total}%`,
+    previewNoWeight: "Log your weight to see these targets in grams.",
+    previewProtein: (protein: string, kg: string) =>
+      `${protein} g protein at ${kg} kg. Complete the profile to see carbs and fat.`,
+    previewFull: (kg: string, kcal: string, protein: string, carbs: string, fat: string) =>
+      `At ${kg} kg and ${kcal} kcal: ${protein} g protein, ${carbs} g carbs, ${fat} g fat.`,
+    previewCapped: "This protein setting needs more calories than your daily target, so carbs and fat would be 0.",
     save: "Save profile",
     saving: "Saving…",
     saved: "Profile saved. Today now uses these values.",
@@ -64,11 +74,13 @@ export const settingsStrings = {
     number: "Enter a number.",
     wholeNumber: "Enter a whole number.",
     date: "Enter a valid date.",
-    birthDateRange: "Enter a birth date after 1900 and at least a year ago.",
+    birthDateRange: "Enter a birth date after 1900.",
+    minAge: (years: number) => `You must be at least ${years} years old.`,
     heightRange: (min: number, max: number) => `Enter a height between ${min} and ${max} cm.`,
     rateRange: (min: number, max: number) => `Enter between ${min} and ${max} kg per week.`,
     pctRange: "Enter a value from 0 to 100.",
-    macroTotal: (total: number) => `Protein, carbs and fat must add up to 100% (now ${total}%).`,
+    proteinRange: (min: number, max: number) => `Enter ${min} to ${max} g per kg, with at most one decimal.`,
+    splitTotal: (total: number) => `Carbs and fat must add up to 100% (now ${total}%).`,
     weightRange: (min: number, max: number) => `Enter a weight between ${min} and ${max} kg.`,
     fix: "Check the highlighted fields.",
   },

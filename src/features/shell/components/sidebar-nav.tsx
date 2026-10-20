@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { cn } from "@/components/ui";
+import { cn, PAGE_TRANSITION } from "@/components/ui";
 import { isActive, type NavItem } from "../nav-items";
 import { shellStrings } from "../strings";
 
@@ -22,10 +22,11 @@ export function SidebarNav({ items, pathname }: SidebarNavProps) {
             <li key={href}>
               <Link
                 href={href}
+                transitionTypes={[PAGE_TRANSITION]}
                 aria-current={active ? "page" : undefined}
                 title={label}
                 className={cn(
-                  "flex min-h-44 items-center gap-12 rounded-buttons px-12 py-12 text-body font-medium text-ink transition-colors duration-150 md:justify-center lg:justify-start lg:px-8",
+                  "flex min-h-44 items-center gap-12 rounded-buttons px-12 py-12 text-body font-medium text-ink transition-[background-color,transform] duration-150 ease-out motion-safe:active:scale-[0.98] md:justify-center lg:justify-start lg:px-8",
                   active ? "bg-nav-active" : "hover:bg-surface-alt",
                 )}
               >

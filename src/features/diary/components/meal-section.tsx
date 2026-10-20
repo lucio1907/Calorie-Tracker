@@ -1,5 +1,7 @@
+"use client";
+
 import { ChevronRight, Plus } from "lucide-react";
-import { Button } from "@/components/ui";
+import { Button, cn, presenceProps, useListPresence, type Presence } from "@/components/ui";
 import { formatAmount, formatKcal } from "@/features/foods/lib/format";
 import type { MealSection as MealSectionData } from "../lib/diary-day";
 import type { DiaryEntry } from "../lib/types";
@@ -16,19 +18,23 @@ export function amountText(entry: Pick<DiaryEntry, "grams" | "quantity" | "porti
     : t.units.grams(grams);
 }
 
+const entryKey = (entry: DiaryEntry) => entry.id;
+
 type MealSectionProps = {
   section: MealSectionData;
   onAdd: () => void;
   onEdit: (entry: DiaryEntry) => void;
 };
 
-function EntryRow({ entry, onEdit }: { entry: DiaryEntry; onEdit: (entry: DiaryEntry) => void }) {
+function EntryRow({ row, onEdit }: { row: Presence<DiaryEntry>; onEdit: (entry: DiaryEntry) => void }) {
+  const entry = row.item;
+  const { className, ...presence } = presenceProps(row.phase);
   return (
-    <li className="border-t border-border">
+    <li className={cn("border-t border-border", className)} {...presence}>
       <button
         type="button"
         onClick={() => onEdit(entry)}
-        className="flex min-h-56 w-full items-center gap-12 px-16 py-12 text-left transition-colors duration-150 hover:bg-surface-alt"
+        className="flex min-h-56 w-full items-center gap-12 px-16 py-12 text-left transition-colors duration-150 hover:bg-surface-alt active:bg-surface-alt"
       >
         <span className="flex min-w-0 flex-1 flex-col gap-4">
           <span className="line-clamp-2 text-body-lg text-ink">{entry.label}</span>
@@ -50,6 +56,8 @@ function EntryRow({ entry, onEdit }: { entry: DiaryEntry; onEdit: (entry: DiaryE
 /** One meal: name, totals, an add button and the entries (each opens the editor). */
 export function MealSection({ section, onAdd, onEdit }: MealSectionProps) {
   const name = t.meals[section.meal];
+  // Added entries rise in and deleted ones fade out (after the Server Action refresh).
+  const rows = useListPresence(section.entries, entryKey);
   const headingId = `meal-${section.meal}`;
 
   return (
@@ -75,10 +83,10 @@ export function MealSection({ section, onAdd, onEdit }: MealSectionProps) {
           <span aria-hidden="true">{t.meal.add}</span>
         </Button>
       </header>
-      {section.entries.length > 0 ? (
+      {rows.length > 0 ? (
         <ul aria-label={t.meal.entries(name)}>
-          {section.entries.map((entry) => (
-            <EntryRow key={entry.id} entry={entry} onEdit={onEdit} />
+          {rows.map((row) => (
+            <EntryRow key={row.key} row={row} onEdit={onEdit} />
           ))}
         </ul>
       ) : (

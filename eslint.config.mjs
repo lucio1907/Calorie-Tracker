@@ -16,6 +16,10 @@ const eslintConfig = defineConfig([
     ".atl/**",
     "supabase/**",
     "coverage/**",
+    // Playwright output (HTML report bundle, traces, screenshots).
+    "test-results/**",
+    "playwright-report/**",
+    "blob-report/**",
   ]),
 ]);
 

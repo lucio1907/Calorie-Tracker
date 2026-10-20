@@ -1,6 +1,6 @@
 import { Plus } from "lucide-react";
 import type { ComponentProps } from "react";
-import { ButtonLink, Card, EmptyState, PageHeader } from "@/components/ui";
+import { ButtonLink, Card, EmptyState, PageHeader, ProgressBar } from "@/components/ui";
 import { formatAmount, formatKcal } from "@/features/foods/lib/format";
 import type { TodaySummary } from "../lib/today-summary";
 import { todayStrings as t } from "../strings";
@@ -17,7 +17,10 @@ const rateFormat = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2, us
 
 type BreakdownItem = { label: string; value: number };
 
-/** TDEE, the goal's daily adjustment (none while maintaining) and the resulting target. */
+/**
+ * TDEE, the goal's daily adjustment (none while maintaining), the raise to the
+ * safe minimum (only when applied) and the resulting target.
+ */
 function targetBreakdown(summary: ReadySummary): BreakdownItem[] {
   const items: BreakdownItem[] = [{ label: t.targetBreakdown.tdee, value: summary.tdeeKcal }];
   if (summary.goal !== "maintain") {
@@ -26,6 +29,9 @@ function targetBreakdown(summary: ReadySummary): BreakdownItem[] {
       label: summary.goal === "lose" ? t.targetBreakdown.lose(rate) : t.targetBreakdown.gain(rate),
       value: Math.abs(summary.goalAdjustmentKcal),
     });
+  }
+  if (summary.floorRaiseKcal > 0) {
+    items.push({ label: t.targetBreakdown.floor(formatKcal(summary.minimumKcal)), value: summary.floorRaiseKcal });
   }
   items.push({ label: t.targetBreakdown.target, value: summary.targetKcal });
   return items;
@@ -44,10 +50,9 @@ function Breakdown({ items, ...props }: { items: BreakdownItem[] } & ComponentPr
   );
 }
 
-/** Share of the target reached, as a CSS width capped at 100%. */
-function barWidth(consumed: number, target: number): string {
-  if (target <= 0) return "0%";
-  return `${Math.min(100, (consumed / target) * 100)}%`;
+/** Share of `target` reached, 0 to 1 (a full bar once reached). */
+function share(consumed: number, target: number): number {
+  return target > 0 ? Math.min(1, consumed / target) : 0;
 }
 
 function BalanceCard({ summary }: { summary: ReadySummary }) {
@@ -73,6 +78,12 @@ function BalanceCard({ summary }: { summary: ReadySummary }) {
           </span>
           <span className="text-body text-ink-muted">{t.kcalUnit}</span>
         </p>
+        {/* Food eaten out of today's budget (target + exercise); the numbers below say the same. */}
+        <ProgressBar
+          value={share(summary.consumed.kcal, summary.targetKcal + summary.exerciseKcal)}
+          fillClassName={over ? "bg-over" : "bg-consumed"}
+          className="mt-8"
+        />
       </div>
       <Breakdown items={equation} />
       <div className="flex flex-col gap-8 border-t border-border pt-12">
@@ -80,6 +91,11 @@ function BalanceCard({ summary }: { summary: ReadySummary }) {
           {t.targetHeading}
         </h3>
         <Breakdown role="group" aria-labelledby="today-target" items={targetBreakdown(summary)} />
+        {summary.targetKcal < summary.bmrKcal ? (
+          <p className="rounded-inputs bg-over-wash px-12 py-8 text-body text-over-ink">
+            {t.belowBmrWarning(formatKcal(summary.bmrKcal))}
+          </p>
+        ) : null}
       </div>
     </Card>
   );
@@ -103,13 +119,16 @@ function MacrosCard({ summary }: { summary: ReadySummary }) {
                   {t.macroAmount(formatAmount(consumed), formatKcal(target))}
                 </span>
               </div>
-              <div aria-hidden="true" className="h-8 w-full overflow-hidden rounded-full bg-surface-alt">
-                <div className={`h-full rounded-full ${macro.barClass}`} style={{ width: barWidth(consumed, target) }} />
-              </div>
+              <ProgressBar value={share(consumed, target)} fillClassName={macro.barClass} />
             </li>
           );
         })}
       </ul>
+      {summary.proteinCapped ? (
+        <p className="rounded-inputs bg-over-wash px-12 py-8 text-body text-over-ink">
+          {t.proteinCappedWarning(rateFormat.format(summary.proteinGPerKg))}
+        </p>
+      ) : null}
     </Card>
   );
 }
@@ -122,8 +141,10 @@ type TodayViewProps = {
 
 /**
  * Today dashboard: remaining kcal (target + exercise - food), how the target
- * follows from TDEE and the weight goal, and macros; or a
- * prompt to finish the profile when the target cannot be computed yet.
+ * follows from TDEE, the weight goal and the safe minimum (with a warning when
+ * it is below BMR), and macros (with a warning when the protein setting takes
+ * the whole target); or, when the target cannot be computed, a
+ * prompt to finish the profile or to fix an under-age birth date.
  */
 export function TodayView({ dateLabel, summary }: TodayViewProps) {
   return (
@@ -144,6 +165,11 @@ export function TodayView({ dateLabel, summary }: TodayViewProps) {
           <BalanceCard summary={summary} />
           <MacrosCard summary={summary} />
         </>
+      ) : summary.status === "underage" ? (
+        <EmptyState
+          message={t.underageMessage(summary.minAgeYears)}
+          action={<ButtonLink href="/settings">{t.underageAction}</ButtonLink>}
+        />
       ) : (
         <EmptyState
           message={t.setupMessage}

@@ -69,9 +69,9 @@ describe("saveProfile", () => {
     activityLevel: "moderate",
     goal: "lose",
     goalKgPerWeek: "0,5",
-    proteinPct: "30",
-    carbsPct: "40",
-    fatPct: "30",
+    proteinGPerKg: "2",
+    carbsSharePct: "57",
+    fatSharePct: "43",
   };
 
   it("upserts the caller's profile row and refreshes Today and Settings", async () => {
@@ -91,9 +91,9 @@ describe("saveProfile", () => {
           activity_level: "moderate",
           goal: "lose",
           goal_kg_per_week: 0.5,
-          protein_pct: 30,
-          carbs_pct: 40,
-          fat_pct: 30,
+          protein_g_per_kg: 2,
+          carbs_share_pct: 57,
+          fat_share_pct: 43,
         },
         options: { onConflict: "user_id" },
       },
@@ -110,10 +110,10 @@ describe("saveProfile", () => {
   });
 
   it("returns field errors without touching the database", async () => {
-    const state = await saveProfile(initialProfileFormState, form({ ...fields, fatPct: "20" }));
+    const state = await saveProfile(initialProfileFormState, form({ ...fields, fatSharePct: "33", proteinGPerKg: "3.5" }));
     expect(state).toEqual({
       status: "error",
-      fieldErrors: { macroSplit: t.validation.macroTotal(90) },
+      fieldErrors: { proteinGPerKg: t.validation.proteinRange(0.8, 3), carbFatSplit: t.validation.splitTotal(90) },
       formError: t.validation.fix,
     });
     expect(calls).toHaveLength(0);
@@ -121,9 +121,26 @@ describe("saveProfile", () => {
   });
 
   it("bounds the birth date with the Buenos Aires day, not the UTC day", async () => {
-    // Local today is 2026-10-15, so a 2025-10-16 birth date is still under a year old.
-    const state = await saveProfile(initialProfileFormState, form({ ...fields, birthDate: "2025-10-16" }));
-    expect(state.fieldErrors).toEqual({ birthDate: t.validation.birthDateRange });
+    // Local today is 2026-10-15, so someone born 2008-10-16 is still 17 (18 already by the UTC day).
+    const state = await saveProfile(initialProfileFormState, form({ ...fields, birthDate: "2008-10-16" }));
+    expect(state.fieldErrors).toEqual({ birthDate: t.validation.minAge(18) });
+  });
+
+  it("maps the database minimum-age rejection to the birth date field error", async () => {
+    nextResult = {
+      data: null,
+      error: { code: "23514", message: "profiles_min_age: the profile owner must be at least 18 years old" },
+    };
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const state = await saveProfile(initialProfileFormState, form(fields));
+    expect(state).toEqual({
+      status: "error",
+      fieldErrors: { birthDate: t.validation.minAge(18) },
+      formError: t.validation.fix,
+    });
+    expect(consoleError).not.toHaveBeenCalled();
+    expect(revalidatePath).not.toHaveBeenCalled();
+    expect(refresh).not.toHaveBeenCalled();
   });
 
   it("reports a database error without revalidating", async () => {

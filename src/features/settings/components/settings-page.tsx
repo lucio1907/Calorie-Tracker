@@ -1,6 +1,7 @@
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import { Card, PageHeader } from "@/components/ui";
 import { requireUser } from "@/features/auth/data/current-user";
+import { PageSkeleton } from "@/features/shell";
 import { appToday } from "@/lib/app-time";
 import { requestNow } from "@/lib/request-time";
 import { ProfileFormContainer } from "../containers/profile-form-container";
@@ -18,17 +19,36 @@ type SettingsPageProps = {
 /**
  * Settings route content: today's weight, the profile the daily target is
  * computed from, and account actions (sign out lives here for mobile users).
- * Reads per request: must render inside <Suspense>.
+ * The heading and account actions are static and land in the shell; only
+ * the cards that read the caller's data wait behind <Suspense>.
  */
-export async function SettingsPage({ accountActions }: SettingsPageProps) {
+export function SettingsPage({ accountActions }: SettingsPageProps) {
+  return (
+    <div className="flex flex-col gap-24">
+      <PageHeader title={s.title} description={s.description} />
+
+      <Suspense fallback={<PageSkeleton />}>
+        <SettingsCards />
+      </Suspense>
+
+      <Card aria-labelledby="settings-account" className="flex flex-col items-start gap-8">
+        <h2 id="settings-account" className="text-body font-semibold text-ink">
+          {s.accountHeading}
+        </h2>
+        {accountActions}
+      </Card>
+    </div>
+  );
+}
+
+/** The weight and profile cards. Reads per request: must render inside <Suspense>. */
+async function SettingsCards() {
   const [now, user] = await Promise.all([requestNow(), requireUser()]);
   const today = appToday(now);
   const [profile, latestWeight] = await Promise.all([getStoredProfile(user.id), getLatestWeight(user.id, today)]);
 
   return (
-    <div className="flex flex-col gap-24">
-      <PageHeader title={s.title} description={s.description} />
-
+    <>
       <Card aria-labelledby="settings-weight" className="flex flex-col gap-12">
         <div className="flex flex-col gap-4">
           <h2 id="settings-weight" className="text-body font-semibold text-ink">
@@ -46,15 +66,12 @@ export async function SettingsPage({ accountActions }: SettingsPageProps) {
           </h2>
           <p className="text-body text-ink-muted">{s.profile.description}</p>
         </div>
-        <ProfileFormContainer defaults={profileFormDefaults(profile)} today={today} />
+        <ProfileFormContainer
+          defaults={profileFormDefaults(profile)}
+          today={today}
+          weightKg={latestWeight?.kg ?? null}
+        />
       </Card>
-
-      <Card aria-labelledby="settings-account" className="flex flex-col items-start gap-8">
-        <h2 id="settings-account" className="text-body font-semibold text-ink">
-          {s.accountHeading}
-        </h2>
-        {accountActions}
-      </Card>
-    </div>
+    </>
   );
 }

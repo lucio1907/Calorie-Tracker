@@ -14,21 +14,28 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "EXPOSE_TESTING_API=1 playwright test",
+    "test:e2e:ui": "EXPOSE_TESTING_API=1 playwright test --ui",
     "user:create": "node --env-file-if-exists=.env.local scripts/create-user.mjs",
     "foods:import-argenfoods": "node --env-file-if-exists=.env.local scripts/import-argenfoods.mjs"
   },
   "dependencies": {
     "@fontsource/inter": "5.2.8",
+    "@internationalized/date": "3.12.4",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.117.3",
     "lucide-react": "1.57.0",
     "next": "16.4.0",
     "react": "19.3.0",
+    "react-aria": "3.52.1",
+    "react-aria-components": "1.21.1",
     "react-dom": "19.3.0",
     "server-only": "0.0.1",
     "zod": "4.6.5"
   },
   "devDependencies": {
+    "@next/playwright": "16.3.8",
+    "@playwright/test": "1.64.0",
     "@tailwindcss/postcss": "4.3.3",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "7.0.1",

@@ -1,6 +1,7 @@
 import "server-only";
 import type { CalendarDate } from "@/domain";
 import { createClient } from "@/lib/supabase/server";
+import type { Database } from "@/lib/supabase/database.types";
 import type { TodayProfile } from "../lib/today-summary";
 
 /*
@@ -9,26 +10,48 @@ import type { TodayProfile } from "../lib/today-summary";
  * the user_id filters match the (user_id, entry_date) indexes.
  */
 
-/** The caller's profile, or null before one exists. */
+/** The columns the target depends on, shared by public.profiles and public.profile_versions. */
+export const TARGET_PROFILE_COLUMNS =
+  "sex, birth_date, height_cm, activity_level, goal, goal_kg_per_week, protein_g_per_kg, carbs_share_pct, fat_share_pct";
+
+type TargetProfileRow = Pick<
+  Database["public"]["Tables"]["profiles"]["Row"],
+  | "sex"
+  | "birth_date"
+  | "height_cm"
+  | "activity_level"
+  | "goal"
+  | "goal_kg_per_week"
+  | "protein_g_per_kg"
+  | "carbs_share_pct"
+  | "fat_share_pct"
+>;
+
+/** A profile (or profile version) row as the target logic reads it. */
+export function toTodayProfile(row: TargetProfileRow): TodayProfile {
+  return {
+    sex: row.sex,
+    birthDate: row.birth_date,
+    heightCm: row.height_cm === null ? null : Number(row.height_cm),
+    activityLevel: row.activity_level,
+    goal: row.goal,
+    goalKgPerWeek: Number(row.goal_kg_per_week),
+    // numeric columns arrive as numbers or strings depending on the client.
+    proteinGPerKg: Number(row.protein_g_per_kg),
+    carbFatSplit: { carbs: row.carbs_share_pct, fat: row.fat_share_pct },
+  };
+}
+
+/** The caller's current profile, or null before one exists. */
 export async function getTodayProfile(userId: string): Promise<TodayProfile | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("profiles")
-    .select("sex, birth_date, height_cm, activity_level, goal, goal_kg_per_week, protein_pct, carbs_pct, fat_pct")
+    .select(TARGET_PROFILE_COLUMNS)
     .eq("user_id", userId)
     .maybeSingle();
   if (error) throw new Error(`profile: ${error.message}`);
-  if (!data) return null;
-
-  return {
-    sex: data.sex,
-    birthDate: data.birth_date,
-    heightCm: data.height_cm === null ? null : Number(data.height_cm),
-    activityLevel: data.activity_level,
-    goal: data.goal,
-    goalKgPerWeek: Number(data.goal_kg_per_week),
-    macroSplit: { protein: data.protein_pct, carbs: data.carbs_pct, fat: data.fat_pct },
-  };
+  return data ? toTodayProfile(data) : null;
 }
 
 /** Most recent logged weight on or before `date`, or null when none. */
