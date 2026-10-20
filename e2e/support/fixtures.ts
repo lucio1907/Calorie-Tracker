@@ -187,7 +187,22 @@ export async function extraAccount(email: string): Promise<E2EData> {
   return data;
 }
 
-export const test = base.extend<{ data: E2EData }>({
+export const test = base.extend<{ data: E2EData; noCspViolations: void }>({
+  // Fails any test whose pages log a Content Security Policy violation, so the
+  // whole suite proves the policy in next.config.ts lets every screen work.
+  noCspViolations: [
+    async ({ context }, provide) => {
+      const violations: string[] = [];
+      context.on("console", (message) => {
+        if (message.type() === "error" && message.text().includes("Content Security Policy")) {
+          violations.push(message.text());
+        }
+      });
+      await provide();
+      expect(violations, "Content Security Policy violations").toEqual([]);
+    },
+    { auto: true },
+  ],
   // Every test starts from an empty account (cleaned before, not after, so a
   // failed run leaves its data around for debugging).
   data: [
