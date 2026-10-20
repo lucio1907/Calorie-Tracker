@@ -5,6 +5,7 @@ import type { CalendarDate } from "@/domain";
 import { getCurrentUser } from "@/features/auth/data/current-user";
 import type { ActionResult } from "@/features/foods/lib/types";
 import { getLatestWeight } from "@/features/settings/data/settings";
+import { isRowQuotaViolation } from "@/lib/supabase/row-quota";
 import { createClient } from "@/lib/supabase/server";
 import { getActivity } from "../data/activity";
 import { activityKcal } from "../lib/activity-kcal";
@@ -112,6 +113,7 @@ export async function createActivityEntry(_previous: ActivityFormState, formData
     minutes: input.minutes,
     kcal: snapshot.kcal,
   });
+  if (isRowQuotaViolation(error)) return failed(formData, t.errors.dayFull);
   if (error) {
     console.error("[activity] insert failed", error.code, error.message);
     return failed(formData, t.errors.saveFailed);

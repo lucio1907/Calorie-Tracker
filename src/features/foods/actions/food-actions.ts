@@ -1,6 +1,7 @@
 "use server";
 
 import { getCurrentUser } from "@/features/auth/data/current-user";
+import { isRowQuotaViolation } from "@/lib/supabase/row-quota";
 import { createClient } from "@/lib/supabase/server";
 import { foodIdSchema, parseFoodForm, readFoodFormValues } from "../lib/food-schema";
 import type { FoodFormState } from "../lib/form-state";
@@ -58,6 +59,7 @@ export async function createFood(previous: FoodFormState, formData: FormData): P
       foodId: null,
     };
   }
+  if (isRowQuotaViolation(error)) return formError(previous, readFoodFormValues(formData), t.form.limitReached);
   if (error) return formError(previous, readFoodFormValues(formData), t.form.failed);
 
   return { status: "saved", fieldErrors: {}, formError: null, values: {}, foodId: data.id };
@@ -126,6 +128,7 @@ export async function setFavorite(foodId: number, favorite: boolean): Promise<Ac
   if (favorite) {
     // RLS only lets users star foods they can see.
     const { error } = await supabase.from("food_favorites").insert({ user_id: user.id, food_id: id.data });
+    if (isRowQuotaViolation(error)) return { ok: false, error: t.detail.favoriteLimit };
     if (error && error.code !== UNIQUE_VIOLATION) return { ok: false, error: t.detail.favoriteFailed };
   } else {
     const { error } = await supabase.from("food_favorites").delete().eq("user_id", user.id).eq("food_id", id.data);

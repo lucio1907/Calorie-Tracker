@@ -151,6 +151,18 @@ describe("createEntry", () => {
     expect(state).toMatchObject({ status: "error", formError: t.errors.saveFailed });
     expect(refresh).not.toHaveBeenCalled();
   });
+
+  it("reports a full day when the row quota rejects the insert", async () => {
+    nextResult = {
+      data: null,
+      error: { code: "23514", message: "row_quota:food_entries: at most 200 rows per user_id, entry_date" },
+    };
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const state = await createEntry(initialEntryFormState, form(fields));
+    expect(state).toMatchObject({ status: "error", formError: t.errors.dayFull });
+    expect(consoleError).not.toHaveBeenCalled();
+    expect(refresh).not.toHaveBeenCalled();
+  });
 });
 
 describe("updateEntry", () => {
