@@ -216,6 +216,9 @@ isOneToOne: false
             "consume_off_request":
 { Args: { "request_kind": string }; Returns: boolean
                            },
+"consume_sign_in_attempt":
+{ Args: { "client_key": string }; Returns: boolean
+                           },
 "daily_energy_totals":
 { Args: { "end_date": string,"start_date": string }; Returns: {
               "entry_date": string,"exercise_kcal": number,"food_kcal": number

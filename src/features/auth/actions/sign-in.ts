@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { takeSignInAttempt } from "../data/sign-in-throttle";
 import { parseCredentials } from "../lib/credentials";
 import { safeNextPath } from "../lib/safe-next-path";
 import type { SignInState } from "../lib/sign-in-state";
@@ -11,6 +12,12 @@ export async function signIn(_previous: SignInState, formData: FormData): Promis
   const parsed = parseCredentials(formData);
   if (!parsed.ok) {
     return { email: parsed.email, fieldErrors: parsed.errors, formError: null };
+  }
+
+  // Our own per-IP limit first: Auth only sees the server's shared IPs.
+  // Every attempt counts, successful or not.
+  if (!(await takeSignInAttempt())) {
+    return { email: parsed.value.email, fieldErrors: {}, formError: authStrings.rateLimited };
   }
 
   const supabase = await createClient();

@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { chromium, type FullConfig } from "@playwright/test";
+import { assignClientIp } from "./support/client-ip";
 import { adminClient, ensureUser, resetUserData } from "./support/supabase-admin";
 import { E2E_PASSWORD, E2E_USERS, isE2EProject, storageStatePath, USER_IDS_PATH } from "./support/users";
 
@@ -25,6 +26,7 @@ export default async function globalSetup(config: FullConfig): Promise<void> {
       ids[project.name] = id;
 
       const context = await browser.newContext({ baseURL: project.use.baseURL });
+      await assignClientIp(context);
       const page = await context.newPage();
       await page.goto("/login");
       await page.getByLabel("Email").fill(email);
