@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { defineConfig, devices } from "@playwright/test";
 import { storageStatePath } from "./e2e/support/users";
 
@@ -36,11 +37,53 @@ const WEB_SERVER_ENV_KEYS = [
   "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
 ];
 
+const LOCAL_HOSTS = new Set(["127.0.0.1", "localhost"]);
+
+/*
+ * `next build` and `next start` load .env* files themselves (.env.local,
+ * .env.production.local, ...) for any variable not already set, so a hosted
+ * project URL in one of them would point the app under test at real data.
+ * The Supabase variables are therefore always passed explicitly: from the
+ * environment (CI exports them) or else from `npx supabase status`, and they
+ * must name the local stack. The result is written back to process.env so the
+ * worker processes, which load this config again, skip the status call.
+ */
+function localSupabaseEnv(): { url: string; publishableKey: string } {
+  let url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  let publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !publishableKey) {
+    const output = execFileSync("npx", ["supabase", "status", "--output", "json"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    // The CLI may print notices around the JSON document.
+    const status = JSON.parse(output.slice(output.indexOf("{"), output.lastIndexOf("}") + 1)) as {
+      API_URL?: string;
+      PUBLISHABLE_KEY?: string;
+    };
+    url ??= status.API_URL;
+    publishableKey ??= status.PUBLISHABLE_KEY;
+  }
+  if (!url || !publishableKey) {
+    throw new Error("E2E: start the local stack (npm run db:start) or set NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.");
+  }
+  const host = new URL(url).hostname;
+  if (!LOCAL_HOSTS.has(host)) {
+    throw new Error(`E2E: refusing to run the app against a non-local Supabase URL (${host}).`);
+  }
+  process.env.NEXT_PUBLIC_SUPABASE_URL = url;
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = publishableKey;
+  return { url, publishableKey };
+}
+
 function webServerEnv(): Record<string, string> {
   const env: Record<string, string | undefined> = Object.fromEntries(
     Object.keys(process.env).map((key) => [key, undefined]),
   );
   for (const key of WEB_SERVER_ENV_KEYS) env[key] = process.env[key];
+  const supabase = localSupabaseEnv();
+  env.NEXT_PUBLIC_SUPABASE_URL = supabase.url;
+  env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = supabase.publishableKey;
   env.EXPOSE_TESTING_API = "1";
   return env as Record<string, string>;
 }

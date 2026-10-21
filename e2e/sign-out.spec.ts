@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+import { assignClientIp } from "./support/client-ip";
 import { expect, extraAccount, test } from "./support/fixtures";
 import { E2E_PASSWORD, E2E_SIGN_OUT_USERS, isE2EProject } from "./support/users";
 
@@ -30,6 +31,10 @@ function signOutButton(page: Page) {
 }
 
 test.describe("Sign out", () => {
+  test.beforeEach(async ({ page }) => {
+    await assignClientIp(page);
+  });
+
   test("leaves nothing of the account behind for the next one in the same tab", async ({ page }, testInfo) => {
     const [first, second] = accountsFor(testInfo.project.name);
     await (await extraAccount(first.email)).profile({ height_cm: 187 });

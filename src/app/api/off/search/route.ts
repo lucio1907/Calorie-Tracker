@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { getCurrentUser } from "@/features/auth/data/current-user";
 import { errorJson, privateJson } from "@/features/foods/data/api-response";
+import { OffRateLimitedError, takeOffRequestSlot } from "@/features/foods/data/off-throttle";
 import { OffUnavailableError, searchOffProducts } from "@/features/foods/data/open-food-facts";
 import { offQuerySchema } from "@/features/foods/lib/food-schema";
 
@@ -8,6 +9,8 @@ import { offQuerySchema } from "@/features/foods/lib/food-schema";
  * GET /api/off/search?q=<name>
  * Proxies an Open Food Facts name search (products sold in Argentina). Results
  * are not stored; a product is saved only when the user picks it.
+ * Each search takes one of the user's OFF search slots; with none left it
+ * answers 429 without calling OFF.
  */
 export async function GET(request: NextRequest) {
   const user = await getCurrentUser();
@@ -17,8 +20,10 @@ export async function GET(request: NextRequest) {
   if (!query.success) return errorJson(400, "invalid query");
 
   try {
+    await takeOffRequestSlot("search");
     return privateJson({ results: await searchOffProducts(query.data) });
   } catch (error) {
+    if (error instanceof OffRateLimitedError) return errorJson(429, "too many open food facts searches");
     if (error instanceof OffUnavailableError) return errorJson(503, "open food facts unavailable");
     console.error("[foods] OFF search failed", error);
     return errorJson(500, "search failed");

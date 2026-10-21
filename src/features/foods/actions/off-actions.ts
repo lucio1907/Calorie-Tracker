@@ -2,6 +2,7 @@
 
 import { getCurrentUser } from "@/features/auth/data/current-user";
 import { ensureOffFood } from "../data/off-foods";
+import { OffRateLimitedError } from "../data/off-throttle";
 import { OffUnavailableError } from "../data/open-food-facts";
 import { barcodeSchema } from "../lib/food-schema";
 import type { BarcodeLookupState } from "../lib/form-state";
@@ -26,6 +27,7 @@ async function resolveBarcode(barcode: string, userId: string): Promise<ActionRe
     return result.ok ? { ok: true, data: { foodId: result.foodId } } : { ok: false, error: REJECTION_MESSAGES[result.reason] };
   } catch (error) {
     if (error instanceof OffUnavailableError) return { ok: false, error: t.barcode.unavailable };
+    if (error instanceof OffRateLimitedError) return { ok: false, error: t.barcode.rateLimited };
     console.error("[foods] barcode lookup failed", error);
     return { ok: false, error: t.errors.unexpected };
   }

@@ -1,3 +1,4 @@
+import { assignClientIp } from "./support/client-ip";
 import { captureScreen, expect, test } from "./support/fixtures";
 import { E2E_PASSWORD, E2E_USERS, isE2EProject } from "./support/users";
 
@@ -10,6 +11,10 @@ function emailFor(project: string): string {
 }
 
 test.describe("Login", () => {
+  test.beforeEach(async ({ page }) => {
+    await assignClientIp(page);
+  });
+
   test("redirects to login and signs in to Today", async ({ page }, testInfo) => {
     await page.goto("/diary");
     await expect(page).toHaveURL(/\/login\?next=%2Fdiary$/);
