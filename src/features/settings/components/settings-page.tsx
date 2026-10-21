@@ -5,8 +5,10 @@ import { PageSkeleton } from "@/features/shell";
 import { appToday } from "@/lib/app-time";
 import { requestNow } from "@/lib/request-time";
 import { ProfileFormContainer } from "../containers/profile-form-container";
+import { TwoFactorContainer } from "../containers/two-factor-container";
 import { WeightFormContainer } from "../containers/weight-form-container";
 import { getLatestWeight, getStoredProfile } from "../data/settings";
+import { getVerifiedTotpFactorId } from "../data/two-factor";
 import { profileFormDefaults } from "../lib/profile-schema";
 import { latestWeightText } from "../lib/weight-entry";
 import { settingsStrings as s } from "../strings";
@@ -18,7 +20,8 @@ type SettingsPageProps = {
 
 /**
  * Settings route content: today's weight, the profile the daily target is
- * computed from, and account actions (sign out lives here for mobile users).
+ * computed from, two-factor authentication, and account actions (sign out
+ * lives here for mobile users).
  * The heading and account actions are static and land in the shell; only
  * the cards that read the caller's data wait behind <Suspense>.
  */
@@ -41,11 +44,15 @@ export function SettingsPage({ accountActions }: SettingsPageProps) {
   );
 }
 
-/** The weight and profile cards. Reads per request: must render inside <Suspense>. */
+/** The weight, profile and two-factor cards. Reads per request: must render inside <Suspense>. */
 async function SettingsCards() {
   const [now, user] = await Promise.all([requestNow(), requireUser()]);
   const today = appToday(now);
-  const [profile, latestWeight] = await Promise.all([getStoredProfile(user.id), getLatestWeight(user.id, today)]);
+  const [profile, latestWeight, totpFactorId] = await Promise.all([
+    getStoredProfile(user.id),
+    getLatestWeight(user.id, today),
+    getVerifiedTotpFactorId(),
+  ]);
 
   return (
     <>
@@ -71,6 +78,16 @@ async function SettingsCards() {
           today={today}
           weightKg={latestWeight?.kg ?? null}
         />
+      </Card>
+
+      <Card aria-labelledby="settings-two-factor" className="flex flex-col gap-12">
+        <div className="flex flex-col gap-4">
+          <h2 id="settings-two-factor" className="text-body font-semibold text-ink">
+            {s.twoFactor.heading}
+          </h2>
+          <p className="text-body text-ink-muted">{totpFactorId ? s.twoFactor.on : s.twoFactor.off}</p>
+        </div>
+        <TwoFactorContainer factorId={totpFactorId} />
       </Card>
     </>
   );

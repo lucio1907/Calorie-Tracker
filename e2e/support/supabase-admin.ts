@@ -71,6 +71,15 @@ export async function ensureUser(admin: AdminClient, email: string, password: st
   throw new Error(`E2E: could not create ${email}: ${created.error.message}`);
 }
 
+/** Deletes every MFA factor of the user, so a failed two-factor run leaves no factor behind. */
+export async function removeMfaFactors(admin: AdminClient, userId: string): Promise<void> {
+  const { data, error } = await admin.auth.admin.mfa.listFactors({ userId });
+  if (error) throw new Error(`E2E: list factors: ${error.message}`);
+  for (const factor of data.factors) {
+    await check("delete factor", admin.auth.admin.mfa.deleteFactor({ id: factor.id, userId }));
+  }
+}
+
 async function check(label: string, request: PromiseLike<{ error: { message: string } | null }>): Promise<void> {
   const { error } = await request;
   if (error) throw new Error(`E2E: ${label}: ${error.message}`);

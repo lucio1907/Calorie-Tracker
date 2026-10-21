@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { takeSignInAttempt } from "../data/sign-in-throttle";
 import { parseCredentials } from "../lib/credentials";
 import { safeNextPath } from "../lib/safe-next-path";
+import { secondFactorDue, verifyPath } from "../lib/second-factor";
 import type { SignInState } from "../lib/sign-in-state";
 import { authStrings } from "../strings";
 
@@ -27,7 +28,10 @@ export async function signIn(_previous: SignInState, formData: FormData): Promis
     return { email: parsed.value.email, fieldErrors: {}, formError: signInErrorMessage(error) };
   }
 
-  redirect(safeNextPath(formData.get("next")));
+  const next = safeNextPath(formData.get("next"));
+  // The client holds the session Auth just returned, factors included, so this reads no network.
+  const { data: levels } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  redirect(secondFactorDue(levels) ? verifyPath(next) : next);
 }
 
 function signInErrorMessage(error: { code?: string; status?: number }): string {

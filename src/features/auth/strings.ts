@@ -15,4 +15,16 @@ export const authStrings = {
   unexpectedError: "Could not sign in right now. Try again in a moment.",
   rateLimited: "Too many sign-in attempts. Wait a few minutes and try again.",
   signOut: "Sign out",
+  verify: {
+    pageTitle: "Verify sign-in",
+    heading: "Two-factor authentication",
+    subheading: "Enter the 6-digit code from your authenticator app.",
+    signOutHint: "Not you, or no access to your authenticator?",
+  },
+  codeLabel: "Authentication code",
+  codeInvalid: "Enter the 6-digit code from your authenticator app.",
+  codeIncorrect: "That code is not valid. Check your authenticator app and try again.",
+  verifySubmit: "Verify",
+  verifySubmitting: "Verifying…",
+  verifyUnexpectedError: "Could not verify the code right now. Try again in a moment.",
 } as const;

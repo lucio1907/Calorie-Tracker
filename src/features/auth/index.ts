@@ -1,8 +1,12 @@
 export { AuthGate } from "./components/auth-gate";
 export { LoginForm } from "./components/login-form";
 export { LoginScreen } from "./components/login-screen";
+export { SecondFactorGate } from "./components/second-factor-gate";
 export { SignOutButton } from "./components/sign-out-button";
+export { VerifyForm } from "./components/verify-form";
 export { LoginFormContainer } from "./containers/login-form-container";
 export { SignOutButtonContainer } from "./containers/sign-out-button-container";
+export { VerifyFormContainer } from "./containers/verify-form-container";
+export { initialVerifyState } from "./lib/second-factor";
 export { initialSignInState } from "./lib/sign-in-state";
 export { authStrings } from "./strings";

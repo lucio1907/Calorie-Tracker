@@ -67,3 +67,24 @@ export type WeightFormState = {
 };
 
 export const initialWeightFormState: WeightFormState = { status: "idle", fieldError: null, formError: null, value: "" };
+
+/** useActionState state for turning two-factor authentication on: a button, then the QR code and a code field. */
+export type TwoFactorEnrollState =
+  | { status: "idle"; formError: string | null }
+  | {
+      status: "enrolling";
+      factorId: string;
+      /** SVG data URI from Auth. */
+      qrCode: string;
+      /** The TOTP secret, for entering by hand. */
+      secret: string;
+      fieldError: string | null;
+      formError: string | null;
+    };
+
+export const initialTwoFactorEnrollState: TwoFactorEnrollState = { status: "idle", formError: null };
+
+/** useActionState state for turning two-factor authentication off. */
+export type TwoFactorDisableState = { formError: string | null };
+
+export const initialTwoFactorDisableState: TwoFactorDisableState = { formError: null };

@@ -3,7 +3,7 @@ import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { test as base, expect, type Page, type TestInfo } from "@playwright/test";
 import type { Database } from "../../src/lib/supabase/database.types";
-import { adminClient, ensureUser, resetUserData, type AdminClient } from "./supabase-admin";
+import { adminClient, ensureUser, removeMfaFactors, resetUserData, type AdminClient } from "./supabase-admin";
 
 type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];
 import { E2E_PASSWORD, isE2EProject, USER_IDS_PATH, type E2EProject } from "./users";
@@ -178,11 +178,13 @@ let admin: AdminClient | null = null;
 
 /**
  * An extra E2E account (password E2E_PASSWORD), created on first use and
- * emptied, for tests that need a user other than the project's own.
+ * emptied (data and MFA factors), for tests that need a user other than the
+ * project's own.
  */
 export async function extraAccount(email: string): Promise<E2EData> {
   admin ??= adminClient();
   const data = new E2EData(admin, await ensureUser(admin, email, E2E_PASSWORD));
+  await removeMfaFactors(admin, data.userId);
   await data.reset();
   return data;
 }

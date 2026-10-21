@@ -27,6 +27,12 @@ export const E2E_SIGN_OUT_USERS: Record<E2EProject, readonly [{ email: string },
   desktop: [{ email: "e2e-desktop-sign-out-a@local.test" }, { email: "e2e-desktop-sign-out-b@local.test" }],
 };
 
+/** One more account per project for the two-factor spec, which enrolls and removes a TOTP factor. */
+export const E2E_MFA_USERS: Record<E2EProject, { email: string }> = {
+  mobile: { email: "e2e-mobile-mfa@local.test" },
+  desktop: { email: "e2e-desktop-mfa@local.test" },
+};
+
 const AUTH_DIR = path.join(import.meta.dirname, "..", ".auth");
 
 /** Authenticated storage state written by global setup for a project. */
