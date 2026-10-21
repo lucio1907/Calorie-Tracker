@@ -69,6 +69,22 @@ export const settingsStrings = {
     saved: "Weight saved.",
   },
 
+  twoFactor: {
+    heading: "Two-factor authentication",
+    off: "Off. Turn it on to ask for a code from an authenticator app after your password.",
+    on: "On. Signing in asks for a code from your authenticator app.",
+    start: "Set up two-factor authentication",
+    starting: "Starting…",
+    scan: "Scan this QR code with your authenticator app, then enter the 6-digit code it shows.",
+    qrAlt: "QR code for your authenticator app",
+    secretLabel: "Can't scan it? Enter this setup key in the app instead:",
+    code: "Authentication code",
+    confirm: "Turn on",
+    confirming: "Checking…",
+    disable: "Turn off two-factor authentication",
+    disabling: "Turning off…",
+  },
+
   validation: {
     required: "Required.",
     number: "Enter a number.",
@@ -83,11 +99,17 @@ export const settingsStrings = {
     splitTotal: (total: number) => `Carbs and fat must add up to 100% (now ${total}%).`,
     weightRange: (min: number, max: number) => `Enter a weight between ${min} and ${max} kg.`,
     fix: "Check the highlighted fields.",
+    totpCode: "Enter the 6-digit code from your authenticator app.",
+    totpCodeIncorrect: "That code is not valid. Check your authenticator app and try again.",
   },
 
   errors: {
     unauthorized: "Your session expired. Sign in again.",
     profileSaveFailed: "Could not save your profile. Try again.",
     weightSaveFailed: "Could not save your weight. Try again.",
+    twoFactorStartFailed: "Could not start two-factor setup. Try again.",
+    twoFactorConfirmFailed: "Could not turn on two-factor authentication. Try again.",
+    twoFactorDisableFailed: "Could not turn off two-factor authentication. Try again.",
+    twoFactorNeedsCode: "Sign in again with your authenticator code to turn this off.",
   },
 } as const;

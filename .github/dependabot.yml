@@ -17,6 +17,14 @@ updates:
     commit-message:
       prefix: "chore(deps)"
       prefix-development: "chore(deps-dev)"
+    ignore:
+      # Types follow the runtime (Node 22: engines + CI); bump both together by hand.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # typescript-eslint (via eslint-config-next) does not support TypeScript 7 yet:
+      # https://github.com/typescript-eslint/typescript-eslint/issues/10940
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
 
   # Actions are pinned to commit SHAs; Dependabot bumps the SHA and its version comment.
   - package-ecosystem: github-actions

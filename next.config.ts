@@ -22,7 +22,9 @@ const isDev = process.env.NODE_ENV === "development";
  * nonce. So scripts use the guide's "without nonces" policy: 'self' plus
  * 'unsafe-inline' for Next's inline bootstrap and RSC payload scripts, and
  * 'unsafe-eval' only in development (React's dev error overlay uses eval).
- * Styles need 'unsafe-inline' for server-rendered style attributes.
+ * Styles need 'unsafe-inline' for server-rendered style attributes. Images
+ * allow data: for the two-factor QR code, an SVG data URI from Supabase Auth
+ * (an <img> never runs an SVG's scripts).
  * The browser only talks to this origin: Supabase and Open Food Facts are
  * called server-side, and the fonts are self-hosted by next/font.
  * Docs: node_modules/next/dist/docs/01-app/02-guides/content-security-policy.md
@@ -31,7 +33,7 @@ const contentSecurityPolicy = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self'",
+  "img-src 'self' data:",
   "font-src 'self'",
   "connect-src 'self'",
   "object-src 'none'",

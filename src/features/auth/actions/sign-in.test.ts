@@ -15,9 +15,10 @@ let requestHeaders = new Headers();
 vi.mock("next/headers", () => ({ headers: async () => requestHeaders }));
 
 const signInWithPassword = vi.fn();
+const getAuthenticatorAssuranceLevel = vi.fn();
 const rpc = vi.fn();
 vi.mock("@/lib/supabase/server", () => ({
-  createClient: async () => ({ auth: { signInWithPassword }, rpc }),
+  createClient: async () => ({ auth: { signInWithPassword, mfa: { getAuthenticatorAssuranceLevel } }, rpc }),
 }));
 
 const { signIn } = await import("./sign-in");
@@ -35,6 +36,10 @@ function authError(status: number, code?: string) {
   return { data: { user: null, session: null }, error: { name: "AuthApiError", status, code, message: "x" } };
 }
 
+function levels(currentLevel: string, nextLevel: string) {
+  return { data: { currentLevel, nextLevel, currentAuthenticationMethods: [] }, error: null };
+}
+
 const sha256 = (value: string) => createHash("sha256").update(value).digest("hex");
 
 /** The client key sent with the last consume_sign_in_attempt call. */
@@ -47,6 +52,8 @@ beforeEach(() => {
   redirect.mockClear();
   signInWithPassword.mockReset();
   rpc.mockReset();
+  // No second factor unless a test says otherwise.
+  getAuthenticatorAssuranceLevel.mockReset().mockResolvedValue(levels("aal1", "aal1"));
   // An attempt is available unless a test says otherwise.
   rpc.mockResolvedValue({ data: true, error: null });
   requestHeaders = new Headers();
@@ -91,6 +98,41 @@ describe("signIn", () => {
     expect(state.fieldErrors).toEqual({ email: authStrings.emailRequired, password: authStrings.passwordRequired });
     expect(signInWithPassword).not.toHaveBeenCalled();
     expect(rpc).not.toHaveBeenCalled();
+  });
+});
+
+describe("signIn with two-factor authentication", () => {
+  beforeEach(() => {
+    signInWithPassword.mockResolvedValue({ data: {}, error: null });
+  });
+
+  it("sends a user with a verified factor to the challenge, keeping the next path", async () => {
+    getAuthenticatorAssuranceLevel.mockResolvedValue(levels("aal1", "aal2"));
+    await expect(signIn(initialSignInState, form({ email: EMAIL, password: "pw", next: "/diary?date=2026-10-01" }))).rejects.toThrow(
+      "NEXT_REDIRECT /login/verify?next=%2Fdiary%3Fdate%3D2026-10-01",
+    );
+  });
+
+  it("sends the challenge no next path when it would be the default", async () => {
+    getAuthenticatorAssuranceLevel.mockResolvedValue(levels("aal1", "aal2"));
+    await expect(signIn(initialSignInState, form({ email: EMAIL, password: "pw" }))).rejects.toThrow(
+      "NEXT_REDIRECT /login/verify",
+    );
+    expect(redirect).toHaveBeenCalledWith("/login/verify");
+  });
+
+  it("never forwards an unsafe next path to the challenge", async () => {
+    getAuthenticatorAssuranceLevel.mockResolvedValue(levels("aal1", "aal2"));
+    await expect(signIn(initialSignInState, form({ email: EMAIL, password: "pw", next: "//evil.example" }))).rejects.toThrow(
+      "NEXT_REDIRECT /login/verify",
+    );
+    expect(redirect).toHaveBeenCalledWith("/login/verify");
+  });
+
+  it("continues straight to the next path without a verified factor", async () => {
+    await expect(signIn(initialSignInState, form({ email: EMAIL, password: "pw", next: "/diary" }))).rejects.toThrow(
+      "NEXT_REDIRECT /diary",
+    );
   });
 });
 

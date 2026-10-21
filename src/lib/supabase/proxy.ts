@@ -5,6 +5,8 @@ import { getSupabaseEnv } from "./env";
 /** Routes reachable without a session. */
 const PUBLIC_PATHS = ["/login"];
 const HOME_PATH = "/today";
+/** The second-factor challenge (features/auth): needs a session, and an aal1 one must be able to stay. */
+const VERIFY_PATH = "/login/verify";
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
@@ -38,6 +40,10 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
   const { data } = await supabase.auth.getClaims();
   const isSignedIn = Boolean(data?.claims?.sub);
   const { pathname } = request.nextUrl;
+
+  if (pathname === VERIFY_PATH) {
+    return isSignedIn ? response : redirectPreservingCookies(request, response, "/login");
+  }
 
   if (!isSignedIn && !isPublicPath(pathname)) {
     return redirectPreservingCookies(request, response, "/login", pathname);
