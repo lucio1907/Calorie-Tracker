@@ -1,0 +1,33 @@
+# Weekly version updates as PRs into development (the integration branch).
+# Security updates are a repository setting and target the default branch.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    target-branch: development
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: America/Argentina/Buenos_Aires
+    open-pull-requests-limit: 5
+    # One PR for every minor/patch bump; majors stay separate so each gets reviewed.
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+
+  # Actions are pinned to commit SHAs; Dependabot bumps the SHA and its version comment.
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: development
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: America/Argentina/Buenos_Aires
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "ci"
