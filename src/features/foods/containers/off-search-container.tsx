@@ -36,6 +36,11 @@ export function OffSearchContainer({ initialQuery, onImported }: OffSearchContai
 
     fetch(`/api/off/search?${new URLSearchParams({ q: query })}`, { signal: controller.signal, cache: "no-store" })
       .then(async (response) => {
+        // Throttled for this user: OFF was not called, so say so instead of "not responding".
+        if (response.status === 429) {
+          setSearch({ status: "error", results: [], error: t.rateLimited });
+          return;
+        }
         if (!response.ok) throw new Error(`OFF search failed: ${response.status}`);
         const body: { results: OffSearchHit[] } = await response.json();
         setSearch({ status: "done", results: body.results, error: null });

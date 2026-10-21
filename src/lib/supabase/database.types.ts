@@ -213,15 +213,24 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "daily_energy_totals":
+            "consume_off_request":
+{ Args: { "request_kind": string }; Returns: boolean
+                           },
+"daily_energy_totals":
 { Args: { "end_date": string,"start_date": string }; Returns: {
               "entry_date": string,"exercise_kcal": number,"food_kcal": number
             }[]
+                           },
+"off_barcode_recently_missed":
+{ Args: { "lookup_barcode": string }; Returns: boolean
                            },
 "recent_foods":
 { Args: { "result_limit"?: number }; Returns: {
               "barcode": string,"brand": string,"carbs_per_100g": number,"fat_per_100g": number,"food_group": string,"id": number,"is_favorite": boolean,"is_own": boolean,"kcal_per_100g": number,"name": string,"protein_per_100g": number,"source": string
             }[]
+                           },
+"record_off_barcode_miss":
+{ Args: { "lookup_barcode": string }; Returns: undefined
                            },
 "search_foods":
 { Args: { "favorites_only"?: boolean,"result_limit"?: number,"search_query"?: string }; Returns: {

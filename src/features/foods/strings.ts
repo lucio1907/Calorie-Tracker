@@ -37,6 +37,7 @@ export const foodsStrings = {
     noEnergy: "Open Food Facts has this product but without calories, so it was not added.",
     invalidData: "Open Food Facts returned values outside valid ranges, so it was not added.",
     unavailable: "Open Food Facts is not responding. Try again in a minute.",
+    rateLimited: "Too many Open Food Facts lookups in a short time. Wait a minute and try again.",
   },
 
   off: {
@@ -48,6 +49,7 @@ export const foodsStrings = {
     queryTooShort: "Type at least 3 characters.",
     noResults: "No products with calories found.",
     unavailable: "Open Food Facts is not responding. Try again in a minute.",
+    rateLimited: "Open Food Facts search is paused for a moment after several searches. Try again in a minute.",
     add: "Add",
     adding: "Adding…",
     addLabel: (name: string) => `Add ${name} to my foods`,

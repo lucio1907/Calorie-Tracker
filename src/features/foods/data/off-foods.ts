@@ -2,6 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { OffRejection } from "../lib/off-mapper";
 import { findFoodIdByBarcode } from "./foods";
+import { isRecentOffMiss, recordOffMiss, takeOffRequestSlot } from "./off-throttle";
 import { fetchOffProduct } from "./open-food-facts";
 
 const UNIQUE_VIOLATION = "23505";
@@ -12,14 +13,22 @@ export type EnsureOffFoodResult = { ok: true; foodId: number } | { ok: false; re
  * Returns the id of a visible food with this barcode, importing it from Open
  * Food Facts as the user's own food (source 'off') when it is not stored yet.
  * Values always come from OFF on the server, never from the client.
- * Throws OffUnavailableError when OFF cannot be reached.
+ * Throws OffUnavailableError when OFF cannot be reached, and
+ * OffRateLimitedError when the user has no OFF requests left this minute.
  */
 export async function ensureOffFood(barcode: string, userId: string): Promise<EnsureOffFoodResult> {
   const existing = await findFoodIdByBarcode([barcode]);
   if (existing !== null) return { ok: true, foodId: existing };
 
+  // Only the OFF part is throttled: stored foods are always found above.
+  if (await isRecentOffMiss(barcode)) return { ok: false, reason: "not_found" };
+  await takeOffRequestSlot("product");
+
   const product = await fetchOffProduct(barcode);
-  if (!product.ok) return product;
+  if (!product.ok) {
+    if (product.reason === "not_found") await recordOffMiss(barcode);
+    return product;
+  }
 
   const { food } = product;
   // OFF may canonicalize the code (e.g. UPC-A -> EAN-13): check that one too.
