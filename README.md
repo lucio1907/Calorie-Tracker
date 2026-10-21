@@ -6,11 +6,11 @@ Personal, single-user calorie tracker. Next.js 16 (App Router) on Vercel + Supab
 
 ```bash
 npm ci
-npx supabase start              # local stack (Docker); prints URLs and keys
+npm run db:start                # local stack (Docker), ports on 127.0.0.1 only; prints URLs and keys
 cp .env.example .env.local      # fill with values from `npx supabase status`
 npm run user:create -- --email owner@local.test   # prints a generated password
 npm run foods:import-argenfoods                    # shared ARGENFOODS catalog (run after every db reset)
-npm run dev                     # http://localhost:3000
+npm run dev                     # http://127.0.0.1:3000 (loopback only)
 ```
 
 | Service | URL |
@@ -19,19 +19,34 @@ npm run dev                     # http://localhost:3000
 | Studio | http://127.0.0.1:54323 |
 | Mailpit | http://127.0.0.1:54324 |
 
+### Local network exposure
+
+A plain `npx supabase start` publishes the stack's ports (54321-54327) on every interface, so any
+peer on the same network could reach Studio and Mailpit (no auth) and Postgres (default
+credentials). `npm run db:start` (`scripts/supabase-start.mjs`) instead starts it on a Docker
+network whose default host binding is 127.0.0.1, as the
+[Supabase local development guide](https://supabase.com/docs/guides/local-development) recommends.
+The network keeps the CLI's default name, so `npx supabase test db` and `npx supabase db reset`
+use it too. If the stack is already running from a plain start, run `npx supabase stop` first.
+Check with `ss -ltn | grep ':543'`: every listener should be on 127.0.0.1. When you do not need
+Studio or Mailpit, skip them: `npm run db:start -- -x studio,mailpit,logflare,postgres-meta`.
+
 ## Creating the owner account
 
 Public sign-ups are disabled (`[auth] enable_signup = false`), so the only account is created with
 `scripts/create-user.mjs`, which calls the Auth admin API:
 
 ```bash
-npm run user:create -- --email you@example.com [--password 'Str0ngPassphrase']
+npm run user:create -- --email you@example.com                     # generates a password
+pass show calorie-tracker | npm run user:create -- --email you@example.com --password-stdin
 ```
 
 It reads `SUPABASE_URL` (or `NEXT_PUBLIC_SUPABASE_URL`) and `SUPABASE_SERVICE_ROLE_KEY` from the
 shell or `.env.local`. Locally the key is the **Secret** key from `npx supabase status`; in
 production use the project's secret key. Never give it a `NEXT_PUBLIC_` prefix. Without
-`--password`, a random password (12+ chars, upper/lower/digit) is generated and printed once.
+`--password-stdin`, a random password (12+ chars, upper/lower/digit) is generated and printed once.
+With it, the password is read from stdin (pipe it in from a password manager or a file), so it
+never appears in the process list or the shell history; there is no `--password <value>` flag.
 
 ## Scripts
 
@@ -42,14 +57,14 @@ production use the project's secret key. Never give it a `NEXT_PUBLIC_` prefix. 
 | `npm run lint` | ESLint |
 | `npm run typecheck` | `next typegen` + `tsc --noEmit` |
 | `npx supabase db reset` | Re-applies migrations and `supabase/seed.sql` |
-| `npm run foods:import-argenfoods` | Upserts `supabase/data/argenfoods.csv` as shared foods (service key; idempotent) |
+| `npm run foods:import-argenfoods` | Upserts `supabase/data/argenfoods.csv` as shared foods (service key; idempotent). Prints the target host; a non-local one needs `-- --yes` |
 | `npx supabase db advisors --local` | Security/performance lints |
 | `npx supabase test db` | pgTAP RLS proofs in `supabase/tests/` (rolled back; needs the local stack) |
 | `npm run test:e2e` | Playwright E2E (mobile + desktop Chromium); builds, starts `next start` on :3210 |
 
 ## End-to-end tests
 
-`e2e/*.spec.ts` drive a production build against the local Supabase stack (`npx supabase start`,
+`e2e/*.spec.ts` drive a production build against the local Supabase stack (`npm run db:start`,
 seeded activities; no food import needed). Global setup creates two dedicated accounts
 (`e2e-mobile@local.test`, `e2e-desktop@local.test`) with the Auth admin API, signs each in through
 the login form and saves the session; every test starts by deleting that account's data, so the
@@ -69,7 +84,9 @@ npx playwright show-report
 ```
 
 Full-page screenshots of each screen land in `test-results/screenshots/<project>/` (records, not
-pixel assertions). CI runs the same suite in the `e2e` job and uploads screenshots and the report.
+pixel assertions). CI runs the same suite in the `e2e` job and uploads the screenshots; the report
+and traces (which hold the E2E users' session cookies) are uploaded only when a test fails, and
+kept for 7 days.
 
 ## Food data
 
@@ -89,7 +106,7 @@ src/
                   actions (Server Actions), data (server-only reads), strings.ts (UI copy)
   components/ui   shared atoms (Button, TextField, Card, PageHeader, EmptyState)
   domain/         pure calculators: BMR, TDEE/target, exercise kcal, daily balance
-  lib/supabase/   browser, server and proxy clients
+  lib/supabase/   server and proxy clients (the browser never talks to Supabase)
   proxy.ts        session refresh + optimistic auth redirect
 supabase/         config.toml, migrations, seed.sql (MET activities)
 ```

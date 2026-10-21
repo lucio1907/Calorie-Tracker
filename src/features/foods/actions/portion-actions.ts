@@ -1,6 +1,7 @@
 "use server";
 
 import { getCurrentUser } from "@/features/auth/data/current-user";
+import { isRowQuotaViolation } from "@/lib/supabase/row-quota";
 import { createClient } from "@/lib/supabase/server";
 import { foodIdSchema, parsePortionForm } from "../lib/food-schema";
 import type { PortionFormState } from "../lib/form-state";
@@ -47,6 +48,7 @@ export async function addPortion(previous: PortionFormState, formData: FormData)
   if (error?.code === UNIQUE_VIOLATION) {
     return { ...previous, status: "error", fieldErrors: { label: t.portions.duplicate }, formError: null, values: readValues(formData) };
   }
+  if (isRowQuotaViolation(error)) return failure(previous, formData, t.portions.limitReached);
   if (error) return failure(previous, formData, t.portions.failed);
 
   return { status: "saved", fieldErrors: {}, formError: null, values: {}, version: previous.version + 1 };

@@ -72,6 +72,7 @@ export const foodsStrings = {
     deleteFailed: "Could not delete this food.",
     deleteInUse: "This food is used in a recipe. Remove it from the recipe first.",
     favoriteFailed: "Could not update favorites.",
+    favoriteLimit: "You have reached the maximum number of favorites.",
     barcode: "Barcode",
     group: "Group",
     code: "Code",
@@ -108,6 +109,7 @@ export const foodsStrings = {
     cancel: "Cancel",
     duplicate: "A portion with this name already exists.",
     failed: "Could not save the portion.",
+    limitReached: "This food already has the maximum number of portions.",
   },
 
   form: {
@@ -131,6 +133,7 @@ export const foodsStrings = {
     cancel: "Cancel",
     failed: "Could not save the food. Try again.",
     duplicateBarcode: "You already have a food with this barcode.",
+    limitReached: "You have reached the maximum number of foods.",
   },
 
   validation: {

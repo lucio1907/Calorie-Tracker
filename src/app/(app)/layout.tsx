@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { AuthGate, SignOutButton } from "@/features/auth";
+import { AuthGate, SignOutButtonContainer } from "@/features/auth";
 import { AppShell, BottomTabBarContainer, SidebarNavContainer } from "@/features/shell";
 
 /*
@@ -12,7 +12,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
     <AppShell
       sidebar={<SidebarNavContainer />}
-      sidebarFooter={<SignOutButton className="w-full md:px-0 lg:justify-start lg:px-8" />}
+      sidebarFooter={<SignOutButtonContainer className="w-full md:px-0 lg:justify-start lg:px-8" />}
       tabBar={<BottomTabBarContainer />}
     >
       <Suspense fallback={null}>

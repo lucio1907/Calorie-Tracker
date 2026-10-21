@@ -18,6 +18,33 @@ const PORT = Number(process.env.E2E_PORT ?? 3210);
 const baseURL = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${PORT}`;
 const start = `npm run start -- --hostname 127.0.0.1 --port ${PORT}`;
 
+/*
+ * The environment of `next build` + `next start`: only what they need. The
+ * test runner itself may hold SUPABASE_SERVICE_ROLE_KEY (CI passes it for the
+ * fixtures' admin client), and the app must never see it. Playwright merges
+ * process.env under webServer.env, so every other variable is unset here
+ * explicitly (Node drops undefined entries when it spawns the command).
+ */
+const WEB_SERVER_ENV_KEYS = [
+  "PATH",
+  "HOME",
+  "TMPDIR",
+  "LANG",
+  "TZ",
+  "CI",
+  "NEXT_PUBLIC_SUPABASE_URL",
+  "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+];
+
+function webServerEnv(): Record<string, string> {
+  const env: Record<string, string | undefined> = Object.fromEntries(
+    Object.keys(process.env).map((key) => [key, undefined]),
+  );
+  for (const key of WEB_SERVER_ENV_KEYS) env[key] = process.env[key];
+  env.EXPOSE_TESTING_API = "1";
+  return env as Record<string, string>;
+}
+
 const shared = {
   baseURL,
   timezoneId: "America/Argentina/Buenos_Aires",
@@ -62,7 +89,7 @@ export default defineConfig({
     ? undefined
     : {
         command: process.env.E2E_SKIP_BUILD ? start : `npm run build && ${start}`,
-        env: { EXPOSE_TESTING_API: "1" },
+        env: webServerEnv(),
         url: `${baseURL}/login`,
         reuseExistingServer: !process.env.CI,
         timeout: 240_000,

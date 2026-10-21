@@ -66,6 +66,7 @@ export const activityStrings = {
     unauthorized: "Your session expired. Sign in again.",
     noWeight: "Log your weight in Settings before adding activities.",
     saveFailed: "Could not save the activity. Try again.",
+    dayFull: "This day already has the maximum number of activities.",
     deleteFailed: "Could not delete the activity.",
     entryMissing: "This entry no longer exists.",
     activityMissing: "This activity no longer exists.",

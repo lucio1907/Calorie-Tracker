@@ -13,5 +13,6 @@ export const authStrings = {
   passwordRequired: "Enter your password.",
   invalidCredentials: "Email or password is incorrect. Check them and try again.",
   unexpectedError: "Could not sign in right now. Try again in a moment.",
+  rateLimited: "Too many sign-in attempts. Wait a few minutes and try again.",
   signOut: "Sign out",
 } as const;

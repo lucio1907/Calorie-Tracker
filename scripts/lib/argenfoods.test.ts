@@ -170,6 +170,24 @@ describe("validateArgenfoodsRows", () => {
       "line 7: expected 9 columns, got 3",
     ]);
   });
+
+  it("rejects control and invisible format characters in names and groups", () => {
+    const { rows, errors } = validateArgenfoodsRows([
+      HEADER,
+      ["1", "Arroz\u0000", "Cereales", "339", "", "", "", "", ""],
+      ["2", "Arroz\u202Eotul", "Cereales", "339", "", "", "", "", ""],
+      ["3", "Arroz", "Cere\u200Bales", "339", "", "", "", "", ""],
+      ["4", "Arroz\tlargo", "Cereales\u0007", "339", "", "", "", "", ""],
+      ["5", "Ñoquis de papa, cocidos", "Cereales y derivados", "130", "", "", "", "", ""],
+    ]);
+    expect(rows.map((row) => row.code)).toEqual(["5"]);
+    expect(errors).toEqual([
+      "line 2: name has control or format characters",
+      "line 3: name has control or format characters",
+      "line 4: group has control or format characters",
+      "line 5: name has control or format characters; group has control or format characters",
+    ]);
+  });
 });
 
 describe("toFoodRecord", () => {

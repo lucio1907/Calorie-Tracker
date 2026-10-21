@@ -19,7 +19,8 @@ export function parseCredentials(formData: FormData): ParseResult {
 
   const errors: CredentialErrors = {};
   if (email === "") errors.email = authStrings.emailRequired;
-  else if (!EMAIL_PATTERN.test(email) || email.length > 254) errors.email = authStrings.emailInvalid;
+  // Length first: the pattern backtracks quadratically on long inputs.
+  else if (email.length > 254 || !EMAIL_PATTERN.test(email)) errors.email = authStrings.emailInvalid;
   if (password === "") errors.password = authStrings.passwordRequired;
 
   if (errors.email || errors.password) return { ok: false, errors, email };

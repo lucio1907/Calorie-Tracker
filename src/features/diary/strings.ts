@@ -105,6 +105,7 @@ export const diaryStrings = {
   errors: {
     unauthorized: "Your session expired. Sign in again.",
     saveFailed: "Could not save the entry. Try again.",
+    dayFull: "This day already has the maximum number of entries.",
     foodMissing: "This food no longer exists.",
     portionMissing: "This portion no longer exists. Pick another one.",
     entryMissing: "This entry no longer exists.",

@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/features/auth/data/current-user";
 import { getFoodDetail } from "@/features/foods/data/foods";
 import type { ActionResult, FoodDetail } from "@/features/foods/lib/types";
 import type { Database } from "@/lib/supabase/database.types";
+import { isRowQuotaViolation } from "@/lib/supabase/row-quota";
 import { createClient } from "@/lib/supabase/server";
 import { amountChanged, resolveEntryAmount, type AmountError, type EntryUnit } from "../lib/entry-amount";
 import { entryLabel } from "../lib/entry-label";
@@ -109,6 +110,7 @@ export async function createEntry(_previous: EntryFormState, formData: FormData)
     label: entryLabel(food),
     ...amountColumns(food, amount.value),
   });
+  if (isRowQuotaViolation(error)) return failed(formData, t.errors.dayFull);
   if (error) {
     console.error("[diary] insert failed", error.code, error.message);
     return failed(formData, t.errors.saveFailed);
