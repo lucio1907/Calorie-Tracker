@@ -150,6 +150,8 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with: { node-version: "22", cache: "npm" }
-      # Production dependencies only: dev tooling (eslint-config-next -> braces)
-      # carries an advisory with no upstream fix and never ships to users.
+      # Production dependencies: no exceptions, they ship to users.
       - run: npm audit --audit-level=high --omit=dev
+      # Everything, dev tooling included, minus dated waivers for advisories
+      # with no fixed release (see scripts/audit-all.mjs).
+      - run: npm run audit:all

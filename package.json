@@ -18,7 +18,8 @@
     "test:e2e:ui": "EXPOSE_TESTING_API=1 playwright test --ui",
     "db:start": "node scripts/supabase-start.mjs",
     "user:create": "node --env-file-if-exists=.env.local scripts/create-user.mjs",
-    "foods:import-argenfoods": "node --env-file-if-exists=.env.local scripts/import-argenfoods.mjs"
+    "foods:import-argenfoods": "node --env-file-if-exists=.env.local scripts/import-argenfoods.mjs",
+    "audit:all": "node scripts/audit-all.mjs"
   },
   "dependencies": {
     "@fontsource/inter": "5.2.8",
