@@ -25,7 +25,9 @@ async function signIn(page: Page, email: string): Promise<void> {
 }
 
 async function enterCode(page: Page, secret: string): Promise<void> {
-  await page.getByLabel("Authentication code").fill(totpCode(secret));
+  // By role, not label: while the form streams in, React holds it in a hidden
+  // node next to the disabled fallback, and only the role query skips it.
+  await page.getByRole("textbox", { name: "Authentication code" }).fill(totpCode(secret));
 }
 
 test.describe("Two-factor authentication", () => {
