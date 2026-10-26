@@ -50,7 +50,7 @@ export function ProgressScreenContainer({
   const close = useCallback(() => setPanel(null), []);
 
   return (
-    <div className="flex flex-col gap-24">
+    <div className="stagger flex flex-col gap-24">
       <PageHeader
         title={t.title}
         description={t.description}

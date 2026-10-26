@@ -1,6 +1,9 @@
 /*
- * Design tokens from design.md ("Dub" reference + calorie tracker adaptation).
- * The adaptation appendix wins where the two disagree.
+ * Design tokens. Structure follows design.md ("Dub" reference + calorie
+ * tracker adaptation); the semantic aliases carry the "Mercado" direction:
+ * warm paper canvas, deep green brand, rounder cards and Bricolage Grotesque
+ * display numbers over Figtree. The reference palette below is kept only for
+ * the few components that still name it.
  *
  * Spacing note: design.md names spacing steps by their pixel value
  * (--spacing-16 = 16px). The base --spacing is set to 1px so every numeric
@@ -31,7 +34,7 @@
   --color-primary-action-fill: #000000;
 
   /* Typography — scale (line-height pairs make text-* set leading too) */
-  --text-caption: 11px;
+  --text-caption: 12px;
   --text-caption--line-height: 1.5;
   --text-body: 14px;
   --text-body--line-height: 1.43;
@@ -49,6 +52,8 @@
   --text-heading-lg--line-height: 1.11;
   --text-display: 48px;
   --text-display--line-height: 1;
+  --text-display-xl: 64px;
+  --text-display-xl--line-height: 1;
 
   --leading-caption: 1.5;
   --leading-body: 1.43;
@@ -91,10 +96,10 @@
 
   /* Border radius — named roles */
   --radius-tags: 9999px;
-  --radius-cards: 12px;
-  --radius-inputs: 6px;
-  --radius-buttons: 8px;
-  --radius-largecards: 16px;
+  --radius-cards: 20px;
+  --radius-inputs: 12px;
+  --radius-buttons: 12px;
+  --radius-largecards: 24px;
 
   /* Shadows */
   --shadow-subtle: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
@@ -120,6 +125,7 @@
   --animate-popover-out: popover-out 100ms var(--ease-exit) both;
   --animate-list-enter: list-enter 220ms var(--ease-enter) both;
   --animate-list-exit: list-exit 140ms var(--ease-exit) both;
+  --animate-card-enter: card-enter 220ms var(--ease-enter) both;
 
   @keyframes popover-in {
     from {
@@ -132,6 +138,13 @@
     from {
       opacity: 0;
       transform: translateY(6px);
+    }
+  }
+
+  @keyframes card-enter {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
     }
   }
 
@@ -153,18 +166,15 @@
 /*
  * Font families resolve to the next/font CSS variables set on <html>
  * (see src/app/fonts.ts), so they use `inline` to reference them at use site.
- * Satoshi is not self-hosted (Fontshare's EULA forbids redistributing the
- * files), so display text falls back to Inter 500 with -0.02em tracking.
+ * Numbers use the body font with tabular figures (the `tabular` utility).
  */
 @theme inline {
-  --font-inter: var(--font-inter-next), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-satoshi: var(--font-inter-next), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-geist-mono: var(--font-geist-mono-next), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-figtree: var(--font-figtree-next), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-bricolage: var(--font-bricolage-next), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   /* Role aliases used by components */
-  --font-sans: var(--font-inter);
-  --font-display: var(--font-satoshi);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-figtree);
+  --font-display: var(--font-bricolage);
 }
 
 /*
@@ -173,45 +183,46 @@
  */
 @theme {
   /* Surfaces and lines */
-  --color-canvas: #ffffff;
+  --color-canvas: #f7f5f0;
   --color-surface: #ffffff;
-  --color-surface-alt: #f5f5f5;
-  --color-surface-muted: #fafafa;
-  --color-border: #e5e5e5;
-  --color-border-strong: #d4d4d4;
-  --color-input-border: #000000;
+  --color-surface-alt: #efebe3;
+  --color-surface-muted: #faf8f4;
+  --color-border: #e4dfd5;
+  --color-border-strong: #d6d0c4;
+  /* 3.66:1 on surface, the 3:1 minimum for input boundaries. */
+  --color-input-border: #8c8577;
 
-  /* Text */
-  --color-ink: #171717;
-  --color-ink-strong: #0a0a0a;
-  --color-ink-muted: #525252;
-  --color-ink-subtle: #737373;
-  --color-input-text: #111827;
+  /* Text (ink-subtle stays >= 4.5:1 on surface, canvas and surface-alt) */
+  --color-ink: #1d1b16;
+  --color-ink-strong: #12110d;
+  --color-ink-muted: #5c564b;
+  --color-ink-subtle: #6b6458;
+  --color-input-text: #1d1b16;
 
   /* Brand + interaction */
-  --color-brand: #2563eb;
-  --color-focus: #2563eb;
-  --color-nav-active: #dbeaff;
-  --color-action: #0a0a0a;
-  --color-action-hover: #262626;
+  --color-brand: #1f4d3a;
+  --color-focus: #1f4d3a;
+  --color-nav-active: #e3ede7;
+  --color-action: #1f4d3a;
+  --color-action-hover: #173b2c;
   --color-on-action: #ffffff;
 
   /* Calorie semantics */
-  --color-consumed: #2563eb;
-  --color-burned: #16a34a;
-  --color-burned-wash: #dcfce7;
-  /* Darker ink for small text on the wash: #16a34a alone is < 4.5:1. */
-  --color-burned-ink: #15803d;
-  --color-over: #ea580c;
-  --color-over-wash: #ffedd5;
-  --color-over-ink: #c2410c;
+  --color-consumed: #1f4d3a;
+  --color-burned: #2e6fa8;
+  --color-burned-wash: #e8f0f8;
+  /* Darker ink for small text on the wash. */
+  --color-burned-ink: #245a8a;
+  --color-over: #c2410c;
+  --color-over-wash: #fdebdd;
+  --color-over-ink: #9a3412;
 
-  /* Macros (fat uses tangerine only inside the macro chart) */
-  --color-protein: #7c3aed;
-  --color-carbs: #2563eb;
-  --color-fat: #ea580c;
+  /* Macros (bar fills stay >= 3:1 against the surface-alt track) */
+  --color-protein: #a23b5c;
+  --color-carbs: #a86e12;
+  --color-fat: #2e6fa8;
 
   /* Errors reuse the warning accent with a text label, never color alone. */
-  --color-danger-ink: #c2410c;
-  --color-danger-wash: #ffedd5;
+  --color-danger-ink: #9a3412;
+  --color-danger-wash: #fdebdd;
 }

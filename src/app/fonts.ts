@@ -1,16 +1,18 @@
-import { Geist_Mono, Inter } from "next/font/google";
+import { Bricolage_Grotesque, Figtree } from "next/font/google";
 
-/** Body/UI font and, as the Satoshi substitute, display font (see theme.css). */
-export const inter = Inter({
+/**
+ * Body/UI font; also numbers, with tabular figures (see the `tabular`
+ * utility). Figtree rather than DM Sans: Google's DM Sans has no `tnum`.
+ */
+export const figtree = Figtree({
   subsets: ["latin", "latin-ext"],
-  variable: "--font-inter-next",
+  variable: "--font-figtree-next",
   display: "swap",
 });
 
-/** Numeric values (kcal, grams, macros, weight) with tabular figures. */
-export const geistMono = Geist_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-geist-mono-next",
+/** Display font for headings and big numbers (see `display-text`). */
+export const bricolage = Bricolage_Grotesque({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-bricolage-next",
   display: "swap",
 });
