@@ -16,17 +16,7 @@ import { spawnSync } from "node:child_process";
 import { applyWaivers } from "./lib/audit.mjs";
 
 /** @type {import("./lib/audit.mjs").Waiver[]} */
-const WAIVERS = [
-  {
-    // braces <= 3.0.3 via eslint-config-next -> @next/eslint-plugin-next ->
-    // fast-glob -> micromatch. 3.0.3 is the latest release, so there is no
-    // fixed version to move to; npm's only "fix" downgrades eslint-config-next
-    // to 14. Dev-only (lint), never in the production bundle.
-    id: "GHSA-vfj7-8cjw-p6xm",
-    reason: "No patched braces release; dev-only lint dependency.",
-    reviewBy: "2027-01-21",
-  },
-];
+const WAIVERS = [];
 
 function fail(message) {
   console.error(`audit-all: ${message}`);
