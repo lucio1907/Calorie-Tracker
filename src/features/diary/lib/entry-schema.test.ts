@@ -17,7 +17,22 @@ describe("parseCreateEntryForm", () => {
   it("parses an entry logged in grams", () => {
     expect(parseCreateEntryForm(form(validCreate))).toEqual({
       ok: true,
-      value: { date: "2026-10-14", meal: "lunch", foodId: 7, unit: { kind: "grams" }, amount: 150 },
+      value: { date: "2026-10-14", meal: "lunch", source: { kind: "food", foodId: 7 }, unit: { kind: "grams" }, amount: 150 },
+    });
+  });
+
+  it("parses a recipe logged by servings", () => {
+    const fields = { date: "2026-10-14", meal: "lunch", recipeId: "4", unit: "1", amount: "1,5" };
+    expect(parseCreateEntryForm(form(fields))).toMatchObject({
+      ok: true,
+      value: { source: { kind: "recipe", recipeId: 4 }, unit: { kind: "portion", portionId: 1 }, amount: 1.5 },
+    });
+  });
+
+  it("rejects a form with both a food and a recipe", () => {
+    expect(parseCreateEntryForm(form({ ...validCreate, recipeId: "4" }))).toMatchObject({
+      ok: false,
+      formError: diaryStrings.errors.unexpected,
     });
   });
 

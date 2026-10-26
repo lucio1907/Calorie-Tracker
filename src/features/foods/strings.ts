@@ -3,6 +3,7 @@ export const foodsStrings = {
   title: "Foods",
   description: "Search the catalog, scan a barcode or add your own foods.",
   newFood: "New food",
+  recipes: "Recipes",
 
   search: {
     label: "Search foods",

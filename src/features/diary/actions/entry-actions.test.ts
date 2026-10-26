@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FoodDetail } from "@/features/foods/lib/types";
+import type { Recipe } from "@/features/recipes/lib/types";
 import { initialEntryFormState } from "../lib/types";
 import { diaryStrings } from "../strings";
 
@@ -14,6 +15,11 @@ vi.mock("@/features/auth/data/current-user", () => ({ getCurrentUser: () => getC
 const getFoodDetail = vi.fn();
 vi.mock("@/features/foods/data/foods", () => ({
   getFoodDetail: (id: number, userId: string) => getFoodDetail(id, userId),
+}));
+
+const getRecipe = vi.fn();
+vi.mock("@/features/recipes/data/recipes", () => ({
+  getRecipe: (id: number, userId: string) => getRecipe(id, userId),
 }));
 
 /** Minimal chainable stand-in for the supabase-js query builder. */
@@ -64,6 +70,18 @@ const bread: FoodDetail = {
   portions: [{ id: 3, label: "1 roll", grams: 50 }],
 };
 
+/** 300 g rice + 200 g chicken, 2 servings: 144 kcal per 100 g, 250 g per serving. */
+const riceAndChicken: Recipe = {
+  id: 4,
+  name: "Rice and chicken",
+  servings: 2,
+  notes: null,
+  items: [
+    { id: 1, foodId: 10, grams: 300, food: { name: "Rice", brand: null, kcal: 130, protein: 2.7, carbs: 28, fat: 0.3 } },
+    { id: 2, foodId: 11, grams: 200, food: { name: "Chicken", brand: null, kcal: 165, protein: 31, carbs: 0, fat: 3.6 } },
+  ],
+};
+
 function form(fields: Record<string, string>): FormData {
   const data = new FormData();
   for (const [key, value] of Object.entries(fields)) data.set(key, value);
@@ -77,6 +95,7 @@ beforeEach(() => {
   refresh.mockReset();
   getCurrentUser.mockReset().mockResolvedValue(USER);
   getFoodDetail.mockReset().mockResolvedValue(bread);
+  getRecipe.mockReset().mockResolvedValue(riceAndChicken);
 });
 
 describe("createEntry", () => {
@@ -165,8 +184,69 @@ describe("createEntry", () => {
   });
 });
 
+describe("createEntry with a recipe", () => {
+  const fields = { date: "2026-10-14", meal: "dinner", recipeId: "4", unit: "1", amount: "1,5" };
+
+  it("snapshots servings computed on the server from the stored ingredients", async () => {
+    // Forged nutrient fields are ignored: only ids, meal, unit and amount are read.
+    const state = await createEntry(initialEntryFormState, form({ ...fields, kcal: "1", grams: "1", label: "x" }));
+
+    expect(state.status).toBe("saved");
+    expect(getRecipe).toHaveBeenCalledWith(4, USER.id);
+    expect(getFoodDetail).not.toHaveBeenCalled();
+    expect(calls).toEqual([
+      {
+        table: "food_entries",
+        op: "insert",
+        filters: [],
+        payload: {
+          user_id: USER.id,
+          entry_date: "2026-10-14",
+          meal: "dinner",
+          recipe_id: 4,
+          label: "Rice and chicken",
+          grams: 375,
+          quantity: 1.5,
+          portion_label: "1 serving",
+          kcal: 540,
+          protein: 52.58,
+          carbs: 63,
+          fat: 6.08,
+        },
+      },
+    ]);
+    expect(refresh).toHaveBeenCalledOnce();
+  });
+
+  it("logs a recipe in grams", async () => {
+    await createEntry(initialEntryFormState, form({ ...fields, unit: "g", amount: "100" }));
+    expect(calls[0].payload).toMatchObject({ recipe_id: 4, grams: 100, quantity: null, portion_label: null, kcal: 144 });
+  });
+
+  it.each([
+    ["no longer exists", null, t.errors.recipeMissing],
+    ["has no ingredients", { ...riceAndChicken, items: [] }, t.errors.recipeEmpty],
+    [
+      "uses a food the caller can no longer see",
+      { ...riceAndChicken, items: [{ ...riceAndChicken.items[0], food: null }] },
+      t.errors.recipeFoodMissing,
+    ],
+  ])("refuses a recipe that %s", async (_label, recipe, message) => {
+    getRecipe.mockResolvedValue(recipe);
+    const state = await createEntry(initialEntryFormState, form(fields));
+    expect(state).toMatchObject({ status: "error", formError: message });
+    expect(calls).toHaveLength(0);
+  });
+
+  it("maps the daily row quota for recipe entries too", async () => {
+    nextResult = { data: null, error: { code: "23514", message: "row_quota:food_entries: at most 200 rows" } };
+    const state = await createEntry(initialEntryFormState, form(fields));
+    expect(state).toMatchObject({ status: "error", formError: t.errors.dayFull });
+  });
+});
+
 describe("updateEntry", () => {
-  const logged = { id: 42, food_id: 7, grams: 50, quantity: 1, portion_label: "1 roll" };
+  const logged = { id: 42, food_id: 7, recipe_id: null, grams: 50, quantity: 1, portion_label: "1 roll" };
 
   it("moves the entry to another meal without recomputing an unchanged amount", async () => {
     results.push({ data: logged, error: null }, { data: { id: 42 }, error: null });
@@ -199,6 +279,14 @@ describe("updateEntry", () => {
       carbs: 57.4,
       fat: 0.2,
     });
+  });
+
+  it("recomputes a recipe entry from the recipe as it is now", async () => {
+    const recipeEntry = { id: 42, food_id: null, recipe_id: 4, grams: 375, quantity: 1.5, portion_label: "1 serving" };
+    results.push({ data: recipeEntry, error: null }, { data: { id: 42 }, error: null });
+    await updateEntry(initialEntryFormState, form({ entryId: "42", meal: "dinner", unit: "1", amount: "2" }));
+    expect(getRecipe).toHaveBeenCalledWith(4, USER.id);
+    expect(calls[1].payload).toMatchObject({ grams: 500, quantity: 2, portion_label: "1 serving", kcal: 720 });
   });
 
   it("only changes the meal of an entry whose food was deleted", async () => {
