@@ -1,3 +1,4 @@
+import { Leaf } from "lucide-react";
 import type { ReactNode } from "react";
 import { shellStrings } from "../strings";
 
@@ -27,7 +28,9 @@ export function AppShell({ sidebar, sidebarFooter, tabBar, children }: AppShellP
       <aside className="fixed inset-y-0 left-0 z-10 hidden [view-transition-name:sidebar] w-72 flex-col justify-between border-r border-border bg-surface p-12 md:flex lg:w-240">
         <div className="flex flex-col gap-24">
           <div className="flex min-h-44 items-center gap-8 px-8 md:justify-center lg:justify-start">
-            <span aria-hidden="true" className="size-24 shrink-0 rounded-full bg-[conic-gradient(from_-81deg,#ff0000,#eab308_99deg,#5cff80_162deg,#00fff9_216deg,#3a8bfd_288deg,#855afc)]" />
+            <span aria-hidden="true" className="flex size-28 shrink-0 items-center justify-center rounded-[8px] bg-brand text-on-action">
+              <Leaf size={16} strokeWidth={2.25} />
+            </span>
             <span className="text-body-lg font-semibold text-ink md:sr-only lg:not-sr-only">{shellStrings.appName}</span>
           </div>
           {sidebar}

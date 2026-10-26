@@ -7,7 +7,7 @@ type TextFieldProps = Omit<ComponentProps<"input">, "id"> & {
   hint?: string;
 };
 
-/** Input Field from design.md: black 1px border, 6px radius, visible label. */
+/** Input Field from design.md: 1px input-border, 12px radius, visible label. */
 export function TextField({ label, error, hint, className, ...inputProps }: TextFieldProps) {
   const id = useId();
   const errorId = `${id}-error`;

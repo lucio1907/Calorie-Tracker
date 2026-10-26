@@ -1,6 +1,9 @@
+// A client component so it can hand AnimatedNumber its format functions.
+"use client";
+
 import { Plus } from "lucide-react";
 import type { ComponentProps } from "react";
-import { ButtonLink, Card, EmptyState, PageHeader, ProgressBar } from "@/components/ui";
+import { AnimatedNumber, ButtonLink, Card, cn, EmptyState, PageHeader, ProgressBar } from "@/components/ui";
 import { formatAmount, formatKcal } from "@/features/foods/lib/format";
 import type { TodaySummary } from "../lib/today-summary";
 import { todayStrings as t } from "../strings";
@@ -57,25 +60,26 @@ function share(consumed: number, target: number): number {
 
 function BalanceCard({ summary }: { summary: ReadySummary }) {
   const over = summary.remainingKcal < 0;
+  // The remaining kcal is the big number above, so the tiles show only its terms.
   const equation = [
-    { label: t.equation.target, value: summary.targetKcal },
-    { label: t.equation.exercise, value: summary.exerciseKcal },
-    { label: t.equation.food, value: summary.consumed.kcal },
-    { label: t.equation.remaining, value: summary.remainingKcal },
+    { label: t.equation.target, value: formatKcal(summary.targetKcal), burned: false },
+    { label: t.equation.food, value: t.equation.foodValue(formatKcal(summary.consumed.kcal)), burned: false },
+    { label: t.equation.exercise, value: t.equation.exerciseValue(formatKcal(summary.exerciseKcal)), burned: true },
   ];
 
   return (
     <Card aria-labelledby="today-remaining" className="flex flex-col gap-16">
       <div className="flex flex-col gap-4">
-        <h2 id="today-remaining" className="text-caption font-semibold tracking-wide text-ink-muted uppercase">
+        <h2 id="today-remaining" className="text-body font-semibold text-ink-muted">
           {over ? t.overLabel : t.remainingLabel}
         </h2>
         <p className="flex items-baseline gap-8">
-          <span
-            className={`display-text text-heading-lg tabular-nums md:text-display ${over ? "text-danger-ink" : "text-ink"}`}
-          >
-            {formatKcal(Math.abs(summary.remainingKcal))}
-          </span>
+          <AnimatedNumber
+            id="today-remaining"
+            value={Math.abs(summary.remainingKcal)}
+            format={formatKcal}
+            className={`display-text text-display-xl tabular-nums ${over ? "text-danger-ink" : "text-ink"}`}
+          />
           <span className="text-body text-ink-muted">{t.kcalUnit}</span>
         </p>
         {/* Food eaten out of today's budget (target + exercise); the numbers below say the same. */}
@@ -85,7 +89,17 @@ function BalanceCard({ summary }: { summary: ReadySummary }) {
           className="mt-8"
         />
       </div>
-      <Breakdown items={equation} />
+      <dl className="grid grid-cols-3 gap-8">
+        {equation.map((item) => (
+          <div
+            key={item.label}
+            className={cn("flex flex-col gap-4 rounded-[14px] p-12", item.burned ? "bg-burned-wash text-burned-ink" : "bg-canvas")}
+          >
+            <dt className={cn("text-caption", !item.burned && "text-ink-muted")}>{item.label}</dt>
+            <dd className={cn("tabular font-semibold", !item.burned && "text-ink")}>{item.value}</dd>
+          </div>
+        ))}
+      </dl>
       <div className="flex flex-col gap-8 border-t border-border pt-12">
         <h3 id="today-target" className="text-caption font-semibold tracking-wide text-ink-muted uppercase">
           {t.targetHeading}
@@ -104,7 +118,7 @@ function BalanceCard({ summary }: { summary: ReadySummary }) {
 function MacrosCard({ summary }: { summary: ReadySummary }) {
   return (
     <Card aria-labelledby="today-macros" className="flex flex-col gap-12">
-      <h2 id="today-macros" className="text-body font-semibold text-ink">
+      <h2 id="today-macros" className="display-text text-subheading text-ink">
         {t.macrosHeading}
       </h2>
       <ul className="flex flex-col gap-12">
@@ -114,9 +128,18 @@ function MacrosCard({ summary }: { summary: ReadySummary }) {
           return (
             <li key={macro.key} className="flex flex-col gap-4">
               <div className="flex justify-between text-body">
-                <span className="text-ink">{macro.label}</span>
+                <span className="flex items-center gap-8 text-ink">
+                  <span aria-hidden="true" className={`size-10 rounded-[3px] ${macro.barClass}`} />
+                  {macro.label}
+                </span>
                 <span className="tabular text-ink-muted">
-                  {t.macroAmount(formatAmount(consumed), formatKcal(target))}
+                  <AnimatedNumber
+                    id={`today-macro-${macro.key}`}
+                    value={consumed}
+                    format={formatAmount}
+                    className="font-bold text-ink"
+                  />
+                  {t.macroTarget(formatKcal(target))}
                 </span>
               </div>
               <ProgressBar value={share(consumed, target)} fillClassName={macro.barClass} />
@@ -148,7 +171,7 @@ type TodayViewProps = {
  */
 export function TodayView({ dateLabel, summary }: TodayViewProps) {
   return (
-    <div className="flex flex-col gap-24">
+    <div className="stagger flex flex-col gap-24">
       <PageHeader
         title={t.title}
         description={dateLabel}

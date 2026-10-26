@@ -4,8 +4,8 @@ import type { MissingProfileField } from "./lib/today-summary";
 export const todayStrings = {
   title: "Today",
   logFood: "Log food",
-  remainingLabel: "Remaining",
-  overLabel: "Over target",
+  remainingLabel: "Left to eat today",
+  overLabel: "Over today's target",
   kcalUnit: "kcal",
   targetHeading: "Daily target",
   targetBreakdown: {
@@ -19,9 +19,11 @@ export const todayStrings = {
     `Your target is below your BMR (${bmr} kcal). Eating this little for long is hard to sustain; consider a slower rate.`,
   equation: {
     target: "Target",
-    exercise: "+ Exercise",
-    food: "− Food",
-    remaining: "= Remaining",
+    food: "Food",
+    exercise: "Exercise",
+    /** Food comes off the budget, exercise adds to it. */
+    foodValue: (kcal: string) => `−${kcal}`,
+    exerciseValue: (kcal: string) => `+${kcal}`,
   },
   macrosHeading: "Macros",
   macros: {
@@ -29,7 +31,8 @@ export const todayStrings = {
     carbs: "Carbs",
     fat: "Fat",
   },
-  macroAmount: (consumed: string, target: string) => `${consumed} / ${target} g`,
+  /** Follows the consumed grams: "90.3 / 207 g". */
+  macroTarget: (target: string) => ` / ${target} g`,
   proteinCappedWarning: (gPerKg: string) =>
     `Your protein setting (${gPerKg} g/kg) needs more calories than your daily target, so protein is capped at the target and carbs and fat are 0. Lower it in Settings.`,
   setupMessage: "Complete your profile to get a daily calorie target.",

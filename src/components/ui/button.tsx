@@ -9,7 +9,7 @@ const base =
   "inline-flex min-h-44 items-center justify-center gap-8 rounded-buttons px-16 text-body font-medium transition-[color,background-color,border-color,transform] duration-150 ease-out motion-safe:active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100";
 
 const variants: Record<Variant, string> = {
-  // Filled Dark CTA: one per surface.
+  // Filled brand CTA: one per surface.
   primary: "bg-action text-on-action shadow-subtle hover:bg-action-hover active:bg-action-hover",
   // Outlined Action Button: the workhorse secondary action.
   outline: "border border-border bg-surface text-ink hover:bg-surface-alt active:bg-surface-alt",

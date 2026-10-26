@@ -1,3 +1,4 @@
+export { AnimatedNumber } from "./animated-number";
 export { Button, ButtonLink, buttonClassName } from "./button";
 export { Calendar } from "./calendar";
 export { CalendarPopover } from "./calendar-popover";

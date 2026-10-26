@@ -195,12 +195,38 @@
 }
 
 @utility tabular {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
 }
 
 @utility display-text {
   font-family: var(--font-display);
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: -0.02em;
+}
+
+/*
+ * Card stacks rise in one after another on page load: each direct child
+ * starts 40ms after the previous one. A <dialog> child (the Sheet) keeps its
+ * own motion. Off under prefers-reduced-motion (see the base layer).
+ */
+@utility stagger {
+  & > :not(dialog) {
+    animation: var(--animate-card-enter);
+  }
+  & > :nth-child(2) {
+    animation-delay: 40ms;
+  }
+  & > :nth-child(3) {
+    animation-delay: 80ms;
+  }
+  & > :nth-child(4) {
+    animation-delay: 120ms;
+  }
+  & > :nth-child(5) {
+    animation-delay: 160ms;
+  }
+  & > :nth-child(n + 6) {
+    animation-delay: 200ms;
+  }
 }

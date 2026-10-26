@@ -27,7 +27,7 @@ type SettingsPageProps = {
  */
 export function SettingsPage({ accountActions }: SettingsPageProps) {
   return (
-    <div className="flex flex-col gap-24">
+    <div className="stagger flex flex-col gap-24">
       <PageHeader title={s.title} description={s.description} />
 
       <Suspense fallback={<PageSkeleton />}>

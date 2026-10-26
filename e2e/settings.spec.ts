@@ -55,7 +55,7 @@ test.describe("Settings", () => {
     await expect(page.getByLabel("Fat (%)")).toHaveValue("45");
 
     await page.goto("/today");
-    await expect(page.getByRole("heading", { name: "Remaining" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Left to eat today" })).toBeVisible();
     await expect(page.getByText("− Lose 0.25 kg/week")).toBeVisible();
     const macros = page.getByRole("region", { name: "Macros" });
     await expect(macros.getByText("Protein", { exact: true }).locator("..")).toContainText("0 / 157 g");
