@@ -8,13 +8,14 @@ import type { CalendarDate, Meal } from "@/domain";
 import { FoodFormContainer } from "@/features/foods/containers/food-form-container";
 import { OffSearchContainer } from "@/features/foods/containers/off-search-container";
 import type { FoodSummary } from "@/features/foods/lib/types";
+import type { Recipe } from "@/features/recipes/lib/types";
 import { DateNav, diaryHref } from "../components/date-nav";
 import { DayTotals } from "../components/day-totals";
 import { MealSection } from "../components/meal-section";
 import type { DiaryDay } from "../lib/diary-day";
 import type { DiaryEntry } from "../lib/types";
 import { diaryStrings as t } from "../strings";
-import { AddEntryContainer, EditEntryContainer } from "./entry-form-containers";
+import { AddEntryContainer, AddRecipeEntryContainer, EditEntryContainer } from "./entry-form-containers";
 import { FoodPickerContainer } from "./food-picker-container";
 
 type Panel =
@@ -22,12 +23,14 @@ type Panel =
   | { kind: "off"; meal: Meal; query: string }
   | { kind: "create-food"; meal: Meal }
   | { kind: "log"; meal: Meal; foodId: number }
+  | { kind: "log-recipe"; meal: Meal; recipe: Recipe }
   | { kind: "edit"; entry: DiaryEntry };
 
 function panelTitle(panel: Panel): string {
   switch (panel.kind) {
     case "pick":
     case "log":
+    case "log-recipe":
       return t.add.title(t.meals[panel.meal]);
     case "off":
       return t.add.offTitle;
@@ -46,6 +49,7 @@ type DiaryScreenContainerProps = {
   suggestedMeal: Meal;
   recentFoods: FoodSummary[];
   initialFoods: FoodSummary[];
+  recipes: Recipe[];
 };
 
 /**
@@ -60,6 +64,7 @@ export function DiaryScreenContainer({
   suggestedMeal,
   recentFoods,
   initialFoods,
+  recipes,
 }: DiaryScreenContainerProps) {
   const router = useRouter();
   const [panel, setPanel] = useState<Panel | null>(null);
@@ -72,7 +77,9 @@ export function DiaryScreenContainer({
           <FoodPickerContainer
             recentFoods={recentFoods}
             initialFoods={initialFoods}
+            recipes={recipes}
             onPick={(foodId) => setPanel({ kind: "log", meal: current.meal, foodId })}
+            onPickRecipe={(recipe) => setPanel({ kind: "log-recipe", meal: current.meal, recipe })}
             onSearchOff={(query) => setPanel({ kind: "off", meal: current.meal, query })}
             onCreateFood={() => setPanel({ kind: "create-food", meal: current.meal })}
           />
@@ -103,8 +110,19 @@ export function DiaryScreenContainer({
             onBack={() => setPanel({ kind: "pick", meal: current.meal })}
           />
         );
+      case "log-recipe":
+        return (
+          <AddRecipeEntryContainer
+            key={current.recipe.id}
+            recipe={current.recipe}
+            meal={current.meal}
+            date={date}
+            onSaved={close}
+            onBack={() => setPanel({ kind: "pick", meal: current.meal })}
+          />
+        );
       case "edit":
-        return <EditEntryContainer key={current.entry.id} entry={current.entry} onDone={close} />;
+        return <EditEntryContainer key={current.entry.id} entry={current.entry} recipes={recipes} onDone={close} />;
     }
   }
 

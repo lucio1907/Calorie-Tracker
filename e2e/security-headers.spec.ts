@@ -22,7 +22,9 @@ function expectSecurityHeaders(response: Response | APIResponse | null): void {
   expect(headers["x-frame-options"]).toBe("DENY");
   expect(headers["x-content-type-options"]).toBe("nosniff");
   expect(headers["referrer-policy"]).toBe("strict-origin-when-cross-origin");
-  expect(headers["permissions-policy"]).toContain("camera=()");
+  // The barcode scanner needs the camera on this origin only.
+  expect(headers["permissions-policy"]).toContain("camera=(self)");
+  expect(headers["permissions-policy"]).toContain("microphone=()");
   const csp = headers["content-security-policy"] ?? "";
   for (const directive of REQUIRED_CSP_DIRECTIVES) {
     expect(csp).toContain(directive);

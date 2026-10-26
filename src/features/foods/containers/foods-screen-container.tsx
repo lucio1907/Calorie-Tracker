@@ -1,8 +1,8 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { CookingPot, Plus } from "lucide-react";
 import { useCallback, useState } from "react";
-import { Button, PageHeader, Sheet } from "@/components/ui";
+import { Button, ButtonLink, PageHeader, Sheet } from "@/components/ui";
 import { FoodResults } from "../components/food-results";
 import { FoodSearchBar } from "../components/food-search-bar";
 import { useFoodSearch } from "../hooks/use-food-search";
@@ -96,10 +96,16 @@ export function FoodsScreenContainer({ initialFoods }: { initialFoods: FoodSumma
         title={t.title}
         description={t.description}
         actions={
-          <Button variant="primary" onClick={() => setPanel({ kind: "create" })}>
-            <Plus aria-hidden="true" size={18} />
-            <span>{t.newFood}</span>
-          </Button>
+          <>
+            <ButtonLink href="/foods/recipes">
+              <CookingPot aria-hidden="true" size={18} />
+              <span>{t.recipes}</span>
+            </ButtonLink>
+            <Button variant="primary" onClick={() => setPanel({ kind: "create" })}>
+              <Plus aria-hidden="true" size={18} />
+              <span>{t.newFood}</span>
+            </Button>
+          </>
         }
       />
 

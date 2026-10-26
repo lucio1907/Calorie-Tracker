@@ -21,18 +21,25 @@ function TabLink({ item, pathname }: { item: NavItem; pathname: string }) {
         transitionTypes={[PAGE_TRANSITION]}
         aria-current={active ? "page" : undefined}
         className={cn(
-          "flex min-h-56 flex-col items-center justify-center gap-4 rounded-buttons text-caption font-medium transition-[color,transform] duration-150 ease-out motion-safe:active:scale-95",
-          active ? "text-brand" : "text-ink-muted",
+          "flex min-h-56 flex-col items-center justify-center gap-4 rounded-buttons text-caption transition-[color,transform] duration-150 ease-out motion-safe:active:scale-95",
+          active ? "font-semibold text-brand" : "font-medium text-ink-muted",
         )}
       >
-        <Icon aria-hidden="true" size={22} />
+        {/* The pill mounts with the active tab, so it grows in on each navigation. */}
+        {active ? (
+          <span className="rounded-full bg-nav-active px-14 py-4 transition-[opacity,scale] duration-200 ease-enter starting:scale-x-60 starting:opacity-0">
+            <Icon aria-hidden="true" size={22} />
+          </span>
+        ) : (
+          <Icon aria-hidden="true" size={22} className="my-4" />
+        )}
         <span>{item.label}</span>
       </Link>
     </li>
   );
 }
 
-/** Mobile (< md) bottom tab bar with the Filled Dark "+ Log" CTA in the center. */
+/** Mobile (< md) bottom tab bar with the filled brand "+ Log" CTA in the center. */
 export function BottomTabBar({ leading, trailing, logHref, pathname }: BottomTabBarProps) {
   return (
     <nav
@@ -49,7 +56,7 @@ export function BottomTabBar({ leading, trailing, logHref, pathname }: BottomTab
             href={logHref}
             transitionTypes={[PAGE_TRANSITION]}
             aria-label={shellStrings.logAccessible}
-            className="flex min-h-44 min-w-44 items-center justify-center gap-4 rounded-full bg-action px-16 text-body font-medium text-on-action shadow-subtle transition-[background-color,transform] duration-150 ease-out active:bg-action-hover motion-safe:active:scale-95"
+            className="flex min-h-48 min-w-48 items-center justify-center gap-4 rounded-full bg-action px-16 text-body font-medium text-on-action shadow-subtle transition-[background-color,transform] duration-150 ease-out active:bg-action-hover motion-safe:active:scale-95"
           >
             <Plus aria-hidden="true" size={18} />
             <span>{shellStrings.log}</span>

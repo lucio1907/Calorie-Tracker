@@ -235,6 +235,9 @@ isOneToOne: false
 "record_off_barcode_miss":
 { Args: { "lookup_barcode": string }; Returns: undefined
                            },
+"save_recipe":
+{ Args: { "ingredients": Json,"name": string,"notes"?: string,"recipe_id"?: number,"servings": number }; Returns: number
+                           },
 "search_foods":
 { Args: { "favorites_only"?: boolean,"result_limit"?: number,"search_query"?: string }; Returns: {
               "barcode": string,"brand": string,"carbs_per_100g": number,"fat_per_100g": number,"food_group": string,"id": number,"is_favorite": boolean,"is_own": boolean,"kcal_per_100g": number,"name": string,"protein_per_100g": number,"source": string

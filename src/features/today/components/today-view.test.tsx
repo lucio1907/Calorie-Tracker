@@ -23,14 +23,14 @@ const ready: TodaySummary = {
 };
 
 describe("TodayView", () => {
-  it("shows target, exercise, consumed and remaining kcal", () => {
+  it("shows remaining kcal from target, food and exercise", () => {
     render(<TodayView dateLabel="Thursday, October 15" summary={ready} />);
 
     const balance = screen.getByRole("region", { name: t.remainingLabel });
-    expect(within(balance).getByText(t.equation.target).nextSibling).toHaveTextContent("2759");
-    expect(within(balance).getByText(t.equation.exercise).nextSibling).toHaveTextContent("300");
-    expect(within(balance).getByText(t.equation.food).nextSibling).toHaveTextContent("1500");
-    expect(within(balance).getByText(t.equation.remaining).nextSibling).toHaveTextContent("1559");
+    expect(within(balance).getByText("1559", { selector: ".sr-only" })).toBeInTheDocument();
+    expect(within(balance).getByText(t.equation.target).nextSibling).toHaveTextContent(/^2759$/);
+    expect(within(balance).getByText(t.equation.food).nextSibling).toHaveTextContent(/^−1500$/);
+    expect(within(balance).getByText(t.equation.exercise).nextSibling).toHaveTextContent(/^\+300$/);
   });
 
   it("shows how the target comes from TDEE and the weight goal", () => {
@@ -140,7 +140,7 @@ describe("TodayView", () => {
     render(<TodayView dateLabel="Thursday, October 15" summary={{ ...ready, remainingKcal: -241 }} />);
 
     const balance = screen.getByRole("region", { name: t.overLabel });
-    expect(within(balance).getByText("241", { selector: "span" })).toBeInTheDocument();
+    expect(within(balance).getByText("241", { selector: ".sr-only" })).toBeInTheDocument();
   });
 
   it("links to the diary for logging", () => {

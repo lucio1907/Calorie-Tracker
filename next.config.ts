@@ -22,6 +22,8 @@ const isDev = process.env.NODE_ENV === "development";
  * nonce. So scripts use the guide's "without nonces" policy: 'self' plus
  * 'unsafe-inline' for Next's inline bootstrap and RSC payload scripts, and
  * 'unsafe-eval' only in development (React's dev error overlay uses eval).
+ * 'wasm-unsafe-eval' lets the camera barcode scanner compile its WebAssembly
+ * decoder (public/zxing_reader.wasm); it does not allow JavaScript eval.
  * Styles need 'unsafe-inline' for server-rendered style attributes. Images
  * allow data: for the two-factor QR code, an SVG data URI from Supabase Auth
  * (an <img> never runs an SVG's scripts).
@@ -31,7 +33,7 @@ const isDev = process.env.NODE_ENV === "development";
  */
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self'",
@@ -51,7 +53,7 @@ const securityHeaders = [
   {
     key: "Permissions-Policy",
     value:
-      "camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), bluetooth=(), hid=(), midi=(), " +
+      "camera=(self), microphone=(), geolocation=(), payment=(), usb=(), serial=(), bluetooth=(), hid=(), midi=(), " +
       "accelerometer=(), gyroscope=(), magnetometer=(), display-capture=(), browsing-topics=()",
   },
 ];

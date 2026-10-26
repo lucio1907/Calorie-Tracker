@@ -4,7 +4,8 @@ import { refresh } from "next/cache";
 import { MAX_ENTRY_GRAMS, nutrientSnapshot } from "@/domain";
 import { getCurrentUser } from "@/features/auth/data/current-user";
 import { getFoodDetail } from "@/features/foods/data/foods";
-import type { ActionResult, FoodDetail } from "@/features/foods/lib/types";
+import type { ActionResult } from "@/features/foods/lib/types";
+import { getRecipe } from "@/features/recipes/data/recipes";
 import type { Database } from "@/lib/supabase/database.types";
 import { isRowQuotaViolation } from "@/lib/supabase/row-quota";
 import { createClient } from "@/lib/supabase/server";
@@ -15,16 +16,18 @@ import {
   parseCreateEntryForm,
   parseUpdateEntryForm,
   readEntryFormValues,
+  type EntrySource,
   type ParseEntryResult,
 } from "../lib/entry-schema";
+import { recipeAsFood, recipeProblemMessage, type LoggableFood } from "../lib/recipe-food";
 import type { EntryAmount, EntryFormState } from "../lib/types";
 import { diaryStrings as t } from "../strings";
 
 /*
  * Diary mutations. The client sends only ids, a meal, a unit and an amount:
- * grams and the nutrient snapshot are always computed here from the food as
- * stored (RLS decides which foods the caller can see), never taken from the
- * browser. Each action re-checks the session and scopes writes to the
+ * grams and the nutrient snapshot are always computed here from the food (or
+ * the recipe's ingredients) as stored (RLS decides what the caller can see),
+ * never taken from the browser. Each action re-checks the session and scopes writes to the
  * caller; RLS enforces the same rules again.
  * After a write, refresh() re-renders the diary in the same round trip
  * (its data is read per request, not cached).
@@ -61,19 +64,33 @@ function invalid(parsed: Extract<ParseEntryResult<unknown>, { ok: false }>): Ent
 
 const SAVED: EntryFormState = { status: "saved", fieldErrors: {}, formError: null, values: {} };
 
-async function loadFood(foodId: number, userId: string): Promise<FoodDetail | null> {
+/** What an entry logs, loaded as stored: the food or recipe, its soft link and its label. */
+type Loaded =
+  | { ok: true; food: LoggableFood; link: { food_id: number } | { recipe_id: number }; label: string }
+  | { ok: false; error: string };
+
+async function loadSource(source: EntrySource, userId: string): Promise<Loaded> {
   try {
-    return await getFoodDetail(foodId, userId);
+    if (source.kind === "food") {
+      const food = await getFoodDetail(source.foodId, userId);
+      if (!food) return { ok: false, error: t.errors.foodMissing };
+      return { ok: true, food, link: { food_id: food.id }, label: entryLabel(food) };
+    }
+    const recipe = await getRecipe(source.recipeId, userId);
+    if (!recipe) return { ok: false, error: t.errors.recipeMissing };
+    const asFood = recipeAsFood(recipe);
+    if (!asFood.ok) return { ok: false, error: recipeProblemMessage(asFood.error) };
+    return { ok: true, food: asFood.food, link: { recipe_id: recipe.id }, label: entryLabel({ name: recipe.name, brand: null }) };
   } catch (error) {
-    console.error("[diary] food lookup failed", error);
-    return null;
+    console.error("[diary] source lookup failed", error);
+    return { ok: false, error: source.kind === "food" ? t.errors.foodMissing : t.errors.recipeMissing };
   }
 }
 
 type EntryUpdate = Database["public"]["Tables"]["food_entries"]["Update"];
 
 /** Grams + snapshot columns for `amount` of `food`. */
-function amountColumns(food: FoodDetail, amount: EntryAmount) {
+function amountColumns(food: LoggableFood, amount: EntryAmount) {
   return {
     grams: amount.grams,
     quantity: amount.quantity,
@@ -82,11 +99,11 @@ function amountColumns(food: FoodDetail, amount: EntryAmount) {
   };
 }
 
-function resolve(food: FoodDetail, unit: EntryUnit, amount: number) {
+function resolve(food: LoggableFood, unit: EntryUnit, amount: number) {
   return resolveEntryAmount(unit, amount, food.portions);
 }
 
-/** Form action: logs `amount` of a food into a meal on a date. */
+/** Form action: logs `amount` of a food or recipe into a meal on a date. */
 export async function createEntry(_previous: EntryFormState, formData: FormData): Promise<EntryFormState> {
   const user = await getCurrentUser();
   if (!user) return failed(formData, t.errors.unauthorized);
@@ -95,10 +112,10 @@ export async function createEntry(_previous: EntryFormState, formData: FormData)
   if (!parsed.ok) return invalid(parsed);
   const input = parsed.value;
 
-  const food = await loadFood(input.foodId, user.id);
-  if (!food) return failed(formData, t.errors.foodMissing);
+  const source = await loadSource(input.source, user.id);
+  if (!source.ok) return failed(formData, source.error);
 
-  const amount = resolve(food, input.unit, input.amount);
+  const amount = resolve(source.food, input.unit, input.amount);
   if (!amount.ok) return amountFailed(formData, amount.error);
 
   const supabase = await createClient();
@@ -106,9 +123,9 @@ export async function createEntry(_previous: EntryFormState, formData: FormData)
     user_id: user.id,
     entry_date: input.date,
     meal: input.meal,
-    food_id: food.id,
-    label: entryLabel(food),
-    ...amountColumns(food, amount.value),
+    ...source.link,
+    label: source.label,
+    ...amountColumns(source.food, amount.value),
   });
   if (isRowQuotaViolation(error)) return failed(formData, t.errors.dayFull);
   if (error) {
@@ -122,8 +139,8 @@ export async function createEntry(_previous: EntryFormState, formData: FormData)
 
 /**
  * Form action: moves an entry to another meal and/or changes its amount.
- * The snapshot is recomputed (from the food as it is now) only when the
- * amount changes; a meal-only edit keeps the logged values untouched.
+ * The snapshot is recomputed (from the food or recipe as it is now) only
+ * when the amount changes; a meal-only edit keeps the logged values untouched.
  */
 export async function updateEntry(_previous: EntryFormState, formData: FormData): Promise<EntryFormState> {
   const user = await getCurrentUser();
@@ -136,7 +153,7 @@ export async function updateEntry(_previous: EntryFormState, formData: FormData)
   const supabase = await createClient();
   const { data: entry, error: readError } = await supabase
     .from("food_entries")
-    .select("id, food_id, grams, quantity, portion_label")
+    .select("id, food_id, recipe_id, grams, quantity, portion_label")
     .eq("id", input.entryId)
     .eq("user_id", user.id)
     .maybeSingle();
@@ -145,9 +162,16 @@ export async function updateEntry(_previous: EntryFormState, formData: FormData)
 
   let changes: EntryUpdate = { meal: input.meal };
   if (input.change) {
-    if (entry.food_id === null) return failed(formData, t.errors.foodMissing);
-    const food = await loadFood(entry.food_id, user.id);
-    if (!food) return failed(formData, t.errors.foodMissing);
+    const linked: EntrySource | null =
+      entry.food_id !== null
+        ? { kind: "food", foodId: entry.food_id }
+        : entry.recipe_id !== null
+          ? { kind: "recipe", recipeId: entry.recipe_id }
+          : null;
+    if (!linked) return failed(formData, t.errors.foodMissing);
+    const source = await loadSource(linked, user.id);
+    if (!source.ok) return failed(formData, source.error);
+    const food = source.food;
 
     const amount = resolve(food, input.change.unit, input.change.amount);
     if (!amount.ok) return amountFailed(formData, amount.error);

@@ -6,7 +6,7 @@ type PageHeaderProps = {
   actions?: ReactNode;
 };
 
-/** Page title: Inter on mobile, display face (Satoshi substitute) on desktop. */
+/** Page title: body font on mobile, display face (Bricolage Grotesque) on desktop. */
 export function PageHeader({ title, description, actions }: PageHeaderProps) {
   return (
     <header className="flex flex-wrap items-end justify-between gap-12">

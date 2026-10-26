@@ -11,7 +11,7 @@ type BarcodeFormProps = {
   pending?: boolean;
 };
 
-/** Manual barcode entry. Camera scanning will feed the same action later. */
+/** Manual barcode entry; camera scans (BarcodeScanner) feed the same action. */
 export function BarcodeForm({ state, action, pending = false }: BarcodeFormProps) {
   const error = state.status === "error" ? state.error : null;
   return (

@@ -20,10 +20,10 @@ test.describe("Today", () => {
     await data.foodEntry({ date: addDays(today, -1), meal: "dinner", label: "Pizza", grams: 300, kcal: 900 });
 
     await page.goto("/today");
-    const balance = page.getByRole("region", { name: "Remaining" });
+    const balance = page.getByRole("region", { name: "Left to eat today" });
     await expect(balance).toBeVisible();
-    await expect(balance.getByText("+ Exercise").locator("..")).toContainText("372");
-    await expect(balance.getByText("− Food").locator("..")).toContainText("1000");
+    await expect(balance.getByText("Exercise", { exact: true }).locator("..")).toContainText("+372");
+    await expect(balance.getByText("Food", { exact: true }).locator("..")).toContainText("−1000");
     await captureScreen(page, testInfo, "today");
   });
 

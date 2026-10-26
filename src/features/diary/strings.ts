@@ -51,6 +51,7 @@ export const diaryStrings = {
     gramsOption: "grams (g)",
     portion: (quantity: string, label: string, grams: string) => `${quantity} × ${label} · ${grams} g`,
     portionOption: (label: string, grams: string) => `${label} (${grams} g)`,
+    serving: "1 serving",
   },
 
   add: {
@@ -63,6 +64,9 @@ export const diaryStrings = {
     offTitle: "Open Food Facts",
     back: "Back to search",
     loadingFood: "Loading food…",
+    recipesHeading: "Recipes",
+    recipeBadge: "Recipe",
+    perServing: "per serving",
   },
 
   entryForm: {
@@ -78,7 +82,7 @@ export const diaryStrings = {
     update: "Save changes",
     perHundred: (kcal: string) => `${kcal} kcal per 100 g`,
     foodDeleted:
-      "The food behind this entry was deleted, so its amount can't change. You can still move it to another meal or delete it.",
+      "The food or recipe behind this entry was deleted, so its amount can't change. You can still move it to another meal or delete it.",
     foodLoadFailed: "Could not load this food.",
     retry: "Try again",
   },
@@ -107,6 +111,10 @@ export const diaryStrings = {
     saveFailed: "Could not save the entry. Try again.",
     dayFull: "This day already has the maximum number of entries.",
     foodMissing: "This food no longer exists.",
+    recipeMissing: "This recipe no longer exists.",
+    recipeEmpty: "This recipe has no ingredients yet, so it can't be logged. Add some in Foods → Recipes.",
+    recipeFoodMissing:
+      "An ingredient of this recipe is no longer available, so it can't be logged. Edit the recipe to remove it.",
     portionMissing: "This portion no longer exists. Pick another one.",
     entryMissing: "This entry no longer exists.",
     deleteFailed: "Could not delete the entry.",

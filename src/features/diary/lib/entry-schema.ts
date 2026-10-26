@@ -20,10 +20,13 @@ const decimalSchema = z.preprocess(
   z.number({ error: (issue) => (issue.input === undefined ? v.required : v.number) }),
 );
 
+/** What is logged: a food, or a recipe (logged like a food whose portion is one serving). */
+export type EntrySource = { kind: "food"; foodId: number } | { kind: "recipe"; recipeId: number };
+
 export type CreateEntryInput = {
   date: CalendarDate;
   meal: Meal;
-  foodId: number;
+  source: EntrySource;
   unit: EntryUnit;
   amount: number;
 };
@@ -86,17 +89,27 @@ function invalid(formData: FormData, fieldErrors: EntryFieldErrors): ParseEntryR
   return { ok: false, fieldErrors, formError: v.fix, values: readEntryFormValues(formData) };
 }
 
+/** Exactly one of the hidden foodId / recipeId fields, as a positive id. */
+function parseSource(formData: FormData): EntrySource | null {
+  const rawFood = formData.get("foodId");
+  const rawRecipe = formData.get("recipeId");
+  if ((rawFood === null) === (rawRecipe === null)) return null;
+  const id = idSchema.safeParse(rawFood ?? rawRecipe);
+  if (!id.success) return null;
+  return rawFood !== null ? { kind: "food", foodId: id.data } : { kind: "recipe", recipeId: id.data };
+}
+
 /** Reads and validates the "add entry" form. */
 export function parseCreateEntryForm(formData: FormData): ParseEntryResult<CreateEntryInput> {
   const date = diaryDateSchema.safeParse(formData.get("date"));
-  const foodId = idSchema.safeParse(formData.get("foodId"));
+  const source = parseSource(formData);
   const unit = parseUnit(formData.get("unit"));
   // Hidden fields or a <select> value the UI never renders: not the user's typo.
-  if (!date.success || !foodId.success || !unit) return tampered(formData);
+  if (!date.success || !source || !unit) return tampered(formData);
 
   const { meal, amount, fieldErrors } = parseVisible(formData, unit);
   if (meal === null || amount === null) return invalid(formData, fieldErrors);
-  return { ok: true, value: { date: date.data, meal, foodId: foodId.data, unit, amount } };
+  return { ok: true, value: { date: date.data, meal, source, unit, amount } };
 }
 
 /** Reads and validates the "edit entry" form. Without a unit field only the meal changes. */

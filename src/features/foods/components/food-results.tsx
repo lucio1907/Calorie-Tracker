@@ -17,7 +17,8 @@ type FoodResultsProps = {
   favoritesOnly: boolean;
   onSelect: (food: FoodSummary) => void;
   onRetry: () => void;
-  onSearchOff: () => void;
+  /** Offers an Open Food Facts search for longer queries; omit to hide it. */
+  onSearchOff?: () => void;
 };
 
 function FoodRow({ food, onSelect }: { food: FoodSummary; onSelect: (food: FoodSummary) => void }) {
@@ -73,7 +74,7 @@ export function FoodResults({ foods, status, query, favoritesOnly, onSelect, onR
     return (
       <div className="flex flex-col items-start gap-12 rounded-largecards bg-surface-muted p-16">
         <p className="text-body-lg text-ink-muted">{message}</p>
-        {!favoritesOnly && trimmed.length >= 3 ? <Button onClick={onSearchOff}>{t.tryOff}</Button> : null}
+        {onSearchOff && !favoritesOnly && trimmed.length >= 3 ? <Button onClick={onSearchOff}>{t.tryOff}</Button> : null}
       </div>
     );
   }
@@ -93,7 +94,7 @@ export function FoodResults({ foods, status, query, favoritesOnly, onSelect, onR
           <FoodRow key={food.id} food={food} onSelect={onSelect} />
         ))}
       </ul>
-      {trimmed.length >= 3 && !favoritesOnly ? (
+      {onSearchOff && trimmed.length >= 3 && !favoritesOnly ? (
         <div>
           <Button variant="ghost" onClick={onSearchOff}>
             {t.tryOff}

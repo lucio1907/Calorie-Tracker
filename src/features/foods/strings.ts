@@ -3,6 +3,7 @@ export const foodsStrings = {
   title: "Foods",
   description: "Search the catalog, scan a barcode or add your own foods.",
   newFood: "New food",
+  recipes: "Recipes",
 
   search: {
     label: "Search foods",
@@ -29,7 +30,12 @@ export const foodsStrings = {
 
   barcode: {
     label: "Scan / enter barcode",
-    hint: "8 to 14 digits. Camera scanning is coming soon.",
+    hint: "8 to 14 digits.",
+    scan: "Scan with camera",
+    stopScan: "Stop camera",
+    cameraPreview: "Camera preview. Point it at the barcode.",
+    cameraDenied: "Camera access was denied. Allow it in your browser settings or type the code.",
+    cameraUnavailable: "The camera is not available. Type the code instead.",
     submit: "Look up",
     submitting: "Looking up…",
     invalid: "Enter 8 to 14 digits.",

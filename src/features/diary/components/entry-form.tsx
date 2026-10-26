@@ -27,6 +27,8 @@ type EntryFormProps = {
   defaults: EntryFormDefaults;
   /** Shown when `food` is null: what the entry logged. */
   logged?: EntryPreview;
+  /** Shown when `food` is null instead of the "deleted" note (e.g. why a recipe can't be logged). */
+  unavailableNote?: string;
   /** Hidden ids (date + foodId to create, entryId to edit). */
   hidden: Record<string, string>;
   submitLabel: string;
@@ -84,6 +86,7 @@ export function EntryForm({
   title,
   defaults,
   logged,
+  unavailableNote,
   hidden,
   submitLabel,
   state,
@@ -120,7 +123,7 @@ export function EntryForm({
           {food ? (
             <p className="text-caption text-ink-muted">{t.entryForm.perHundred(formatKcal(food.kcal))}</p>
           ) : (
-            <p className="text-body text-ink-muted">{t.entryForm.foodDeleted}</p>
+            <p className="text-body text-ink-muted">{unavailableNote ?? t.entryForm.foodDeleted}</p>
           )}
         </div>
 

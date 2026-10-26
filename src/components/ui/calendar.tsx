@@ -130,7 +130,7 @@ export function Calendar<T extends DateValue>({ today, className, ...props }: Ca
                     blocked
                       ? "cursor-not-allowed text-silver"
                       : "cursor-pointer motion-safe:data-[pressed]:scale-95",
-                    !blocked && isSelected && "bg-brand font-semibold text-on-action data-[hovered]:bg-deep-sapphire",
+                    !blocked && isSelected && "bg-brand font-semibold text-on-action data-[hovered]:bg-action-hover",
                     !blocked && !isSelected && "data-[hovered]:bg-surface-alt",
                     !blocked && !isSelected && (isToday ? "font-semibold text-brand ring-1 ring-brand ring-inset" : "text-ink"),
                     isOutsideMonth && "invisible",

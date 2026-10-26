@@ -1,6 +1,7 @@
 import { DayTransition } from "@/components/ui";
 import { requireUser } from "@/features/auth/data/current-user";
 import { getRecentFoods, searchFoods } from "@/features/foods/data/foods";
+import { getRecipes } from "@/features/recipes/data/recipes";
 import { appToday, suggestMealAt } from "@/lib/app-time";
 import { requestNow } from "@/lib/request-time";
 import { Meal } from "@/domain";
@@ -22,10 +23,11 @@ export async function DiaryPage({ searchParams }: DiaryPageProps) {
   const today = appToday(now);
   const date = resolveDiaryDate(dateParam, today);
 
-  const [entries, recentFoods, initialFoods] = await Promise.all([
+  const [entries, recentFoods, initialFoods, recipes] = await Promise.all([
     getDiaryEntries(user.id, date),
     getRecentFoods(),
     searchFoods({ query: "", favoritesOnly: false }),
+    getRecipes(user.id),
   ]);
 
   return (
@@ -39,6 +41,7 @@ export async function DiaryPage({ searchParams }: DiaryPageProps) {
         suggestedMeal={date === today ? suggestMealAt(now) : Meal.Breakfast}
         recentFoods={recentFoods}
         initialFoods={initialFoods}
+        recipes={recipes}
       />
     </DayTransition>
   );

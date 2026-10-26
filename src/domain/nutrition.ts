@@ -41,6 +41,17 @@ export function nutrientSnapshot(per100g: Nutrients, grams: number): Nutrients {
   if (!Number.isFinite(grams) || grams <= 0 || grams > MAX_ENTRY_GRAMS) {
     throw new InvalidArgumentError(`Grams must be greater than 0 and at most ${MAX_ENTRY_GRAMS}, got ${grams}.`);
   }
+  return nutrientsForGrams(per100g, grams);
+}
+
+/**
+ * nutrientSnapshot's math and rounding without the per-entry gram limit, for
+ * amounts that are never stored as one entry (a recipe's ingredients and totals).
+ */
+export function nutrientsForGrams(per100g: Nutrients, grams: number): Nutrients {
+  if (!Number.isFinite(grams) || grams < 0) {
+    throw new InvalidArgumentError(`Grams must be a non-negative number, got ${grams}.`);
+  }
   const gramsHundredths = toHundredths(grams);
 
   const snapshot = { ...ZERO_NUTRIENTS };

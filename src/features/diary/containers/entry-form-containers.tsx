@@ -4,10 +4,11 @@ import { useActionState, useState, useTransition } from "react";
 import { Button } from "@/components/ui";
 import type { CalendarDate, Meal } from "@/domain";
 import { useFoodDetail } from "@/features/foods/hooks/use-food-detail";
-import type { FoodDetail } from "@/features/foods/lib/types";
+import type { Recipe } from "@/features/recipes/lib/types";
 import { createEntry, deleteEntry, updateEntry } from "../actions/entry-actions";
 import { EntryForm, type EntryFormDefaults } from "../components/entry-form";
 import { GRAMS_UNIT } from "../lib/entry-amount";
+import { recipeAsFood, recipeProblemMessage, type LoggableFood } from "../lib/recipe-food";
 import { initialEntryFormState, type DiaryEntry, type EntryFormState } from "../lib/types";
 import { diaryStrings } from "../strings";
 
@@ -34,14 +35,14 @@ function FoodLoadState({ status, onRetry }: { status: "loading" | "not_found" | 
   );
 }
 
-/** Start with one portion when the food has any, otherwise 100 g. */
-function createDefaults(food: FoodDetail, meal: Meal): EntryFormDefaults {
+/** Start with one portion (a recipe: one serving) when the food has any, otherwise 100 g. */
+function createDefaults(food: LoggableFood, meal: Meal): EntryFormDefaults {
   const first = food.portions[0];
   return first ? { meal, unit: String(first.id), amount: "1" } : { meal, unit: GRAMS_UNIT, amount: "100" };
 }
 
 /** Restore how the entry was logged; fall back to grams when its portion is gone. */
-function editDefaults(entry: DiaryEntry, food: FoodDetail | null): EntryFormDefaults {
+function editDefaults(entry: DiaryEntry, food: LoggableFood | null): EntryFormDefaults {
   const portion =
     entry.quantity !== null && entry.portionLabel !== null
       ? food?.portions.find((candidate) => candidate.label === entry.portionLabel)
@@ -59,14 +60,18 @@ type AddEntryContainerProps = {
   onBack: () => void;
 };
 
-/** Second step of "add food": amount for the picked food, saved with createEntry. */
-export function AddEntryContainer({ foodId, meal, date, onSaved, onBack }: AddEntryContainerProps) {
-  const { food, status, reload } = useFoodDetail(foodId);
-  const [state, formAction, pending] = useActionState(async (previous: EntryFormState, formData: FormData) => {
+function useCreateEntry(onSaved: () => void) {
+  return useActionState(async (previous: EntryFormState, formData: FormData) => {
     const next = await createEntry(previous, formData);
     if (next.status === "saved") onSaved();
     return next;
   }, initialEntryFormState);
+}
+
+/** Second step of "add food": amount for the picked food, saved with createEntry. */
+export function AddEntryContainer({ foodId, meal, date, onSaved, onBack }: AddEntryContainerProps) {
+  const { food, status, reload } = useFoodDetail(foodId);
+  const [state, formAction, pending] = useCreateEntry(onSaved);
 
   if (!food) {
     return (
@@ -87,6 +92,46 @@ export function AddEntryContainer({ foodId, meal, date, onSaved, onBack }: AddEn
       title={food.name}
       defaults={createDefaults(food, meal)}
       hidden={{ date, foodId: String(food.id) }}
+      submitLabel={t.entryForm.save}
+      state={state}
+      action={formAction}
+      pending={pending}
+      onCancel={onBack}
+      cancelLabel={t.add.back}
+    />
+  );
+}
+
+type AddRecipeEntryContainerProps = Omit<AddEntryContainerProps, "foodId"> & { recipe: Recipe };
+
+/**
+ * Second step for a recipe: the same form, with one serving as the only
+ * portion. The server recomputes everything from the stored ingredients.
+ */
+export function AddRecipeEntryContainer({ recipe, meal, date, onSaved, onBack }: AddRecipeEntryContainerProps) {
+  const [state, formAction, pending] = useCreateEntry(onSaved);
+  const asFood = recipeAsFood(recipe);
+
+  if (!asFood.ok) {
+    return (
+      <div className="flex flex-col items-start gap-16">
+        <p className="text-body-lg font-semibold text-ink">{recipe.name}</p>
+        <p role="alert" className="text-body text-danger-ink">
+          {recipeProblemMessage(asFood.error)}
+        </p>
+        <Button variant="ghost" onClick={onBack}>
+          {t.add.back}
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <EntryForm
+      food={asFood.food}
+      title={recipe.name}
+      defaults={createDefaults(asFood.food, meal)}
+      hidden={{ date, recipeId: String(recipe.id) }}
       submitLabel={t.entryForm.save}
       state={state}
       action={formAction}
@@ -148,7 +193,12 @@ function DeleteEntryControl({ entry, onDeleted }: { entry: DiaryEntry; onDeleted
   );
 }
 
-function EditEntryForm({ entry, food, onDone }: EditEntryContainerProps & { food: FoodDetail | null }) {
+function EditEntryForm({
+  entry,
+  food,
+  unavailableNote,
+  onDone,
+}: EditEntryContainerProps & { food: LoggableFood | null; unavailableNote?: string }) {
   const [state, formAction, pending] = useActionState(async (previous: EntryFormState, formData: FormData) => {
     const next = await updateEntry(previous, formData);
     if (next.status === "saved") onDone();
@@ -161,6 +211,7 @@ function EditEntryForm({ entry, food, onDone }: EditEntryContainerProps & { food
       title={entry.label}
       defaults={editDefaults(entry, food)}
       logged={{ grams: entry.grams, nutrients: entry }}
+      unavailableNote={unavailableNote}
       hidden={{ entryId: String(entry.id) }}
       submitLabel={t.entryForm.update}
       state={state}
@@ -179,11 +230,18 @@ function EditLinkedEntry({ entry, foodId, onDone }: EditEntryContainerProps & { 
   return <EditEntryForm entry={entry} food={food} onDone={onDone} />;
 }
 
-/** Edit an entry's meal and amount, or delete it. */
-export function EditEntryContainer({ entry, onDone }: EditEntryContainerProps) {
-  return entry.foodId === null ? (
-    <EditEntryForm entry={entry} food={null} onDone={onDone} />
-  ) : (
-    <EditLinkedEntry entry={entry} foodId={entry.foodId} onDone={onDone} />
+/** Edit an entry's meal and amount, or delete it. `recipes` are the caller's, for recipe entries. */
+export function EditEntryContainer({ entry, recipes, onDone }: EditEntryContainerProps & { recipes: Recipe[] }) {
+  if (entry.foodId !== null) return <EditLinkedEntry entry={entry} foodId={entry.foodId} onDone={onDone} />;
+
+  const recipe = entry.recipeId === null ? undefined : recipes.find((candidate) => candidate.id === entry.recipeId);
+  const asFood = recipe ? recipeAsFood(recipe) : null;
+  return (
+    <EditEntryForm
+      entry={entry}
+      food={asFood?.ok ? asFood.food : null}
+      unavailableNote={asFood && !asFood.ok ? recipeProblemMessage(asFood.error) : undefined}
+      onDone={onDone}
+    />
   );
 }
