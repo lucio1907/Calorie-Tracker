@@ -19,7 +19,7 @@ export function formatAmount(value: number): string {
   return formatter(1).format(value);
 }
 
-/** Value for an input's defaultValue: plain number text, empty for null. */
+/** Value for an input's defaultValue: full-precision number with a decimal comma ("72,5"), empty for null. */
 export function toInputValue(value: number | null | undefined): string {
-  return value === null || value === undefined ? "" : String(value);
+  return value === null || value === undefined ? "" : String(value).replace(".", ",");
 }

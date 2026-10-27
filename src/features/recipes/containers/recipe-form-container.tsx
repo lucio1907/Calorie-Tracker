@@ -5,6 +5,7 @@ import { FoodResults } from "@/features/foods/components/food-results";
 import { FoodSearchBar } from "@/features/foods/components/food-search-bar";
 import { useFoodSearch } from "@/features/foods/hooks/use-food-search";
 import { toDecimal } from "@/features/foods/lib/food-schema";
+import { toInputValue } from "@/features/foods/lib/format";
 import type { FoodSummary } from "@/features/foods/lib/types";
 import { createRecipe, updateRecipe } from "../actions/recipe-actions";
 import { RecipeForm, type IngredientDraft } from "../components/recipe-form";
@@ -67,14 +68,14 @@ export function RecipeFormContainer({ recipe, initialFoods, onSaved, onCancel }:
     return next;
   }, initialRecipeFormState);
 
-  const [servings, setServings] = useState(recipe ? String(recipe.servings) : "1");
+  const [servings, setServings] = useState(recipe ? toInputValue(recipe.servings) : "1");
   const [ingredients, setIngredients] = useState<IngredientDraft[]>(
     () =>
       recipe?.items.map((item) => ({
         key: `item-${item.id}`,
         foodId: item.foodId,
         name: item.food?.name ?? null,
-        grams: String(item.grams),
+        grams: toInputValue(item.grams),
       })) ?? [],
   );
   // Per-100 g values of every food on the form, for the live summary.
