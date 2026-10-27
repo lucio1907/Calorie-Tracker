@@ -13,22 +13,22 @@ import { addDays, appToday, expect, test } from "./support/fixtures";
 type AppRoute = { path: string; heading: string; inTabBar: boolean };
 
 const ROUTES: readonly AppRoute[] = [
-  { path: "/today", heading: "Today", inTabBar: true },
-  { path: "/diary", heading: "Diary", inTabBar: true },
-  { path: "/activity", heading: "Activity", inTabBar: false },
-  { path: "/foods", heading: "Foods", inTabBar: false },
-  { path: "/progress", heading: "Progress", inTabBar: true },
-  { path: "/settings", heading: "Settings", inTabBar: true },
+  { path: "/today", heading: "Hoy", inTabBar: true },
+  { path: "/diary", heading: "Diario", inTabBar: true },
+  { path: "/activity", heading: "Actividad", inTabBar: false },
+  { path: "/foods", heading: "Alimentos", inTabBar: false },
+  { path: "/progress", heading: "Progreso", inTabBar: true },
+  { path: "/settings", heading: "Ajustes", inTabBar: true },
 ];
 
 /** The sidebar (desktop) or the bottom tab bar (mobile), whichever is on screen. */
 function mainNav(page: Page, mobile: boolean) {
-  return page.getByRole("navigation", { name: mobile ? "Main (mobile)" : "Main", exact: true });
+  return page.getByRole("navigation", { name: mobile ? "Principal (móvil)" : "Principal", exact: true });
 }
 
 /** The page skeleton (other status regions, like empty states, stay out). */
 function loading(page: Page) {
-  return page.getByRole("status").filter({ hasText: "Loading…" });
+  return page.getByRole("status").filter({ hasText: "Cargando…" });
 }
 
 /** The shell: the real page heading plus the loading placeholder for its data. */
@@ -85,7 +85,7 @@ test.describe("search-param navigations are instant", () => {
       await expectLoaded(page, route.heading);
 
       await instant(page, async () => {
-        await page.getByRole("link", { name: "Previous day" }).click();
+        await page.getByRole("link", { name: "Día anterior" }).click();
         await page.waitForURL((url) => url.searchParams.get("date") === yesterday);
         await expectShell(page, route.heading);
       });
@@ -95,13 +95,13 @@ test.describe("search-param navigations are instant", () => {
 
   test("/progress to another range", async ({ page }) => {
     await page.goto("/progress?range=30");
-    await expectLoaded(page, "Progress");
+    await expectLoaded(page, "Progreso");
 
     await instant(page, async () => {
       await page.getByRole("link", { name: "7 days" }).click();
       await page.waitForURL((url) => url.searchParams.get("range") === "7");
-      await expectShell(page, "Progress");
+      await expectShell(page, "Progreso");
     });
-    await expectLoaded(page, "Progress");
+    await expectLoaded(page, "Progreso");
   });
 });

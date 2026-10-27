@@ -48,22 +48,21 @@ describe("DatePicker", () => {
   it("submits the date as YYYY-MM-DD under its name, and empty until set", () => {
     const { unmount } = render(<Harness initial="1996-01-10" />);
     expect(submitted()).toEqual({ birthDate: "1996-01-10" });
-    expect(screen.getByRole("group", { name: "Birth date" })).toHaveTextContent("1/10/1996");
+    expect(screen.getByRole("group", { name: "Birth date" })).toHaveTextContent("10/1/1996");
     unmount();
 
     render(<Harness />);
     expect(submitted()).toEqual({ birthDate: "" });
   });
 
-  it("accepts a typed date in the month/day/year segments", async () => {
+  it("accepts a typed date in the day/month/year segments", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(<Harness onChange={onChange} />);
 
-    await user.click(screen.getByRole("spinbutton", { name: /month/i }));
-    await user.keyboard("07191990");
+    await user.click(screen.getByRole("spinbutton", { name: /día/i }));
+    await user.keyboard("19071990");
 
-    console.log("CALLS", JSON.stringify(onChange.mock.calls), document.activeElement?.getAttribute("aria-label"), document.activeElement?.textContent);
     expect(onChange).toHaveBeenLastCalledWith("1990-07-19");
     expect(submitted()).toEqual({ birthDate: "1990-07-19" });
   });
@@ -74,10 +73,10 @@ describe("DatePicker", () => {
     const grid = await openCalendar(user);
 
     const headers = within(grid).getAllByRole("columnheader", { hidden: true }).map((cell) => cell.textContent);
-    expect(headers).toEqual(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]);
-    await waitFor(() => expect(day(grid, /October 1, 2008/)).toHaveFocus());
-    expect(day(grid, /October 15, 2008/)).not.toHaveAttribute("aria-disabled");
-    expect(day(grid, /October 16, 2008/)).toHaveAttribute("aria-disabled", "true");
+    expect(headers).toEqual(["lun", "mar", "mié", "jue", "vie", "sáb", "dom"]);
+    await waitFor(() => expect(day(grid, /, 1 de octubre de 2008/)).toHaveFocus());
+    expect(day(grid, /, 15 de octubre de 2008/)).not.toHaveAttribute("aria-disabled");
+    expect(day(grid, /, 16 de octubre de 2008/)).toHaveAttribute("aria-disabled", "true");
   });
 
   it("moves through the grid with the keyboard and picks with Enter", async () => {
@@ -85,10 +84,10 @@ describe("DatePicker", () => {
     const onChange = vi.fn();
     render(<Harness initial="1996-01-10" onChange={onChange} />);
     const grid = await openCalendar(user);
-    await waitFor(() => expect(day(grid, /January 10, 1996/)).toHaveFocus());
+    await waitFor(() => expect(day(grid, /, 10 de enero de 1996/)).toHaveFocus());
 
     await user.keyboard("{ArrowRight}{ArrowDown}");
-    expect(day(grid, /January 18, 1996/)).toHaveFocus();
+    expect(day(grid, /, 18 de enero de 1996/)).toHaveFocus();
     await user.keyboard("{Enter}");
 
     expect(onChange).toHaveBeenLastCalledWith("1996-01-18");
@@ -102,13 +101,13 @@ describe("DatePicker", () => {
     render(<Harness initial="2000-03-10" onChange={onChange} />);
     await openCalendar(user);
 
-    await user.click(screen.getByRole("button", { name: /^2000 Year/ }));
+    await user.click(screen.getByRole("button", { name: /^2000 Año/ }));
     await user.click(await screen.findByRole("option", { name: "1975" }));
     await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
     // The month stays March.
     const grid = screen.getByRole("grid");
-    expect(grid).toHaveAccessibleName(/March 1975/);
-    await user.click(day(grid, /March 4, 1975/));
+    expect(grid).toHaveAccessibleName(/marzo de 1975/);
+    await user.click(day(grid, /, 4 de marzo de 1975/));
 
     expect(onChange).toHaveBeenLastCalledWith("1975-03-04");
   });
@@ -118,7 +117,7 @@ describe("DatePicker", () => {
     render(<Harness initial="2000-03-10" />);
     await openCalendar(user);
 
-    await user.click(screen.getByRole("button", { name: /^2000 Year/ }));
+    await user.click(screen.getByRole("button", { name: /^2000 Año/ }));
     const years = (await screen.findAllByRole("option")).map((option) => option.textContent);
     expect(years[0]).toBe("1900");
     expect(years.at(-1)).toBe("2008");
@@ -141,7 +140,7 @@ describe("DatePicker", () => {
     const user = userEvent.setup();
     render(<Harness initial="1996-01-10" />);
     const grid = await openCalendar(user);
-    await user.click(day(grid, /January 20, 1996/));
+    await user.click(day(grid, /, 20 de enero de 1996/));
 
     await waitFor(() => expect(screen.queryByRole("grid")).not.toBeInTheDocument());
     expect(submitted()).toEqual({ birthDate: "1996-01-20" });

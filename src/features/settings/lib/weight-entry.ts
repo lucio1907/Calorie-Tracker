@@ -33,7 +33,7 @@ export function todayWeightEntry(kg: number, now: Date): { entry_date: CalendarD
   return { entry_date: appToday(now), kg };
 }
 
-const kgFormat = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2, useGrouping: false });
+const kgFormat = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 2, useGrouping: false });
 
 /** "Latest: 80.5 kg (today)", or the date it was logged ("Wednesday, October 14"). */
 export function latestWeightText(latest: LatestWeight | null, today: CalendarDate): string {

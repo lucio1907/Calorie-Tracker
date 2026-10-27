@@ -1,16 +1,16 @@
 import type { CalendarDate } from "@/domain";
 
-const shortDate = new Intl.DateTimeFormat("en-US", { timeZone: "UTC", month: "short", day: "numeric" });
-const kgFormat = new Intl.NumberFormat("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 2, useGrouping: false });
-const signedKg = new Intl.NumberFormat("en-US", {
+const shortDate = new Intl.DateTimeFormat("es-AR", { timeZone: "UTC", month: "short", day: "numeric" });
+const kgFormat = new Intl.NumberFormat("es-AR", { minimumFractionDigits: 1, maximumFractionDigits: 2, useGrouping: false });
+const signedKg = new Intl.NumberFormat("es-AR", {
   minimumFractionDigits: 1,
   maximumFractionDigits: 2,
   useGrouping: false,
   signDisplay: "exceptZero",
 });
-const signedKcal = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0, useGrouping: false, signDisplay: "exceptZero" });
+const signedKcal = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 0, useGrouping: false, signDisplay: "exceptZero" });
 
-/** "Oct 14": formatted in UTC from UTC midnight, so the calendar day never shifts. */
+/** "14 oct": formatted in UTC from UTC midnight, so the calendar day never shifts. */
 export function formatShortDate(date: CalendarDate): string {
   return shortDate.format(new Date(`${date}T00:00:00Z`));
 }

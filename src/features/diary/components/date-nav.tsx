@@ -63,8 +63,8 @@ export function DateNav({ date, today, onPick, basePath = "/diary" }: DateNavPro
           >
             <span className="flex min-w-0 flex-col items-center">
               <span className="sr-only">{t.pickDate}: </span>
-              <span className="text-body-lg font-semibold text-ink">{relative ? t.relative[relative] : formatted}</span>
-              {relative ? <span className="text-caption text-ink-muted">{formatted}</span> : null}
+              <span className="text-body-lg font-semibold text-ink first-letter:uppercase">{relative ? t.relative[relative] : formatted}</span>
+              {relative ? <span className="text-caption text-ink-muted first-letter:uppercase">{formatted}</span> : null}
             </span>
             <CalendarDays aria-hidden="true" size={18} className="shrink-0 text-ink-muted" />
           </CalendarPopover>

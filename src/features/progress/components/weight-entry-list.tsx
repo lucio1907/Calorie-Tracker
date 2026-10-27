@@ -31,7 +31,7 @@ function Row({
         className="flex min-h-56 w-full items-center gap-12 px-16 py-12 text-left transition-colors duration-150 hover:bg-surface-alt active:bg-surface-alt"
       >
         <span className="flex min-w-0 flex-1 flex-col gap-4">
-          <span className="text-body-lg text-ink">{formatDiaryDate(entry.date, today)}</span>
+          <span className="text-body-lg text-ink first-letter:uppercase">{formatDiaryDate(entry.date, today)}</span>
           {entry.changeKg !== null ? (
             <span>
               <PillBadge className="tabular">{t.entries.changeFromPrevious(formatSignedKg(entry.changeKg))}</PillBadge>

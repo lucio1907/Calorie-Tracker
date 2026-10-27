@@ -21,21 +21,21 @@ test.describe("Login", () => {
     await captureScreen(page, testInfo, "login");
 
     await page.getByLabel("Email").fill(emailFor(testInfo.project.name));
-    await page.getByLabel("Password").fill(E2E_PASSWORD);
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByLabel("Contraseña").fill(E2E_PASSWORD);
+    await page.getByRole("button", { name: "Iniciar sesión" }).click();
 
     // Back to the page that asked for a session.
     await expect(page).toHaveURL(/\/diary$/);
-    await expect(page.getByRole("heading", { name: "Diary", level: 1 })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Diario", level: 1 })).toBeVisible();
   });
 
   test("rejects bad credentials", async ({ page }, testInfo) => {
     await page.goto("/login");
     await page.getByLabel("Email").fill(emailFor(testInfo.project.name));
-    await page.getByLabel("Password").fill("not-the-password");
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByLabel("Contraseña").fill("not-the-password");
+    await page.getByRole("button", { name: "Iniciar sesión" }).click();
 
-    await expect(page.locator("form").getByRole("alert")).toHaveText("Email or password is incorrect. Check them and try again.");
+    await expect(page.locator("form").getByRole("alert")).toHaveText("El email o la contraseña no son correctos. Revisalos y probá de nuevo.");
     await expect(page).toHaveURL(/\/login$/);
     // The email stays filled in for another try.
     await expect(page.getByLabel("Email")).toHaveValue(emailFor(testInfo.project.name));

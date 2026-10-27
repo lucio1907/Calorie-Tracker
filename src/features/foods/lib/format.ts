@@ -3,7 +3,7 @@ const formatters = new Map<number, Intl.NumberFormat>();
 function formatter(maxDecimals: number): Intl.NumberFormat {
   let instance = formatters.get(maxDecimals);
   if (!instance) {
-    instance = new Intl.NumberFormat("en-US", { maximumFractionDigits: maxDecimals, useGrouping: false });
+    instance = new Intl.NumberFormat("es-AR", { maximumFractionDigits: maxDecimals, useGrouping: false });
     formatters.set(maxDecimals, instance);
   }
   return instance;
@@ -14,7 +14,7 @@ export function formatKcal(value: number): string {
   return formatter(0).format(value);
 }
 
-/** Grams and milligrams: up to one decimal ("12.5", "0.4", "3"). */
+/** Grams and milligrams: up to one decimal ("12,5", "0,4", "3"). */
 export function formatAmount(value: number): string {
   return formatter(1).format(value);
 }

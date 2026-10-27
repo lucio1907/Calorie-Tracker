@@ -16,7 +16,7 @@ const MACROS = [
   { key: "fat", label: t.macros.fat, barClass: "bg-fat" },
 ] as const;
 
-const rateFormat = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2, useGrouping: false });
+const rateFormat = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 2, useGrouping: false });
 
 type BreakdownItem = { label: string; value: number };
 
