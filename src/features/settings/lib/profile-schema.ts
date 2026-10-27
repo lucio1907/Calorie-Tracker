@@ -13,6 +13,7 @@ import {
   type Sex,
 } from "@/domain";
 import { toDecimal } from "@/features/foods/lib/food-schema";
+import { toInputValue } from "@/features/foods/lib/format";
 import { settingsStrings } from "../strings";
 import type {
   ProfileFieldErrors,
@@ -212,9 +213,9 @@ export function profileFormDefaults(profile: StoredProfile | null): ProfileFormV
       activityLevel: "",
       goal: COLUMN_DEFAULTS.goal,
       goalKgPerWeek: "",
-      proteinGPerKg: String(COLUMN_DEFAULTS.proteinGPerKg),
-      carbsSharePct: String(COLUMN_DEFAULTS.carbsSharePct),
-      fatSharePct: String(COLUMN_DEFAULTS.fatSharePct),
+      proteinGPerKg: toInputValue(COLUMN_DEFAULTS.proteinGPerKg),
+      carbsSharePct: toInputValue(COLUMN_DEFAULTS.carbsSharePct),
+      fatSharePct: toInputValue(COLUMN_DEFAULTS.fatSharePct),
     };
   }
 
@@ -222,12 +223,12 @@ export function profileFormDefaults(profile: StoredProfile | null): ProfileFormV
   return {
     sex: known(SEXES, profile.sex),
     birthDate: profile.birthDate ?? "",
-    heightCm: profile.heightCm === null ? "" : String(profile.heightCm),
+    heightCm: profile.heightCm === null ? "" : toInputValue(profile.heightCm),
     activityLevel: known(ACTIVITY_LEVELS, profile.activityLevel),
     goal,
-    goalKgPerWeek: goal === "maintain" || profile.goalKgPerWeek <= 0 ? "" : String(profile.goalKgPerWeek),
-    proteinGPerKg: String(profile.proteinGPerKg),
-    carbsSharePct: String(profile.carbsSharePct),
-    fatSharePct: String(profile.fatSharePct),
+    goalKgPerWeek: goal === "maintain" || profile.goalKgPerWeek <= 0 ? "" : toInputValue(profile.goalKgPerWeek),
+    proteinGPerKg: toInputValue(profile.proteinGPerKg),
+    carbsSharePct: toInputValue(profile.carbsSharePct),
+    fatSharePct: toInputValue(profile.fatSharePct),
   };
 }

@@ -207,7 +207,7 @@ describe("createEntry with a recipe", () => {
           label: "Rice and chicken",
           grams: 375,
           quantity: 1.5,
-          portion_label: "1 serving",
+          portion_label: t.units.serving,
           kcal: 540,
           protein: 52.58,
           carbs: 63,
@@ -282,11 +282,11 @@ describe("updateEntry", () => {
   });
 
   it("recomputes a recipe entry from the recipe as it is now", async () => {
-    const recipeEntry = { id: 42, food_id: null, recipe_id: 4, grams: 375, quantity: 1.5, portion_label: "1 serving" };
+    const recipeEntry = { id: 42, food_id: null, recipe_id: 4, grams: 375, quantity: 1.5, portion_label: t.units.serving };
     results.push({ data: recipeEntry, error: null }, { data: { id: 42 }, error: null });
     await updateEntry(initialEntryFormState, form({ entryId: "42", meal: "dinner", unit: "1", amount: "2" }));
     expect(getRecipe).toHaveBeenCalledWith(4, USER.id);
-    expect(calls[1].payload).toMatchObject({ grams: 500, quantity: 2, portion_label: "1 serving", kcal: 720 });
+    expect(calls[1].payload).toMatchObject({ grams: 500, quantity: 2, portion_label: t.units.serving, kcal: 720 });
   });
 
   it("only changes the meal of an entry whose food was deleted", async () => {

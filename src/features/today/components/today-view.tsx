@@ -16,7 +16,7 @@ const MACROS = [
   { key: "fat", label: t.macros.fat, barClass: "bg-fat" },
 ] as const;
 
-const rateFormat = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2, useGrouping: false });
+const rateFormat = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 2, useGrouping: false });
 
 type BreakdownItem = { label: string; value: number };
 
@@ -158,7 +158,7 @@ function MacrosCard({ summary }: { summary: ReadySummary }) {
 }
 
 type TodayViewProps = {
-  /** Today's date, already formatted ("Thursday, October 15"). */
+  /** Today's date, already formatted ("jueves, 15 de octubre"). */
   dateLabel: string;
   summary: TodaySummary;
 };

@@ -36,12 +36,12 @@ describe("DateNav", () => {
     render(<DateNav date="2026-10-10" today={TODAY} onPick={vi.fn()} />);
     const grid = await openCalendar(user);
 
-    const shown = within(grid).getByRole("button", { name: /October 10, 2026/ });
+    const shown = within(grid).getByRole("button", { name: /10 de octubre de 2026/ });
     await waitFor(() => expect(shown).toHaveFocus());
     expect(shown.closest("[role=gridcell]")).toHaveAttribute("aria-selected", "true");
     // Highlighted from the `today` prop (the app time zone), not from the browser clock.
-    expect(within(grid).getByRole("button", { name: /October 15, 2026/ })).toHaveClass("ring-brand");
-    expect(within(grid).getByRole("button", { name: /October 14, 2026/ })).not.toHaveClass("ring-brand");
+    expect(within(grid).getByRole("button", { name: /15 de octubre de 2026/ })).toHaveClass("ring-brand");
+    expect(within(grid).getByRole("button", { name: /14 de octubre de 2026/ })).not.toHaveClass("ring-brand");
   });
 
   it("jumps to a picked day with the keyboard and closes", async () => {
@@ -49,7 +49,7 @@ describe("DateNav", () => {
     const onPick = vi.fn();
     render(<DateNav date={TODAY} today={TODAY} onPick={onPick} />);
     const grid = await openCalendar(user);
-    await waitFor(() => expect(within(grid).getByRole("button", { name: /October 15, 2026/ })).toHaveFocus());
+    await waitFor(() => expect(within(grid).getByRole("button", { name: /15 de octubre de 2026/ })).toHaveFocus());
 
     await user.keyboard("{ArrowUp}{Enter}");
 
@@ -63,7 +63,7 @@ describe("DateNav", () => {
     render(<DateNav date={TODAY} today={TODAY} onPick={onPick} />);
     const grid = await openCalendar(user);
 
-    await user.click(within(grid).getByRole("button", { name: /October 15, 2026/ }));
+    await user.click(within(grid).getByRole("button", { name: /15 de octubre de 2026/ }));
     expect(onPick).not.toHaveBeenCalled();
   });
 
@@ -73,8 +73,8 @@ describe("DateNav", () => {
 
     expect(screen.queryByRole("link", { name: t.previous })).not.toBeInTheDocument();
     const grid = await openCalendar(user);
-    expect(grid).toHaveAccessibleName(/January 2000/);
-    const previousMonth = screen.getAllByRole("button", { name: /previous/i }).find((button) => button.getAttribute("slot") === "previous");
+    expect(grid).toHaveAccessibleName(/enero de 2000/);
+    const previousMonth = screen.getAllByRole("button", { name: /anterior/i }).find((button) => button.getAttribute("slot") === "previous");
     expect(previousMonth).toBeDisabled();
   });
 });

@@ -4,10 +4,10 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s · Calorie Tracker",
-    default: "Calorie Tracker",
+    template: "%s · Contador de calorías",
+    default: "Contador de calorías",
   },
-  description: "Personal calorie and macro tracker.",
+  description: "Contador personal de calorías y macros.",
   robots: { index: false, follow: false },
 };
 
@@ -17,7 +17,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${figtree.variable} ${bricolage.variable}`}>
+    <html lang="es-AR" className={`${figtree.variable} ${bricolage.variable}`}>
       <body>{children}</body>
     </html>
   );

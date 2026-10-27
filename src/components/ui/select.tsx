@@ -76,7 +76,7 @@ export function Select({
   }, [open]);
 
   return (
-    <I18nProvider locale="en-US">
+    <I18nProvider locale="es-AR">
       <AriaSelect
         name={name}
         value={value === "" ? null : value}

@@ -30,8 +30,8 @@ export default async function globalSetup(config: FullConfig): Promise<void> {
       const page = await context.newPage();
       await page.goto("/login");
       await page.getByLabel("Email").fill(email);
-      await page.getByLabel("Password").fill(E2E_PASSWORD);
-      await page.getByRole("button", { name: "Sign in" }).click();
+      await page.getByLabel("Contraseña").fill(E2E_PASSWORD);
+      await page.getByRole("button", { name: "Iniciar sesión" }).click();
       await page.waitForURL("**/today");
       await context.storageState({ path: storageStatePath(project.name) });
       await context.close();

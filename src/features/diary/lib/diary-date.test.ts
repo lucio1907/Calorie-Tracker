@@ -51,15 +51,15 @@ describe("relativeDay", () => {
 
 describe("formatDiaryDate", () => {
   it("shows weekday, month and day for the current year", () => {
-    expect(formatDiaryDate("2026-10-14", today)).toBe("Wednesday, October 14");
+    expect(formatDiaryDate("2026-10-14", today)).toBe("miércoles, 14 de octubre");
   });
 
   it("adds the year when it differs from today's", () => {
-    expect(formatDiaryDate("2025-12-31", today)).toBe("Wednesday, December 31, 2025");
+    expect(formatDiaryDate("2025-12-31", today)).toBe("miércoles, 31 de diciembre de 2025");
   });
 
   it("never shifts the day with the time zone", () => {
     // A naive new Date("2026-01-01") is UTC midnight: Dec 31 in Buenos Aires.
-    expect(formatDiaryDate("2026-01-01", today)).toBe("Thursday, January 1");
+    expect(formatDiaryDate("2026-01-01", today)).toBe("jueves, 1 de enero");
   });
 });

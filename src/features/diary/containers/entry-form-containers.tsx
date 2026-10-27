@@ -4,6 +4,7 @@ import { useActionState, useState, useTransition } from "react";
 import { Button } from "@/components/ui";
 import type { CalendarDate, Meal } from "@/domain";
 import { useFoodDetail } from "@/features/foods/hooks/use-food-detail";
+import { toInputValue } from "@/features/foods/lib/format";
 import type { Recipe } from "@/features/recipes/lib/types";
 import { createEntry, deleteEntry, updateEntry } from "../actions/entry-actions";
 import { EntryForm, type EntryFormDefaults } from "../components/entry-form";
@@ -48,8 +49,8 @@ function editDefaults(entry: DiaryEntry, food: LoggableFood | null): EntryFormDe
       ? food?.portions.find((candidate) => candidate.label === entry.portionLabel)
       : undefined;
   return portion && entry.quantity !== null
-    ? { meal: entry.meal, unit: String(portion.id), amount: String(entry.quantity) }
-    : { meal: entry.meal, unit: GRAMS_UNIT, amount: String(entry.grams) };
+    ? { meal: entry.meal, unit: String(portion.id), amount: toInputValue(entry.quantity) }
+    : { meal: entry.meal, unit: GRAMS_UNIT, amount: toInputValue(entry.grams) };
 }
 
 type AddEntryContainerProps = {

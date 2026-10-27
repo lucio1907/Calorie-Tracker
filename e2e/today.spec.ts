@@ -4,8 +4,8 @@ test.describe("Today", () => {
   test("asks for a profile before there is a target", async ({ page }, testInfo) => {
     await page.goto("/today");
 
-    await expect(page.getByText("Complete your profile to get a daily calorie target.")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Set up profile" })).toHaveAttribute("href", "/settings");
+    await expect(page.getByText("Completá tu perfil para obtener un objetivo diario de calorías.")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Completar perfil" })).toHaveAttribute("href", "/settings");
     await captureScreen(page, testInfo, "today-setup");
   });
 
@@ -20,10 +20,10 @@ test.describe("Today", () => {
     await data.foodEntry({ date: addDays(today, -1), meal: "dinner", label: "Pizza", grams: 300, kcal: 900 });
 
     await page.goto("/today");
-    const balance = page.getByRole("region", { name: "Left to eat today" });
+    const balance = page.getByRole("region", { name: "Te queda por comer hoy" });
     await expect(balance).toBeVisible();
-    await expect(balance.getByText("Exercise", { exact: true }).locator("..")).toContainText("+372");
-    await expect(balance.getByText("Food", { exact: true }).locator("..")).toContainText("−1000");
+    await expect(balance.getByText("Ejercicio", { exact: true }).locator("..")).toContainText("+372");
+    await expect(balance.getByText("Comida", { exact: true }).locator("..")).toContainText("−1000");
     await captureScreen(page, testInfo, "today");
   });
 
@@ -35,19 +35,19 @@ test.describe("Today", () => {
     await page.goto("/today");
     const macros = page.getByRole("region", { name: "Macros" });
     // 80 kg x 1.8 g/kg = 144 g.
-    await expect(macros.getByText("Protein", { exact: true }).locator("..")).toContainText("0 / 144 g");
-    const carbsBefore = await macros.getByText("Carbs", { exact: true }).locator("..").textContent();
+    await expect(macros.getByText("Proteínas", { exact: true }).locator("..")).toContainText("0 / 144 g");
+    const carbsBefore = await macros.getByText("Carbohidratos", { exact: true }).locator("..").textContent();
 
     await page.goto("/settings");
-    await page.getByLabel("Current weight (kg)").fill("90");
-    await page.getByRole("button", { name: "Log weight" }).click();
-    await expect(page.getByText("Latest: 90 kg (today)")).toBeVisible();
+    await page.getByLabel("Peso actual (kg)").fill("90");
+    await page.getByRole("button", { name: "Registrar peso" }).click();
+    await expect(page.getByText("Último: 90 kg (hoy)")).toBeVisible();
 
     await page.goto("/today");
     // 90 kg x 1.8 g/kg = 162 g; carbs and fat follow the new target.
-    await expect(macros.getByText("Protein", { exact: true }).locator("..")).toContainText("0 / 162 g");
-    await expect(macros.getByText("Carbs", { exact: true }).locator("..")).not.toHaveText(carbsBefore ?? "");
-    await expect(page.getByText(/protein setting/)).toHaveCount(0);
+    await expect(macros.getByText("Proteínas", { exact: true }).locator("..")).toContainText("0 / 162 g");
+    await expect(macros.getByText("Carbohidratos", { exact: true }).locator("..")).not.toHaveText(carbsBefore ?? "");
+    await expect(page.getByText(/configuración de proteínas/)).toHaveCount(0);
     await captureScreen(page, testInfo, "today-macros");
   });
 
@@ -59,8 +59,8 @@ test.describe("Today", () => {
 
     await page.goto("/today");
     const macros = page.getByRole("region", { name: "Macros" });
-    await expect(macros.getByText("Protein", { exact: true }).locator("..")).toContainText("0 / 300 g");
-    await expect(macros.getByText("Fat", { exact: true }).locator("..")).toContainText("0 / 0 g");
-    await expect(macros.getByText(/Your protein setting \(3 g\/kg\) needs more calories than your daily target/)).toBeVisible();
+    await expect(macros.getByText("Proteínas", { exact: true }).locator("..")).toContainText("0 / 300 g");
+    await expect(macros.getByText("Grasas", { exact: true }).locator("..")).toContainText("0 / 0 g");
+    await expect(macros.getByText(/Tu configuración de proteínas \(3 g\/kg\) necesita más calorías que tu objetivo diario/)).toBeVisible();
   });
 });
