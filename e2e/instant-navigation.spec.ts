@@ -98,7 +98,7 @@ test.describe("search-param navigations are instant", () => {
     await expectLoaded(page, "Progreso");
 
     await instant(page, async () => {
-      await page.getByRole("link", { name: "7 days" }).click();
+      await page.getByRole("link", { name: "7 días" }).click();
       await page.waitForURL((url) => url.searchParams.get("range") === "7");
       await expectShell(page, "Progreso");
     });

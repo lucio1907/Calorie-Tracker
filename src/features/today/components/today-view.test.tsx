@@ -24,7 +24,7 @@ const ready: TodaySummary = {
 
 describe("TodayView", () => {
   it("shows remaining kcal from target, food and exercise", () => {
-    render(<TodayView dateLabel="Thursday, October 15" summary={ready} />);
+    render(<TodayView dateLabel="jueves, 15 de octubre" summary={ready} />);
 
     const balance = screen.getByRole("region", { name: t.remainingLabel });
     expect(within(balance).getByText("1559", { selector: ".sr-only" })).toBeInTheDocument();
@@ -36,31 +36,31 @@ describe("TodayView", () => {
   it("shows how the target comes from TDEE and the weight goal", () => {
     render(
       <TodayView
-        dateLabel="Thursday, October 15"
+        dateLabel="jueves, 15 de octubre"
         summary={{ ...ready, goal: "lose", goalKgPerWeek: 0.25, goalAdjustmentKcal: -275, targetKcal: 2484 }}
       />,
     );
 
     const target = screen.getByRole("group", { name: t.targetHeading });
     expect(within(target).getByText(t.targetBreakdown.tdee).nextSibling).toHaveTextContent("2759");
-    expect(within(target).getByText(t.targetBreakdown.lose("0.25")).nextSibling).toHaveTextContent("275");
+    expect(within(target).getByText(t.targetBreakdown.lose("0,25")).nextSibling).toHaveTextContent("275");
     expect(within(target).getByText(t.targetBreakdown.target).nextSibling).toHaveTextContent("2484");
   });
 
   it("shows a weight-gain surplus as an addition", () => {
     render(
       <TodayView
-        dateLabel="Thursday, October 15"
+        dateLabel="jueves, 15 de octubre"
         summary={{ ...ready, goal: "gain", goalKgPerWeek: 0.5, goalAdjustmentKcal: 550, targetKcal: 3309 }}
       />,
     );
 
     const target = screen.getByRole("group", { name: t.targetHeading });
-    expect(within(target).getByText(t.targetBreakdown.gain("0.5")).nextSibling).toHaveTextContent("550");
+    expect(within(target).getByText(t.targetBreakdown.gain("0,5")).nextSibling).toHaveTextContent("550");
   });
 
   it("shows no goal adjustment while maintaining", () => {
-    render(<TodayView dateLabel="Thursday, October 15" summary={ready} />);
+    render(<TodayView dateLabel="jueves, 15 de octubre" summary={ready} />);
 
     const target = screen.getByRole("group", { name: t.targetHeading });
     expect(within(target).getAllByRole("term").map((term) => term.textContent)).toEqual([
@@ -72,7 +72,7 @@ describe("TodayView", () => {
   it("says when the target was raised to the safe minimum, and by how much", () => {
     render(
       <TodayView
-        dateLabel="Thursday, October 15"
+        dateLabel="jueves, 15 de octubre"
         summary={{ ...ready, goal: "lose", goalKgPerWeek: 1.5, goalAdjustmentKcal: -1650, floorRaiseKcal: 391, targetKcal: 1500 }}
       />,
     );
@@ -80,7 +80,7 @@ describe("TodayView", () => {
     const target = screen.getByRole("group", { name: t.targetHeading });
     expect(within(target).getAllByRole("term").map((term) => term.textContent)).toEqual([
       t.targetBreakdown.tdee,
-      t.targetBreakdown.lose("1.5"),
+      t.targetBreakdown.lose("1,5"),
       t.targetBreakdown.floor("1500"),
       t.targetBreakdown.target,
     ]);
@@ -90,7 +90,7 @@ describe("TodayView", () => {
   });
 
   it("shows no safe-minimum line when the target is above it", () => {
-    render(<TodayView dateLabel="Thursday, October 15" summary={ready} />);
+    render(<TodayView dateLabel="jueves, 15 de octubre" summary={ready} />);
 
     expect(screen.queryByText(t.targetBreakdown.floor("1500"))).not.toBeInTheDocument();
   });
@@ -98,7 +98,7 @@ describe("TodayView", () => {
   it("warns, without blocking, when the target is below BMR", () => {
     render(
       <TodayView
-        dateLabel="Thursday, October 15"
+        dateLabel="jueves, 15 de octubre"
         summary={{ ...ready, goal: "lose", goalKgPerWeek: 0.5, goalAdjustmentKcal: -550, targetKcal: 1586 }}
       />,
     );
@@ -108,51 +108,51 @@ describe("TodayView", () => {
   });
 
   it("does not warn when the target is at or above BMR", () => {
-    render(<TodayView dateLabel="Thursday, October 15" summary={{ ...ready, targetKcal: 1780 }} />);
+    render(<TodayView dateLabel="jueves, 15 de octubre" summary={{ ...ready, targetKcal: 1780 }} />);
 
     expect(screen.queryByText(t.belowBmrWarning("1780"))).not.toBeInTheDocument();
   });
 
   it("shows macro totals against their targets", () => {
-    render(<TodayView dateLabel="Thursday, October 15" summary={ready} />);
+    render(<TodayView dateLabel="jueves, 15 de octubre" summary={ready} />);
 
     const macros = screen.getByRole("region", { name: t.macrosHeading });
-    expect(within(macros).getByText(t.macros.protein).nextSibling).toHaveTextContent("90.3 / 207 g");
+    expect(within(macros).getByText(t.macros.protein).nextSibling).toHaveTextContent("90,3 / 207 g");
     expect(within(macros).getByText(t.macros.carbs).nextSibling).toHaveTextContent("150 / 276 g");
-    expect(within(macros).getByText(t.macros.fat).nextSibling).toHaveTextContent("50.5 / 92 g");
+    expect(within(macros).getByText(t.macros.fat).nextSibling).toHaveTextContent("50,5 / 92 g");
     expect(screen.queryByText(t.proteinCappedWarning("1.8"))).not.toBeInTheDocument();
   });
 
   it("warns when the protein setting takes the whole target", () => {
     render(
       <TodayView
-        dateLabel="Thursday, October 15"
+        dateLabel="jueves, 15 de octubre"
         summary={{ ...ready, targetKcal: 1200, macroTargets: { protein: 300, carbs: 0, fat: 0 }, proteinGPerKg: 3, proteinCapped: true }}
       />,
     );
 
     const macros = screen.getByRole("region", { name: t.macrosHeading });
-    expect(within(macros).getByText(t.macros.protein).nextSibling).toHaveTextContent("90.3 / 300 g");
+    expect(within(macros).getByText(t.macros.protein).nextSibling).toHaveTextContent("90,3 / 300 g");
     expect(within(macros).getByText(t.proteinCappedWarning("3"))).toBeInTheDocument();
   });
 
   it("says how far over target the day is", () => {
-    render(<TodayView dateLabel="Thursday, October 15" summary={{ ...ready, remainingKcal: -241 }} />);
+    render(<TodayView dateLabel="jueves, 15 de octubre" summary={{ ...ready, remainingKcal: -241 }} />);
 
     const balance = screen.getByRole("region", { name: t.overLabel });
     expect(within(balance).getByText("241", { selector: ".sr-only" })).toBeInTheDocument();
   });
 
   it("links to the diary for logging", () => {
-    render(<TodayView dateLabel="Thursday, October 15" summary={ready} />);
+    render(<TodayView dateLabel="jueves, 15 de octubre" summary={ready} />);
 
     expect(screen.getByRole("link", { name: t.logFood })).toHaveAttribute("href", "/diary");
-    expect(screen.getByText("Thursday, October 15")).toBeInTheDocument();
+    expect(screen.getByText("jueves, 15 de octubre")).toBeInTheDocument();
   });
 
   it("points to settings, not the balance, when the profile is incomplete", () => {
     render(
-      <TodayView dateLabel="Thursday, October 15" summary={{ status: "incomplete", missing: ["birthDate", "weight"] }} />,
+      <TodayView dateLabel="jueves, 15 de octubre" summary={{ status: "incomplete", missing: ["birthDate", "weight"] }} />,
     );
 
     expect(screen.getByText(t.setupMessage)).toBeInTheDocument();
@@ -163,19 +163,19 @@ describe("TodayView", () => {
   });
 
   it("says the user is too young for a target and links to the birth date in settings", () => {
-    render(<TodayView dateLabel="Thursday, October 15" summary={{ status: "underage", minAgeYears: 18 }} />);
+    render(<TodayView dateLabel="jueves, 15 de octubre" summary={{ status: "underage", minAgeYears: 18 }} />);
 
     expect(
-      screen.getByText("You must be 18 or older to get a calorie target. Update your birth date in Settings."),
+      screen.getByText("Tenés que tener 18 años o más para obtener un objetivo de calorías. Actualizá tu fecha de nacimiento en Ajustes."),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: t.underageAction })).toHaveAttribute("href", "/settings");
     expect(screen.queryByText(t.setupMessage)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Missing:/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Falta:/)).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: t.remainingLabel })).not.toBeInTheDocument();
   });
 
   it("fills the budget and macro bars to their share of the target", () => {
-    const { container } = render(<TodayView dateLabel="Thursday, October 15" summary={ready} />);
+    const { container } = render(<TodayView dateLabel="jueves, 15 de octubre" summary={ready} />);
 
     const fills = [...container.querySelectorAll("[data-progress]")].map((fill) => Number(fill.getAttribute("data-progress")));
     // Food 1500.4 of target 2759 + exercise 300.3; then protein 90.25/207, carbs 150/276, fat 50.5/92.
@@ -185,7 +185,7 @@ describe("TodayView", () => {
   it("shows a full warning-colored budget bar when over", () => {
     const { container } = render(
       <TodayView
-        dateLabel="Thursday, October 15"
+        dateLabel="jueves, 15 de octubre"
         summary={{ ...ready, consumed: { ...ready.consumed, kcal: 3500 }, remainingKcal: -441 }}
       />,
     );

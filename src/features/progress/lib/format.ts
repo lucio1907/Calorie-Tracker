@@ -15,12 +15,12 @@ export function formatShortDate(date: CalendarDate): string {
   return shortDate.format(new Date(`${date}T00:00:00Z`));
 }
 
-/** "80.5", "79.25", "80.0". */
+/** "80,5", "79,25", "80,0". */
 export function formatKg(kg: number): string {
   return kgFormat.format(kg);
 }
 
-/** "+0.5", "−1.2" style signs ("0.0" for no change). */
+/** "+0,5", "−1,2" style signs ("0,0" for no change). */
 export function formatSignedKg(kg: number): string {
   return signedKg.format(kg);
 }

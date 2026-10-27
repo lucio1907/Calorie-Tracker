@@ -158,7 +158,7 @@ function MacrosCard({ summary }: { summary: ReadySummary }) {
 }
 
 type TodayViewProps = {
-  /** Today's date, already formatted ("Thursday, October 15"). */
+  /** Today's date, already formatted ("jueves, 15 de octubre"). */
   dateLabel: string;
   summary: TodaySummary;
 };
