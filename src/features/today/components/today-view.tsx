@@ -42,9 +42,10 @@ function targetBreakdown(summary: ReadySummary): BreakdownItem[] {
 
 function Breakdown({ items, ...props }: { items: BreakdownItem[] } & ComponentProps<"dl">) {
   return (
-    <dl className="tabular grid grid-cols-2 gap-8 text-body sm:flex sm:flex-wrap sm:items-center sm:gap-12" {...props}>
+    // One row per term on phones (label left, kcal right), so long labels never wrap.
+    <dl className="tabular flex flex-col gap-4 text-body sm:flex-row sm:flex-wrap sm:items-center sm:gap-12" {...props}>
       {items.map((item) => (
-        <div key={item.label} className="flex items-baseline gap-4">
+        <div key={item.label} className="flex items-baseline justify-between gap-12 sm:justify-start sm:gap-4">
           <dt className="text-ink-muted">{item.label}</dt>
           <dd className="text-ink">{formatKcal(item.value)}</dd>
         </div>

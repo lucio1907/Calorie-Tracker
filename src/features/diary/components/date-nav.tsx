@@ -75,14 +75,14 @@ export function DateNav({ date, today, onPick, basePath = "/diary" }: DateNavPro
           </ButtonLink>
         ) : null}
       </div>
-      {/* Always reserves the row, so moving between today and other days never shifts the page. */}
-      <div className="flex min-h-44 justify-center">
-        {date !== today ? (
+      {/* Only off today: an always-reserved row left a blank gap above the day's content. */}
+      {date !== today ? (
+        <div className="flex justify-center">
           <ButtonLink href={basePath} transitionTypes={[dayTransitionType(date, today)]} className="shrink-0">
             {t.today}
           </ButtonLink>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
     </nav>
   );
 }
