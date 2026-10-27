@@ -20,14 +20,14 @@ function emailFor(project: string): string {
 
 async function signIn(page: Page, email: string): Promise<void> {
   await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill(E2E_PASSWORD);
-  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.getByLabel("Contraseña").fill(E2E_PASSWORD);
+  await page.getByRole("button", { name: "Iniciar sesión" }).click();
 }
 
 async function enterCode(page: Page, secret: string): Promise<void> {
   // By role, not label: while the form streams in, React holds it in a hidden
   // node next to the disabled fallback, and only the role query skips it.
-  await page.getByRole("textbox", { name: "Authentication code" }).fill(totpCode(secret));
+  await page.getByRole("textbox", { name: "Código de verificación" }).fill(totpCode(secret));
 }
 
 test.describe("Two-factor authentication", () => {
@@ -44,8 +44,8 @@ test.describe("Two-factor authentication", () => {
     await signIn(page, email);
     await expect(page).toHaveURL(/\/today$/);
     await page.goto("/settings");
-    await page.getByRole("button", { name: "Set up two-factor authentication" }).click();
-    const qr = page.getByRole("img", { name: "QR code for your authenticator app" });
+    await page.getByRole("button", { name: "Configurar la verificación en dos pasos" }).click();
+    const qr = page.getByRole("img", { name: "Código QR para tu app de autenticación" });
     await expect(qr).toBeVisible();
     // The data URI loads (the CSP allows it) and decodes as an image.
     expect(await qr.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
@@ -53,16 +53,16 @@ test.describe("Two-factor authentication", () => {
     expect(secret).toMatch(/^[A-Z2-7]+=*$/);
     await captureScreen(page, testInfo, "two-factor-setup");
     await enterCode(page, secret);
-    await page.getByRole("button", { name: "Turn on" }).click();
-    await expect(page.getByText("On. Signing in asks for a code from your authenticator app.")).toBeVisible();
+    await page.getByRole("button", { name: "Activar", exact: true }).click();
+    await expect(page.getByText("Activada. Al iniciar sesión se pide un código de tu app de autenticación.")).toBeVisible();
 
     // The password alone now stops at the challenge, which can sign out.
-    await page.getByRole("main").getByRole("button", { name: "Sign out" }).click();
+    await page.getByRole("main").getByRole("button", { name: "Cerrar sesión" }).click();
     await expect(page).toHaveURL(/\/login$/);
     await signIn(page, email);
     await expect(page).toHaveURL(/\/login\/verify$/);
     await captureScreen(page, testInfo, "two-factor-challenge");
-    await page.getByRole("main").getByRole("button", { name: "Sign out" }).click();
+    await page.getByRole("main").getByRole("button", { name: "Cerrar sesión" }).click();
     await expect(page).toHaveURL(/\/login$/);
 
     // Without the code the app sends every page back to the challenge.
@@ -76,14 +76,14 @@ test.describe("Two-factor authentication", () => {
     // The code completes the sign-in and continues to the page that asked for it.
     await page.goto("/login/verify?next=%2Fdiary");
     await enterCode(page, secret);
-    await page.getByRole("button", { name: "Verify" }).click();
+    await page.getByRole("button", { name: "Verificar" }).click();
     await expect(page).toHaveURL(/\/diary$/);
-    await expect(page.getByRole("heading", { name: "Diary", level: 1 })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Diario", level: 1 })).toBeVisible();
 
     // Turn it off (the session is aal2 now), so a rerun starts from scratch.
     await page.goto("/settings");
-    await page.getByRole("button", { name: "Turn off two-factor authentication" }).click();
-    await expect(page.getByText(/^Off\. Turn it on/)).toBeVisible();
-    await expect(page.getByRole("button", { name: "Set up two-factor authentication" })).toBeVisible();
+    await page.getByRole("button", { name: "Desactivar la verificación en dos pasos" }).click();
+    await expect(page.getByText(/^Desactivada\. Activala/)).toBeVisible();
+    await expect(page.getByRole("button", { name: "Configurar la verificación en dos pasos" })).toBeVisible();
   });
 });

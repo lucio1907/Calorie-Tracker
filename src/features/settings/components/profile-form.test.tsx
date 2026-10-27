@@ -18,8 +18,8 @@ const stored: ProfileFormValues = {
   heightCm: "180",
   activityLevel: "moderate",
   goal: "lose",
-  goalKgPerWeek: "0.5",
-  proteinGPerKg: "1.8",
+  goalKgPerWeek: "0,5",
+  proteinGPerKg: "1,8",
   carbsSharePct: "60",
   fatSharePct: "40",
 };
@@ -29,12 +29,12 @@ describe("ProfileForm", () => {
     const { container } = render(<ProfileForm defaults={stored} today={TODAY} weightKg={80} state={initialProfileFormState} />);
 
     expect(screen.getByLabelText(p.sex)).toHaveTextContent(s.sexes.male);
-    expect(screen.getByRole("group", { name: p.birthDate })).toHaveTextContent("1/10/1996");
+    expect(screen.getByRole("group", { name: p.birthDate })).toHaveTextContent("10/1/1996");
     expect(screen.getByLabelText(p.heightCm)).toHaveValue("180");
     expect(screen.getByLabelText(p.activityLevel)).toHaveTextContent(s.activityLevels.moderate);
     expect(screen.getByLabelText(p.goal)).toHaveTextContent(s.goals.lose);
-    expect(screen.getByLabelText(p.goalKgPerWeek)).toHaveValue("0.5");
-    expect(screen.getByLabelText(p.proteinGPerKg)).toHaveValue("1.8");
+    expect(screen.getByLabelText(p.goalKgPerWeek)).toHaveValue("0,5");
+    expect(screen.getByLabelText(p.proteinGPerKg)).toHaveValue("1,8");
     expect(screen.getByLabelText(p.carbsSharePct)).toHaveValue("60");
     expect(screen.getByText(p.splitTotal("100"))).toBeInTheDocument();
     // The custom selects submit the same values the native ones did.
@@ -53,8 +53,8 @@ describe("ProfileForm", () => {
     await user.click(screen.getByRole("button", { name: new RegExp(p.birthDate) }));
     const grid = await screen.findByRole("grid");
     // Latest birth date of an 18-year-old.
-    expect(within(grid).getByRole("button", { name: /October 15, 2008/ })).not.toHaveAttribute("aria-disabled");
-    expect(within(grid).getByRole("button", { name: /October 16, 2008/ })).toHaveAttribute("aria-disabled", "true");
+    expect(within(grid).getByRole("button", { name: /, 15 de octubre de 2008/ })).not.toHaveAttribute("aria-disabled");
+    expect(within(grid).getByRole("button", { name: /, 16 de octubre de 2008/ })).toHaveAttribute("aria-disabled", "true");
   });
 
   it("starts empty with the default split before a profile exists", () => {
@@ -71,7 +71,7 @@ describe("ProfileForm", () => {
       goal: "maintain",
     });
     expect(screen.queryByLabelText(p.goalKgPerWeek)).not.toBeInTheDocument();
-    expect(screen.getByLabelText(p.proteinGPerKg)).toHaveValue("1.8");
+    expect(screen.getByLabelText(p.proteinGPerKg)).toHaveValue("1,8");
     expect(screen.getByLabelText(p.carbsSharePct)).toHaveValue("60");
     expect(screen.getByLabelText(p.fatSharePct)).toHaveValue("40");
   });
@@ -135,7 +135,7 @@ describe("ProfileForm", () => {
     render(<ProfileForm defaults={profileFormDefaults(null)} today={TODAY} weightKg={72.5} state={initialProfileFormState} />);
 
     // 72.5 x 1.8 = 130.5 -> 131 g.
-    expect(screen.getByText(p.previewProtein("131", "72.5"))).toBeInTheDocument();
+    expect(screen.getByText(p.previewProtein("131", "72,5"))).toBeInTheDocument();
   });
 
   it("asks for a weight before previewing grams", () => {
@@ -204,7 +204,7 @@ describe("ProfileForm", () => {
     expect(screen.getByLabelText(p.sex)).toHaveTextContent(s.sexes.female);
     expect(screen.getByLabelText(p.activityLevel)).toHaveTextContent(s.activityLevels.active);
     expect(screen.getByLabelText(p.goal)).toHaveTextContent(s.goals.maintain);
-    expect(screen.getByRole("group", { name: p.birthDate })).toHaveTextContent("1/10/1996");
+    expect(screen.getByRole("group", { name: p.birthDate })).toHaveTextContent("10/1/1996");
     expect(formValues(container.querySelector("form"))).toMatchObject({
       sex: "female",
       birthDate: "1996-01-10",

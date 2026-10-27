@@ -35,7 +35,7 @@ export function todayWeightEntry(kg: number, now: Date): { entry_date: CalendarD
 
 const kgFormat = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 2, useGrouping: false });
 
-/** "Latest: 80.5 kg (today)", or the date it was logged ("Wednesday, October 14"). */
+/** "Último: 80,5 kg (hoy)", or the date it was logged ("miércoles, 14 de octubre"). */
 export function latestWeightText(latest: LatestWeight | null, today: CalendarDate): string {
   const w = settingsStrings.weight;
   if (latest === null) return w.none;

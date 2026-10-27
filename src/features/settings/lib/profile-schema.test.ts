@@ -241,7 +241,7 @@ describe("profileFormDefaults", () => {
       activityLevel: "",
       goal: "maintain",
       goalKgPerWeek: "",
-      proteinGPerKg: "1.8",
+      proteinGPerKg: "1,8",
       carbsSharePct: "60",
       fatSharePct: "40",
     });
@@ -263,11 +263,11 @@ describe("profileFormDefaults", () => {
     ).toEqual({
       sex: "male",
       birthDate: "1996-01-10",
-      heightCm: "180.5",
+      heightCm: "180,5",
       activityLevel: "moderate",
       goal: "lose",
-      goalKgPerWeek: "0.25",
-      proteinGPerKg: "2.2",
+      goalKgPerWeek: "0,25",
+      proteinGPerKg: "2,2",
       carbsSharePct: "57",
       fatSharePct: "43",
     });
