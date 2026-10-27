@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { Button, formActionProps, Select, TextField } from "@/components/ui";
 import { MAX_ENTRY_GRAMS, MEALS, type Meal, type Nutrients } from "@/domain";
-import { formatAmount, formatKcal } from "@/features/foods/lib/format";
+import { formatAmount, formatKcal, toInputValue } from "@/features/foods/lib/format";
 import { GRAMS_UNIT, type PortionOption } from "../lib/entry-amount";
 import { previewEntry, type EntryPreview } from "../lib/entry-preview";
 import type { EntryFormState } from "../lib/types";
@@ -106,7 +106,7 @@ export function EntryForm({
 
   function changeUnit(next: string) {
     // Keep the same food amount when switching to grams; start at 1 portion otherwise.
-    if (next === GRAMS_UNIT) setAmount(preview ? String(preview.grams) : amount);
+    if (next === GRAMS_UNIT) setAmount(preview ? toInputValue(preview.grams) : amount);
     else if (isGrams) setAmount("1");
     setUnit(next);
   }

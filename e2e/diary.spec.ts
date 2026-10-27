@@ -5,19 +5,19 @@ test.describe("Diary", () => {
     await data.food("E2E Rice", { kcal: 130, protein: 2.7, carbs: 28, fat: 0.3 });
 
     await page.goto("/diary");
-    await expect(page.getByRole("heading", { name: "Diary", level: 1 })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Diario", level: 1 })).toBeVisible();
 
     // Add: lunch -> pick the food -> 150 g.
-    await page.getByRole("button", { name: "Add food to Lunch" }).click();
-    const addSheet = page.getByRole("dialog", { name: "Add to Lunch" });
-    await addSheet.getByLabel("Search foods").fill("E2E Rice");
+    await page.getByRole("button", { name: "Agregar alimento a Almuerzo" }).click();
+    const addSheet = page.getByRole("dialog", { name: "Agregar a Almuerzo" });
+    await addSheet.getByLabel("Buscar alimentos").fill("E2E Rice");
     await addSheet.getByRole("button", { name: /E2E Rice/ }).first().click();
-    await addSheet.getByRole("textbox", { name: "Grams" }).fill("150");
+    await addSheet.getByRole("textbox", { name: "Gramos" }).fill("150");
     await expect(addSheet.getByText("195", { exact: true })).toBeVisible();
-    await addSheet.getByRole("button", { name: "Add to diary" }).click();
+    await addSheet.getByRole("button", { name: "Agregar al diario" }).click();
     await expect(addSheet).toBeHidden();
 
-    const lunch = page.getByRole("list", { name: "Lunch entries" });
+    const lunch = page.getByRole("list", { name: "Registros de Almuerzo" });
     await expect(lunch.getByRole("listitem")).toHaveCount(1);
     await expect(lunch).toContainText("E2E Rice");
     await expect(lunch).toContainText("195");
@@ -25,18 +25,18 @@ test.describe("Diary", () => {
 
     // Edit: 200 g.
     await lunch.getByRole("button", { name: /E2E Rice/ }).click();
-    const editSheet = page.getByRole("dialog", { name: "Edit entry" });
-    await editSheet.getByRole("textbox", { name: "Grams" }).fill("200");
-    await editSheet.getByRole("button", { name: "Save changes" }).click();
+    const editSheet = page.getByRole("dialog", { name: "Editar registro" });
+    await editSheet.getByRole("textbox", { name: "Gramos" }).fill("200");
+    await editSheet.getByRole("button", { name: "Guardar cambios" }).click();
     await expect(editSheet).toBeHidden();
     await expect(lunch).toContainText("260");
 
     // Delete.
     await lunch.getByRole("button", { name: /E2E Rice/ }).click();
-    await editSheet.getByRole("button", { name: "Delete entry" }).click();
-    await editSheet.getByRole("button", { name: "Delete", exact: true }).click();
+    await editSheet.getByRole("button", { name: "Eliminar registro" }).click();
+    await editSheet.getByRole("button", { name: "Eliminar", exact: true }).click();
     await expect(editSheet).toBeHidden();
-    await expect(page.getByRole("list", { name: "Lunch entries" })).toHaveCount(0);
+    await expect(page.getByRole("list", { name: "Registros de Almuerzo" })).toHaveCount(0);
     await expect.poll(() => data.count("food_entries")).toBe(0);
   });
 
@@ -47,6 +47,6 @@ test.describe("Diary", () => {
     await page.goto("/diary?date=2026-01-15");
     await expect(page.getByText("Today's soup")).toHaveCount(0);
     await page.goto("/diary");
-    await expect(page.getByRole("list", { name: "Dinner entries" })).toContainText("Today's soup");
+    await expect(page.getByRole("list", { name: "Registros de Cena" })).toContainText("Today's soup");
   });
 });

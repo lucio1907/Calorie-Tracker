@@ -20,7 +20,7 @@ describe("ActivityPicker", () => {
 
     const list = screen.getByRole("list", { name: t.add.catalog });
     expect(within(list).getAllByRole("listitem")).toHaveLength(2);
-    expect(within(list).getByText("MET 9.3")).toBeInTheDocument();
+    expect(within(list).getByText("MET 9,3")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /Yoga, general/ }));
     expect(onPick).toHaveBeenCalledWith(catalog[1]);

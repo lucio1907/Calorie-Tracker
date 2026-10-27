@@ -44,7 +44,7 @@ describe("ActivityScreenContainer", () => {
     expect(screen.getByText(t.day.empty)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: t.logActivity })).toBeInTheDocument();
     const nav = screen.getByRole("navigation");
-    expect(within(nav).getByRole("link", { name: "Previous day" })).toHaveAttribute("href", "/activity?date=2026-10-14");
+    expect(within(nav).getByRole("link", { name: "Día anterior" })).toHaveAttribute("href", "/activity?date=2026-10-14");
   });
 
   it("blocks adding and links to Settings when no weight is logged", () => {

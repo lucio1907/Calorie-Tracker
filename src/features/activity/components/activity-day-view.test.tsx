@@ -50,7 +50,7 @@ describe("ActivityDayView", () => {
 describe("WeightNotice", () => {
   it("names the weight the kcal use", () => {
     render(<WeightNotice weight={{ kg: 80.5, date: "2026-10-14" }} today="2026-10-15" />);
-    expect(screen.getByText(t.weight.using("80.5", "Wednesday, October 14"))).toBeInTheDocument();
+    expect(screen.getByText(t.weight.using("80,5", "miércoles, 14 de octubre"))).toBeInTheDocument();
     expect(screen.queryByRole("link")).not.toBeInTheDocument();
   });
 
