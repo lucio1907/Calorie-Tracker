@@ -21,6 +21,16 @@ describe("DateNav", () => {
     expect(screen.getByRole("button", { name: new RegExp(t.pickDate) })).toHaveTextContent(t.relative.yesterday);
   });
 
+  it("offers the jump back to today only on other days", () => {
+    const { rerender } = render(<DateNav date={TODAY} today={TODAY} onPick={vi.fn()} />);
+    expect(screen.queryByRole("link", { name: t.today })).not.toBeInTheDocument();
+    // No empty row is reserved for it either (it left a blank gap on phones).
+    expect(screen.getByRole("navigation").childElementCount).toBe(1);
+
+    rerender(<DateNav date="2026-10-20" today={TODAY} onPick={vi.fn()} />);
+    expect(screen.getByRole("link", { name: t.today })).toHaveAttribute("href", "/diary");
+  });
+
   it("opens a calendar on the shown day with today highlighted", async () => {
     const user = userEvent.setup();
     render(<DateNav date="2026-10-10" today={TODAY} onPick={vi.fn()} />);
