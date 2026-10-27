@@ -56,10 +56,10 @@ describe("latestWeightText", () => {
   });
 
   it("calls today's entry today", () => {
-    expect(latestWeightText({ kg: 80.25, date: "2026-10-15" }, "2026-10-15")).toBe(w.latest("80.25", w.today));
+    expect(latestWeightText({ kg: 80.25, date: "2026-10-15" }, "2026-10-15")).toBe(w.latest("80,25", w.today));
   });
 
   it("names the day of an older entry", () => {
-    expect(latestWeightText({ kg: 79, date: "2026-10-12" }, "2026-10-15")).toBe(w.latest("79", "Monday, October 12"));
+    expect(latestWeightText({ kg: 79, date: "2026-10-12" }, "2026-10-15")).toBe(w.latest("79", "lunes, 12 de octubre"));
   });
 });

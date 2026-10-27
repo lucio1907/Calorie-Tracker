@@ -38,10 +38,10 @@ function preview() {
 describe("EntryForm", () => {
   it("previews kcal and macros for the default portion", () => {
     renderForm();
-    // 1 roll = 50 g: 134.5 kcal -> "135"; P 4.65 -> "4.7".
+    // 1 roll = 50 g: 134.5 kcal -> "135"; P 4.65 -> "4,7".
     expect(preview().getByText("135")).toBeInTheDocument();
     expect(preview().getByText("· 50 g")).toBeInTheDocument();
-    expect(preview().getByText(/Protein 4\.7 g/)).toBeInTheDocument();
+    expect(preview().getByText(/Proteínas 4,7 g/)).toBeInTheDocument();
   });
 
   it("updates the preview as the quantity changes, accepting a decimal comma", async () => {

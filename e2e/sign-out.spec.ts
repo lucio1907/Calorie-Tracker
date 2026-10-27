@@ -20,14 +20,14 @@ function accountsFor(project: string) {
 
 async function signIn(page: Page, email: string): Promise<void> {
   await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill(E2E_PASSWORD);
-  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.getByLabel("Contraseña").fill(E2E_PASSWORD);
+  await page.getByRole("button", { name: "Iniciar sesión" }).click();
   await expect(page).toHaveURL(/\/today$/);
 }
 
 /** The Settings page's own sign-out button (the sidebar has another on desktop). */
 function signOutButton(page: Page) {
-  return page.getByRole("main").getByRole("button", { name: "Sign out" });
+  return page.getByRole("main").getByRole("button", { name: "Cerrar sesión" });
 }
 
 test.describe("Sign out", () => {
@@ -43,22 +43,22 @@ test.describe("Sign out", () => {
     await page.goto("/login");
     await signIn(page, first.email);
     await page.goto("/settings");
-    await expect(page.getByLabel("Height (cm)")).toHaveValue("187");
+    await expect(page.getByLabel("Altura (cm)")).toHaveValue("187");
 
     await signOutButton(page).click();
     await expect(page).toHaveURL(/\/login$/);
-    await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Iniciar sesión" })).toBeVisible();
     // Not even hidden: the previous account's Settings form is gone from the document.
     expect(await page.content()).not.toContain('value="187"');
 
     await signIn(page, second.email);
     const mobile = testInfo.project.name === "mobile";
     await page
-      .getByRole("navigation", { name: mobile ? "Main (mobile)" : "Main", exact: true })
-      .getByRole("link", { name: "Settings", exact: true })
+      .getByRole("navigation", { name: mobile ? "Principal (móvil)" : "Principal", exact: true })
+      .getByRole("link", { name: "Ajustes", exact: true })
       .click();
     await expect(page).toHaveURL(/\/settings$/);
-    await expect(page.getByLabel("Height (cm)")).toHaveValue("158");
+    await expect(page.getByLabel("Altura (cm)")).toHaveValue("158");
   });
 
   test("still signs out before hydration (without JavaScript)", async ({ browser, page }, testInfo) => {

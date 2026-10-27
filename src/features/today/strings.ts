@@ -2,50 +2,50 @@ import type { MissingProfileField } from "./lib/today-summary";
 
 /** User-facing copy for the today feature. Translate here. */
 export const todayStrings = {
-  title: "Today",
-  logFood: "Log food",
-  remainingLabel: "Left to eat today",
-  overLabel: "Over today's target",
+  title: "Hoy",
+  logFood: "Registrar comida",
+  remainingLabel: "Te queda por comer hoy",
+  overLabel: "Te pasaste del objetivo de hoy",
   kcalUnit: "kcal",
-  targetHeading: "Daily target",
+  targetHeading: "Objetivo diario",
   targetBreakdown: {
     tdee: "TDEE",
-    lose: (kgPerWeek: string) => `− Lose ${kgPerWeek} kg/week`,
-    gain: (kgPerWeek: string) => `+ Gain ${kgPerWeek} kg/week`,
-    floor: (minimum: string) => `+ Raised to safe minimum (${minimum} kcal)`,
-    target: "= Target",
+    lose: (kgPerWeek: string) => `− Bajar ${kgPerWeek} kg/semana`,
+    gain: (kgPerWeek: string) => `+ Subir ${kgPerWeek} kg/semana`,
+    floor: (minimum: string) => `+ Ajuste al mínimo seguro (${minimum} kcal)`,
+    target: "= Objetivo",
   },
   belowBmrWarning: (bmr: string) =>
-    `Your target is below your BMR (${bmr} kcal). Eating this little for long is hard to sustain; consider a slower rate.`,
+    `Tu objetivo está por debajo de tu metabolismo basal (${bmr} kcal). Comer tan poco durante mucho tiempo es difícil de sostener; considerá un ritmo más lento.`,
   equation: {
-    target: "Target",
-    food: "Food",
-    exercise: "Exercise",
+    target: "Objetivo",
+    food: "Comida",
+    exercise: "Ejercicio",
     /** Food comes off the budget, exercise adds to it. */
     foodValue: (kcal: string) => `−${kcal}`,
     exerciseValue: (kcal: string) => `+${kcal}`,
   },
   macrosHeading: "Macros",
   macros: {
-    protein: "Protein",
-    carbs: "Carbs",
-    fat: "Fat",
+    protein: "Proteínas",
+    carbs: "Carbohidratos",
+    fat: "Grasas",
   },
-  /** Follows the consumed grams: "90.3 / 207 g". */
+  /** Follows the consumed grams: "90,3 / 207 g". */
   macroTarget: (target: string) => ` / ${target} g`,
   proteinCappedWarning: (gPerKg: string) =>
-    `Your protein setting (${gPerKg} g/kg) needs more calories than your daily target, so protein is capped at the target and carbs and fat are 0. Lower it in Settings.`,
-  setupMessage: "Complete your profile to get a daily calorie target.",
+    `Tu configuración de proteínas (${gPerKg} g/kg) necesita más calorías que tu objetivo diario, así que las proteínas se limitan al objetivo y los carbohidratos y las grasas quedan en 0. Bajala en Ajustes.`,
+  setupMessage: "Completá tu perfil para obtener un objetivo diario de calorías.",
   missingFields: {
-    sex: "sex",
-    birthDate: "birth date",
-    height: "height",
-    activityLevel: "activity level",
-    weight: "weight",
+    sex: "sexo",
+    birthDate: "fecha de nacimiento",
+    height: "altura",
+    activityLevel: "nivel de actividad",
+    weight: "peso",
   } satisfies Record<MissingProfileField, string>,
-  missing: (fields: readonly string[]) => `Missing: ${fields.join(", ")}.`,
-  setupAction: "Set up profile",
+  missing: (fields: readonly string[]) => `Falta: ${fields.join(", ")}.`,
+  setupAction: "Completar perfil",
   underageMessage: (minAgeYears: number) =>
-    `You must be ${minAgeYears} or older to get a calorie target. Update your birth date in Settings.`,
-  underageAction: "Update birth date",
+    `Tenés que tener ${minAgeYears} años o más para obtener un objetivo de calorías. Actualizá tu fecha de nacimiento en Ajustes.`,
+  underageAction: "Actualizar fecha de nacimiento",
 } as const;

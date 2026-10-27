@@ -27,11 +27,11 @@ describe("WeightChart", () => {
     );
     render(<WeightChart trend={trend} from="2026-10-13" to="2026-10-19" rangeDays={7} />);
 
-    expect(screen.getByRole("img", { name: t.weight.chartLabel(2, 7, "Oct 13", "Oct 19") })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: t.weight.chartLabel(2, 7, "13 oct", "19 oct") })).toBeInTheDocument();
     const latest = screen.getByText(t.weight.latest).closest("div")!;
-    expect(within(latest).getByText("80.2 kg")).toBeInTheDocument();
+    expect(within(latest).getByText("80,2 kg")).toBeInTheDocument();
     const change = screen.getByText(t.weight.change).closest("div")!;
-    expect(within(change).getByText("-0.8 kg")).toBeInTheDocument();
+    expect(within(change).getByText("-0,8 kg")).toBeInTheDocument();
   });
 });
 

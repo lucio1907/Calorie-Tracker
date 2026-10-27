@@ -73,7 +73,7 @@ export function DatePicker({
   const maxValue = toAriaDate(max);
 
   return (
-    <I18nProvider locale="en-US">
+    <I18nProvider locale="es-AR">
       <AriaDatePicker
         name={name}
         value={toAriaDate(value)}

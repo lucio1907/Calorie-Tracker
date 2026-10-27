@@ -88,7 +88,7 @@ export async function getFoodDetail(foodId: number, userId: string): Promise<Foo
     isFavorite: favoriteResult.data !== null,
     portions: row.food_portions
       .map((portion) => ({ id: portion.id, label: portion.label, grams: Number(portion.grams) }))
-      .sort((a, b) => a.grams - b.grams || a.label.localeCompare(b.label)),
+      .sort((a, b) => a.grams - b.grams || a.label.localeCompare(b.label, "es-AR")),
   };
 }
 

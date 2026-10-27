@@ -34,7 +34,7 @@ describe("ActivityEntryForm", () => {
     const user = userEvent.setup();
     renderForm();
 
-    expect(screen.getByText(t.form.previewBasis("9.3", "70"))).toBeInTheDocument();
+    expect(screen.getByText(t.form.previewBasis("9,3", "70"))).toBeInTheDocument();
     expect(screen.getByText("326")).toBeInTheDocument();
 
     const minutes = screen.getByLabelText(t.form.minutes);

@@ -70,7 +70,7 @@ function YearSelect() {
 
   return (
     <Select
-      label="Year"
+      label="Año"
       hideLabel
       options={options}
       value={String(focused.year)}
@@ -96,7 +96,7 @@ export type CalendarProps<T extends DateValue> = Omit<AriaCalendarProps<T>, "cla
  */
 export function Calendar<T extends DateValue>({ today, className, ...props }: CalendarProps<T>) {
   return (
-    <I18nProvider locale="en-US">
+    <I18nProvider locale="es-AR">
       <AriaCalendar firstDayOfWeek="mon" className={cn("flex w-max max-w-full flex-col gap-8", className)} {...props}>
         <div className="flex items-center gap-4">
           <Button slot="previous" className={navButton}>

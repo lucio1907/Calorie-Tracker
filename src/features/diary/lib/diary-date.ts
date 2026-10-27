@@ -30,14 +30,14 @@ export function relativeDay(date: CalendarDate, today: CalendarDate): RelativeDa
   return null;
 }
 
-const withYear = new Intl.DateTimeFormat("en-US", {
+const withYear = new Intl.DateTimeFormat("es-AR", {
   timeZone: "UTC",
   weekday: "long",
   month: "long",
   day: "numeric",
   year: "numeric",
 });
-const withoutYear = new Intl.DateTimeFormat("en-US", {
+const withoutYear = new Intl.DateTimeFormat("es-AR", {
   timeZone: "UTC",
   weekday: "long",
   month: "long",
@@ -45,7 +45,8 @@ const withoutYear = new Intl.DateTimeFormat("en-US", {
 });
 
 /**
- * "Wednesday, October 14" (plus the year when it is not today's year).
+ * "miércoles, 14 de octubre" (plus the year when it is not today's year), lowercase as
+ * Spanish writes it mid-sentence; standalone labels capitalize it with CSS.
  * Formatted in UTC from UTC midnight, so the calendar day never shifts.
  */
 export function formatDiaryDate(date: CalendarDate, today: CalendarDate): string {

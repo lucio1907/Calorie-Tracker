@@ -12,7 +12,7 @@ export function PageHeader({ title, description, actions }: PageHeaderProps) {
     <header className="flex flex-wrap items-end justify-between gap-12">
       <div className="flex flex-col gap-4">
         <h1 className="text-heading-sm font-semibold text-ink lg:display-text lg:text-heading-lg">{title}</h1>
-        {description ? <p className="text-body text-ink-muted">{description}</p> : null}
+        {description ? <p className="text-body text-ink-muted first-letter:uppercase">{description}</p> : null}
       </div>
       {actions ? <div className="flex gap-8">{actions}</div> : null}
     </header>

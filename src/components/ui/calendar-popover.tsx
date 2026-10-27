@@ -41,7 +41,7 @@ export function CalendarPopover({
   const [open, setOpen] = useState(false);
 
   return (
-    <I18nProvider locale="en-US">
+    <I18nProvider locale="es-AR">
       <DialogTrigger isOpen={open} onOpenChange={setOpen}>
         <Button className={triggerClassName}>{children}</Button>
         <Popover className={popoverClassName("overflow-y-auto p-12")}>
