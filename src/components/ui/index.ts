@@ -15,7 +15,7 @@ export { SearchParamsSuspense } from "./search-params-suspense";
 export { Select, type SelectOption } from "./select";
 export { Sheet } from "./sheet";
 export { TextField } from "./text-field";
-export { LIST_EXIT_MS, presenceProps, useListPresence, type Presence } from "./use-list-presence";
+export { presenceProps, useListPresence, type Presence } from "./use-list-presence";
 export {
   AnchoredTransition,
   DAY_BACK,

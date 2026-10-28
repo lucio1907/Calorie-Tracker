@@ -23,12 +23,3 @@ const MULTIPLIERS: Record<ActivityLevel, number> = {
 export function activityMultiplier(level: ActivityLevel): number {
   return MULTIPLIERS[level];
 }
-
-/** Maps a stored value to an activity level, or throws when it is unknown. */
-export function parseActivityLevel(value: string): ActivityLevel {
-  const level = ACTIVITY_LEVELS.find((candidate) => candidate === value);
-  if (level === undefined) {
-    throw new RangeError(`Unknown activity level: ${value}.`);
-  }
-  return level;
-}
