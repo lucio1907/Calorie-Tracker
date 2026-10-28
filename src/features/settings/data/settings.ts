@@ -1,5 +1,6 @@
 import "server-only";
 import type { CalendarDate } from "@/domain";
+import { TARGET_PROFILE_COLUMNS } from "@/features/today/data/today";
 import { createClient } from "@/lib/supabase/server";
 import type { LatestWeight, StoredProfile } from "../lib/types";
 
@@ -13,9 +14,7 @@ export async function getStoredProfile(userId: string): Promise<StoredProfile | 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("profiles")
-    .select(
-      "sex, birth_date, height_cm, activity_level, goal, goal_kg_per_week, protein_g_per_kg, carbs_share_pct, fat_share_pct",
-    )
+    .select(TARGET_PROFILE_COLUMNS)
     .eq("user_id", userId)
     .maybeSingle();
   if (error) throw new Error(`profile: ${error.message}`);

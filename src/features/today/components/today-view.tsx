@@ -1,12 +1,10 @@
-// A client component so it can hand AnimatedNumber its format functions.
-"use client";
-
 import { Plus } from "lucide-react";
 import type { ComponentProps } from "react";
-import { AnimatedNumber, ButtonLink, Card, cn, EmptyState, PageHeader, ProgressBar } from "@/components/ui";
-import { formatAmount, formatKcal } from "@/features/foods/lib/format";
+import { ButtonLink, Card, cn, EmptyState, PageHeader, ProgressBar } from "@/components/ui";
+import { formatKcal } from "@/features/foods/lib/format";
 import type { TodaySummary } from "../lib/today-summary";
 import { todayStrings as t } from "../strings";
+import { TodayNumber } from "./today-number";
 
 type ReadySummary = Extract<TodaySummary, { status: "ready" }>;
 
@@ -75,10 +73,10 @@ function BalanceCard({ summary }: { summary: ReadySummary }) {
           {over ? t.overLabel : t.remainingLabel}
         </h2>
         <p className="flex items-baseline gap-8">
-          <AnimatedNumber
+          <TodayNumber
             id="today-remaining"
             value={Math.abs(summary.remainingKcal)}
-            format={formatKcal}
+            format="kcal"
             className={`display-text text-display-xl tabular-nums ${over ? "text-danger-ink" : "text-ink"}`}
           />
           <span className="text-body text-ink-muted">{t.kcalUnit}</span>
@@ -134,10 +132,10 @@ function MacrosCard({ summary }: { summary: ReadySummary }) {
                   {macro.label}
                 </span>
                 <span className="tabular text-ink-muted">
-                  <AnimatedNumber
+                  <TodayNumber
                     id={`today-macro-${macro.key}`}
                     value={consumed}
-                    format={formatAmount}
+                    format="amount"
                     className="font-bold text-ink"
                   />
                   {t.macroTarget(formatKcal(target))}

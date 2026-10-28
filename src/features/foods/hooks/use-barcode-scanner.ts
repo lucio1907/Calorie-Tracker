@@ -1,5 +1,6 @@
 "use client";
 
+import type { BarcodeDetector as Detector } from "barcode-detector/ponyfill";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { foodsStrings } from "../strings";
 
@@ -10,7 +11,24 @@ const FORMATS = ["ean_13", "ean_8", "upc_a", "upc_e"] as const;
 const SCAN_INTERVAL_MS = 200;
 
 /**
- * Rear camera + ZXing decoder (loaded on first scan, .wasm served from /public).
+ * The browser's own detector when it reads every retail format (Chrome on
+ * Android); otherwise ZXing, loaded on first scan with its .wasm from /public.
+ */
+async function createDetector(): Promise<Detector> {
+  const Native = (globalThis as { BarcodeDetector?: typeof Detector }).BarcodeDetector;
+  if (Native) {
+    const supported: readonly string[] = await Native.getSupportedFormats().catch(() => []);
+    if (FORMATS.every((format) => supported.includes(format))) return new Native({ formats: [...FORMATS] });
+  }
+  const { BarcodeDetector, prepareZXingModule } = await import("barcode-detector/ponyfill");
+  prepareZXingModule({
+    overrides: { locateFile: (path: string, prefix: string) => (path.endsWith(".wasm") ? `/${path}` : prefix + path) },
+  });
+  return new BarcodeDetector({ formats: [...FORMATS] });
+}
+
+/**
+ * Rear camera + barcode detector (see createDetector).
  * Calls onDetected once with the first code read, then turns the camera off.
  */
 export function useBarcodeScanner(onDetected: (barcode: string) => void) {
@@ -26,11 +44,7 @@ export function useBarcodeScanner(onDetected: (barcode: string) => void) {
 
     async function run() {
       try {
-        const { BarcodeDetector, prepareZXingModule } = await import("barcode-detector/ponyfill");
-        prepareZXingModule({
-          overrides: { locateFile: (path: string, prefix: string) => (path.endsWith(".wasm") ? `/${path}` : prefix + path) },
-        });
-        const detector = new BarcodeDetector({ formats: [...FORMATS] });
+        const detector = await createDetector();
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
         const video = videoRef.current;
         if (cancelled || !video) return;

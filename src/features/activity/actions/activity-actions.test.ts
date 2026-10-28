@@ -74,6 +74,17 @@ beforeEach(() => {
 describe("createActivityEntry", () => {
   const fields = { date: "2026-10-14", activityId: "8", minutes: "30" };
 
+  it("looks up the activity and the weight at the same time", async () => {
+    let resolveActivity: (value: typeof running) => void = () => {};
+    getActivity.mockReturnValue(new Promise((resolve) => (resolveActivity = resolve)));
+
+    const pending = createActivityEntry(initialActivityFormState, form(fields));
+    await vi.waitFor(() => expect(getLatestWeight).toHaveBeenCalledWith(USER.id, "2026-10-14"));
+    resolveActivity(running);
+
+    expect((await pending).status).toBe("saved");
+  });
+
   it("snapshots kcal computed on the server from MET, the latest weight and the duration", async () => {
     // A forged kcal or user_id in the form is ignored.
     const state = await createActivityEntry(
