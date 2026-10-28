@@ -54,22 +54,6 @@ export async function getTodayProfile(userId: string): Promise<TodayProfile | nu
   return data ? toTodayProfile(data) : null;
 }
 
-/** Most recent logged weight on or before `date`, or null when none. */
-export async function getLatestWeightKg(userId: string, date: CalendarDate): Promise<number | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("weight_entries")
-    .select("kg")
-    .eq("user_id", userId)
-    .lte("entry_date", date)
-    .order("entry_date", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (error) throw new Error(`weight ${date}: ${error.message}`);
-
-  return data ? Number(data.kg) : null;
-}
-
 /** kcal snapshot of each exercise logged on `date`. */
 export async function getExerciseKcal(userId: string, date: CalendarDate): Promise<number[]> {
   const supabase = await createClient();

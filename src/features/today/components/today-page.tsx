@@ -2,9 +2,10 @@ import { requireUser } from "@/features/auth/data/current-user";
 import { getDiaryEntries } from "@/features/diary/data/diary";
 import { formatDiaryDate } from "@/features/diary/lib/diary-date";
 import { buildDiaryDay } from "@/features/diary/lib/diary-day";
+import { getLatestWeight } from "@/features/settings/data/settings";
 import { appToday } from "@/lib/app-time";
 import { requestNow } from "@/lib/request-time";
-import { getExerciseKcal, getLatestWeightKg, getTodayProfile } from "../data/today";
+import { getExerciseKcal, getTodayProfile } from "../data/today";
 import { buildTodaySummary } from "../lib/today-summary";
 import { TodayView } from "./today-view";
 
@@ -16,9 +17,9 @@ export async function TodayPage() {
   const [now, user] = await Promise.all([requestNow(), requireUser()]);
   const today = appToday(now);
 
-  const [profile, weightKg, foodEntries, exerciseKcal] = await Promise.all([
+  const [profile, weight, foodEntries, exerciseKcal] = await Promise.all([
     getTodayProfile(user.id),
-    getLatestWeightKg(user.id, today),
+    getLatestWeight(user.id, today),
     getDiaryEntries(user.id, today),
     getExerciseKcal(user.id, today),
   ]);
@@ -26,7 +27,7 @@ export async function TodayPage() {
   const summary = buildTodaySummary({
     today,
     profile,
-    weightKg,
+    weightKg: weight?.kg ?? null,
     food: buildDiaryDay(foodEntries).totals,
     exerciseKcal,
   });
