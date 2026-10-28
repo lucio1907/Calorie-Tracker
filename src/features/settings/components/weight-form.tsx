@@ -6,12 +6,14 @@ const w = settingsStrings.weight;
 
 type WeightFormProps = {
   state: WeightFormState;
+  /** The latest logged weight as input text ("78,5"); empty before any weight. */
+  latestKg?: string;
   action?: (formData: FormData) => void;
   pending?: boolean;
 };
 
 /** Logs today's weight. The date is set on the server (today in the app time zone). */
-export function WeightForm({ state, action, pending = false }: WeightFormProps) {
+export function WeightForm({ state, latestKg = "", action, pending = false }: WeightFormProps) {
   return (
     <form action={action} noValidate className="flex flex-col gap-12" aria-busy={pending || undefined}>
       {state.formError ? (
@@ -28,7 +30,7 @@ export function WeightForm({ state, action, pending = false }: WeightFormProps) 
           enterKeyHint="done"
           required
           hint={w.hint}
-          defaultValue={state.status === "error" ? state.value : ""}
+          defaultValue={state.status === "error" ? state.value : latestKg}
           error={state.fieldError ?? undefined}
           className="w-full max-w-320 [&_input]:tabular"
         />

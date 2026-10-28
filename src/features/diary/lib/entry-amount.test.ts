@@ -1,6 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { MAX_ENTRY_GRAMS } from "@/domain";
-import { amountChanged, GRAMS_UNIT, MAX_PORTION_QUANTITY, parseUnit, resolveEntryAmount } from "./entry-amount";
+import { diaryStrings } from "../strings";
+import {
+  amountChanged,
+  findUnitPortion,
+  GRAMS_UNIT,
+  MAX_PORTION_QUANTITY,
+  NEW_UNIT,
+  parseUnit,
+  resolveEntryAmount,
+} from "./entry-amount";
+
+const UNIT = diaryStrings.units.unitLabel;
 
 const portions = [
   { id: 3, label: "1 slice", grams: 25 },
@@ -15,6 +26,10 @@ describe("parseUnit", () => {
 
   it("reads a portion id", () => {
     expect(parseUnit("12")).toEqual({ kind: "portion", portionId: 12 });
+  });
+
+  it("reads the new-unit option (its weight comes from another field)", () => {
+    expect(parseUnit(NEW_UNIT)).toEqual({ kind: "newUnit" });
   });
 
   it.each([[""], ["abc"], ["-1"], ["0"], ["1.5"], [null], [undefined], [12]])("rejects %j", (value) => {
@@ -94,6 +109,30 @@ describe("resolveEntryAmount", () => {
       ok: false,
       error: "invalid_amount",
     });
+  });
+});
+
+describe("resolveEntryAmount with a unit being defined", () => {
+  it("multiplies the quantity by the typed unit weight and labels it as the unit", () => {
+    expect(resolveEntryAmount({ kind: "newUnit", grams: 25 }, 2, portions)).toEqual({
+      ok: true,
+      value: { grams: 50, quantity: 2, portionLabel: UNIT },
+    });
+  });
+
+  it("applies the same per-entry limit as a portion", () => {
+    expect(resolveEntryAmount({ kind: "newUnit", grams: 10000 }, 2, portions)).toEqual({ ok: false, error: "too_large" });
+  });
+});
+
+describe("findUnitPortion", () => {
+  it("finds the food's unit portion, ignoring case and spaces", () => {
+    const unit = { id: 9, label: " Unidad ", grams: 25 };
+    expect(findUnitPortion([...portions, unit])).toBe(unit);
+  });
+
+  it("is undefined when the food has no unit yet", () => {
+    expect(findUnitPortion(portions)).toBeUndefined();
   });
 });
 

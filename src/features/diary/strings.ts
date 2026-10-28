@@ -52,6 +52,9 @@ export const diaryStrings = {
     portion: (quantity: string, label: string, grams: string) => `${quantity} × ${label} · ${grams} g`,
     portionOption: (label: string, grams: string) => `${label} (${grams} g)`,
     serving: "1 porción",
+    /** Stored as the label of each user's own unit portion; lowercase, compared case-insensitively. */
+    unitLabel: "unidad",
+    newUnitOption: "unidad",
   },
 
   add: {
@@ -74,6 +77,8 @@ export const diaryStrings = {
     unit: "Unidad",
     quantity: "Cantidad",
     grams: "Gramos",
+    unitGrams: "Peso de 1 unidad (g)",
+    unitGramsHint: "Se guarda solo para vos. La próxima vez la unidad ya aparece en la lista.",
     gramsHint: (max: number) => `Hasta ${max} g por registro.`,
     previewHeading: "Este registro",
     previewEmpty: "Ingresá una cantidad para ver las kcal y los macros.",
@@ -117,6 +122,8 @@ export const diaryStrings = {
     recipeFoodMissing:
       "Un ingrediente de esta receta ya no está disponible, así que no se puede registrar. Editá la receta para quitarlo.",
     portionMissing: "Esta porción ya no existe. Elegí otra.",
+    unitFailed: "No se pudo guardar el peso de la unidad. Probá de nuevo.",
+    unitLimit: "Ya guardaste la cantidad máxima de unidades.",
     entryMissing: "Este registro ya no existe.",
     deleteFailed: "No se pudo eliminar el registro.",
     unexpected: "Algo salió mal. Probá de nuevo.",

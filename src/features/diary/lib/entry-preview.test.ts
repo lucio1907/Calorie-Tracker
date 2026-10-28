@@ -26,6 +26,23 @@ describe("previewEntry", () => {
     });
   });
 
+  it("previews a unit being defined: quantity x the typed unit weight", () => {
+    // 2 units of 25 g = 50 g of bread: 134.5 kcal.
+    expect(previewEntry(bread, "unit", "2", "25")).toEqual({
+      grams: 50,
+      nutrients: { kcal: 134.5, protein: 4.65, carbs: 28.7, fat: 0.1 },
+    });
+  });
+
+  it.each([
+    ["no weight", ""],
+    ["a zero weight", "0"],
+    ["a weight above the portion limit", "10001"],
+    ["text", "abc"],
+  ])("returns null for a unit being defined with %s", (_label, unitGrams) => {
+    expect(previewEntry(bread, "unit", "2", unitGrams)).toBeNull();
+  });
+
   it.each([
     ["an empty amount", "g", ""],
     ["text", "g", "abc"],

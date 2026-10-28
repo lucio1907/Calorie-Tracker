@@ -30,7 +30,7 @@ export type EntryFormState = {
   values: EntryFormValues;
 };
 
-export type EntryFieldName = "meal" | "unit" | "amount";
+export type EntryFieldName = "meal" | "unit" | "amount" | "unitGrams";
 export type EntryFieldErrors = Partial<Record<EntryFieldName, string>>;
 export type EntryFormValues = Partial<Record<EntryFieldName, string>>;
 

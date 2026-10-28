@@ -1,6 +1,7 @@
 import { Suspense, type ReactNode } from "react";
 import { Card, PageHeader } from "@/components/ui";
 import { requireUser } from "@/features/auth/data/current-user";
+import { toInputValue } from "@/features/foods/lib/format";
 import { PageSkeleton } from "@/features/shell";
 import { appToday } from "@/lib/app-time";
 import { requestNow } from "@/lib/request-time";
@@ -63,7 +64,7 @@ async function SettingsCards() {
           </h2>
           <p className="tabular text-body text-ink-muted">{latestWeightText(latestWeight, today)}</p>
         </div>
-        <WeightFormContainer />
+        <WeightFormContainer latestKg={toInputValue(latestWeight?.kg)} />
       </Card>
 
       <Card aria-labelledby="settings-profile" className="flex flex-col gap-16">

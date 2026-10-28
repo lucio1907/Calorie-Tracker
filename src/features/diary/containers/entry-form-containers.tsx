@@ -90,6 +90,7 @@ export function AddEntryContainer({ foodId, meal, date, onSaved, onBack }: AddEn
   return (
     <EntryForm
       food={food}
+      canDefineUnit
       title={food.name}
       defaults={createDefaults(food, meal)}
       hidden={{ date, foodId: String(food.id) }}
@@ -197,9 +198,10 @@ function DeleteEntryControl({ entry, onDeleted }: { entry: DiaryEntry; onDeleted
 function EditEntryForm({
   entry,
   food,
+  canDefineUnit = false,
   unavailableNote,
   onDone,
-}: EditEntryContainerProps & { food: LoggableFood | null; unavailableNote?: string }) {
+}: EditEntryContainerProps & { food: LoggableFood | null; canDefineUnit?: boolean; unavailableNote?: string }) {
   const [state, formAction, pending] = useActionState(async (previous: EntryFormState, formData: FormData) => {
     const next = await updateEntry(previous, formData);
     if (next.status === "saved") onDone();
@@ -209,6 +211,7 @@ function EditEntryForm({
   return (
     <EntryForm
       food={food}
+      canDefineUnit={canDefineUnit}
       title={entry.label}
       defaults={editDefaults(entry, food)}
       logged={{ grams: entry.grams, nutrients: entry }}
@@ -228,7 +231,7 @@ function EditLinkedEntry({ entry, foodId, onDone }: EditEntryContainerProps & { 
   if (status === "loading") return <FoodLoadState status="loading" onRetry={reload} />;
   if (status === "error" && !food) return <FoodLoadState status="error" onRetry={reload} />;
   // not_found: the food was deleted after the entry list loaded; edit like a deleted food.
-  return <EditEntryForm entry={entry} food={food} onDone={onDone} />;
+  return <EditEntryForm entry={entry} food={food} canDefineUnit onDone={onDone} />;
 }
 
 /** Edit an entry's meal and amount, or delete it. `recipes` are the caller's, for recipe entries. */

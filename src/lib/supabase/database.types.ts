@@ -87,14 +87,14 @@ isOneToOne: false
                   ]
                 },"food_portions": {
                   Row: {
-                    "created_at": string,"food_id": number,"grams": number,"id": number,"label": string
+                    "created_at": string,"food_id": number,"grams": number,"id": number,"label": string,"owner_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"food_id": number,"grams": number,"id"?: never,"label": string
+                    "created_at"?: string,"food_id": number,"grams": number,"id"?: never,"label": string,"owner_id"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"food_id"?: number,"grams"?: number,"id"?: never,"label"?: string
+                    "created_at"?: string,"food_id"?: number,"grams"?: number,"id"?: never,"label"?: string,"owner_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -239,7 +239,7 @@ isOneToOne: false
 { Args: { "ingredients": Json,"name": string,"notes"?: string,"recipe_id"?: number,"servings": number }; Returns: number
                            },
 "search_foods":
-{ Args: { "favorites_only"?: boolean,"result_limit"?: number,"search_query"?: string }; Returns: {
+{ Args: { "favorites_only"?: boolean,"result_limit"?: number,"result_offset"?: number,"search_query"?: string }; Returns: {
               "barcode": string,"brand": string,"carbs_per_100g": number,"fat_per_100g": number,"food_group": string,"id": number,"is_favorite": boolean,"is_own": boolean,"kcal_per_100g": number,"name": string,"protein_per_100g": number,"source": string
             }[]
                            }

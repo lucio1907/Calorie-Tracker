@@ -20,6 +20,32 @@ test.describe("Foods", () => {
     await expect(detail).toContainText("89");
   });
 
+  test("pages through the results 20 at a time", async ({ page, data }) => {
+    // 21 matches: "E2E Paged 01" .. "E2E Paged 21".
+    await Promise.all(
+      Array.from({ length: 21 }, (_, index) => data.food(`E2E Paged ${String(index + 1).padStart(2, "0")}`, { kcal: 100 })),
+    );
+
+    await page.goto("/foods");
+    await page.getByLabel("Buscar alimentos").fill("E2E Paged");
+    const results = page.getByRole("region", { name: "Resultados" });
+    const pagination = page.getByRole("navigation", { name: "Páginas de resultados" });
+    await expect(results.getByRole("button", { name: /E2E Paged/ })).toHaveCount(20);
+    await expect(pagination).toContainText("Página 1");
+    await expect(pagination.getByRole("button", { name: "Anterior" })).toBeDisabled();
+
+    await pagination.getByRole("button", { name: "Siguiente" }).click();
+    await expect(pagination).toContainText("Página 2");
+    await expect(results.getByRole("button", { name: /E2E Paged/ })).toHaveCount(1);
+    await expect(results.getByRole("button", { name: /E2E Paged 21/ })).toBeVisible();
+    await expect(pagination.getByRole("button", { name: "Siguiente" })).toBeDisabled();
+
+    // A new search starts over from the first page.
+    await page.getByLabel("Buscar alimentos").fill("E2E Paged 2");
+    await expect(results.getByRole("button", { name: /E2E Paged/ })).toHaveCount(2);
+    await expect(pagination).toHaveCount(0);
+  });
+
   test("creates a custom food", async ({ page }, testInfo) => {
     await page.goto("/foods");
     await page.getByRole("button", { name: "Nuevo alimento" }).click();

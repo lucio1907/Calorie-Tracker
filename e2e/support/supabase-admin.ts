@@ -92,6 +92,7 @@ export async function resetUserData(admin: AdminClient, userId: string): Promise
   await check("weight_entries", admin.from("weight_entries").delete().eq("user_id", userId));
   await check("food_favorites", admin.from("food_favorites").delete().eq("user_id", userId));
   await check("recipes", admin.from("recipes").delete().eq("user_id", userId));
+  await check("food_portions", admin.from("food_portions").delete().eq("owner_id", userId));
   await check("foods", admin.from("foods").delete().eq("owner_id", userId));
   await check("activities", admin.from("activities").delete().eq("owner_id", userId));
   await check("profiles", admin.from("profiles").delete().eq("user_id", userId));
