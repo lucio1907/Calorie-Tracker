@@ -4,7 +4,7 @@ import { useState, type ReactNode } from "react";
 import { Button, formActionProps, Select, TextField } from "@/components/ui";
 import { MAX_ENTRY_GRAMS, MEALS, type Meal, type Nutrients } from "@/domain";
 import { formatAmount, formatKcal, toInputValue } from "@/features/foods/lib/format";
-import { GRAMS_UNIT, type PortionOption } from "../lib/entry-amount";
+import { findUnitPortion, GRAMS_UNIT, NEW_UNIT, type PortionOption } from "../lib/entry-amount";
 import { previewEntry, type EntryPreview } from "../lib/entry-preview";
 import type { EntryFormState } from "../lib/types";
 import { diaryStrings } from "../strings";
@@ -22,6 +22,8 @@ export type EntryFormDefaults = { meal: Meal; unit: string; amount: string };
 type EntryFormProps = {
   /** The food to log; null when it was deleted (only the meal can change). */
   food: EntryFormFood | null;
+  /** Offer "unidad" (with its weight) when the food has no unit yet. Foods only, never recipes. */
+  canDefineUnit?: boolean;
   /** Heading above the fields (the food name, or the entry label). */
   title: string;
   defaults: EntryFormDefaults;
@@ -41,13 +43,14 @@ type EntryFormProps = {
   footer?: ReactNode;
 };
 
-/** The food's portions, then grams. */
-function unitOptions(portions: readonly PortionOption[]) {
+/** The food's portions, then "unidad" when it can still be defined, then grams. */
+function unitOptions(portions: readonly PortionOption[], canDefineUnit: boolean) {
   return [
     ...portions.map((portion) => ({
       value: String(portion.id),
       label: t.units.portionOption(portion.label, formatAmount(portion.grams)),
     })),
+    ...(canDefineUnit && !findUnitPortion(portions) ? [{ value: NEW_UNIT, label: t.units.newUnitOption }] : []),
     { value: GRAMS_UNIT, label: t.units.gramsOption },
   ];
 }
@@ -77,12 +80,13 @@ function PreviewPanel({ preview }: { preview: EntryPreview | null }) {
 }
 
 /**
- * Add / edit form for one entry: meal, unit (grams or a portion) and amount,
- * with a live preview computed with the same rules the server uses to store
+ * Add / edit form for one entry: meal, unit (grams, a portion, or a "unidad"
+ * being defined with its weight) and amount, with a live preview computed with the same rules the server uses to store
  * the snapshot.
  */
 export function EntryForm({
   food,
+  canDefineUnit = false,
   title,
   defaults,
   logged,
@@ -99,9 +103,10 @@ export function EntryForm({
   const [meal, setMeal] = useState<string>(defaults.meal);
   const [unit, setUnit] = useState(defaults.unit);
   const [amount, setAmount] = useState(defaults.amount);
+  const [unitGrams, setUnitGrams] = useState("");
   const errors = state.fieldErrors;
 
-  const preview = food ? previewEntry(food, unit, amount) : (logged ?? null);
+  const preview = food ? previewEntry(food, unit, amount, unitGrams) : (logged ?? null);
   const isGrams = unit === GRAMS_UNIT;
 
   function changeUnit(next: string) {
@@ -141,7 +146,7 @@ export function EntryForm({
               <Select
                 label={t.entryForm.unit}
                 name="unit"
-                options={unitOptions(food.portions)}
+                options={unitOptions(food.portions, canDefineUnit)}
                 value={unit}
                 onChange={changeUnit}
                 error={errors.unit}
@@ -159,6 +164,21 @@ export function EntryForm({
                 error={errors.amount}
                 className="tabular"
               />
+              {unit === NEW_UNIT ? (
+                <TextField
+                  label={t.entryForm.unitGrams}
+                  name="unitGrams"
+                  inputMode="decimal"
+                  autoComplete="off"
+                  enterKeyHint="done"
+                  required
+                  value={unitGrams}
+                  onChange={(event) => setUnitGrams(event.target.value)}
+                  hint={t.entryForm.unitGramsHint}
+                  error={errors.unitGrams}
+                  className="tabular col-span-2"
+                />
+              ) : null}
             </div>
           ) : null}
 

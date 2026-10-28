@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { MAX_ENTRY_GRAMS } from "@/domain";
 import type { FoodDetail } from "@/features/foods/lib/types";
 import type { Recipe } from "@/features/recipes/lib/types";
 import { initialEntryFormState } from "../lib/types";
@@ -39,6 +40,7 @@ function builder(table: string) {
     delete: () => ((call.op = "delete"), chain),
     eq: (column: string, value: unknown) => (call.filters.push([column, value]), chain),
     maybeSingle: settle,
+    single: settle,
     then: (resolve: (value: unknown) => unknown, reject: (reason: unknown) => unknown) => settle().then(resolve, reject),
   };
   return chain;
@@ -160,7 +162,7 @@ describe("createEntry", () => {
   it("rejects a total above the per-entry limit", async () => {
     // 200 rolls x 50 g = 10000 g.
     const state = await createEntry(initialEntryFormState, form({ ...fields, amount: "200" }));
-    expect(state).toMatchObject({ status: "error", fieldErrors: { amount: t.validation.totalTooLarge(5000) } });
+    expect(state).toMatchObject({ status: "error", fieldErrors: { amount: t.validation.totalTooLarge(MAX_ENTRY_GRAMS) } });
   });
 
   it("reports a database error without refreshing", async () => {
@@ -245,6 +247,98 @@ describe("createEntry with a recipe", () => {
   });
 });
 
+describe("createEntry with a unit being defined", () => {
+  const fields = { date: "2026-10-14", meal: "breakfast", foodId: "7", unit: "unit", amount: "2", unitGrams: "25" };
+  const savedUnit = { id: 91, label: t.units.unitLabel, grams: 25 };
+  /** 2 units of 25 g = 50 g of bread. */
+  const twoUnits = {
+    grams: 50,
+    quantity: 2,
+    portion_label: t.units.unitLabel,
+    kcal: 134.5,
+    protein: 4.65,
+    carbs: 28.7,
+    fat: 0.1,
+  };
+
+  it("saves the caller's own unit for a catalog food, then logs quantity x unit grams", async () => {
+    results.push({ data: savedUnit, error: null }, { data: null, error: null });
+    const state = await createEntry(initialEntryFormState, form(fields));
+
+    expect(state.status).toBe("saved");
+    expect(calls).toHaveLength(2);
+    expect(calls[0]).toMatchObject({
+      table: "food_portions",
+      op: "insert",
+      payload: { food_id: 7, label: t.units.unitLabel, grams: 25, owner_id: USER.id },
+    });
+    expect(calls[1]).toMatchObject({ table: "food_entries", op: "insert", payload: { food_id: 7, ...twoUnits } });
+    expect(refresh).toHaveBeenCalledOnce();
+  });
+
+  it("saves the unit as a regular portion of the caller's own food", async () => {
+    getFoodDetail.mockResolvedValue({ ...bread, isOwn: true });
+    results.push({ data: savedUnit, error: null }, { data: null, error: null });
+    await createEntry(initialEntryFormState, form(fields));
+    expect(calls[0]).toMatchObject({ table: "food_portions", payload: { owner_id: null } });
+  });
+
+  it("logs with the unit the caller already has instead of saving another one", async () => {
+    getFoodDetail.mockResolvedValue({ ...bread, portions: [...bread.portions, { id: 8, label: "unidad", grams: 30 }] });
+    const state = await createEntry(initialEntryFormState, form(fields));
+
+    expect(state.status).toBe("saved");
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toMatchObject({ table: "food_entries", payload: { grams: 60, quantity: 2, portion_label: "unidad" } });
+  });
+
+  it("logs with the unit saved meanwhile when the insert hits the unique key", async () => {
+    getFoodDetail
+      .mockResolvedValueOnce(bread)
+      .mockResolvedValueOnce({ ...bread, portions: [...bread.portions, { id: 8, label: "unidad", grams: 30 }] });
+    results.push({ data: null, error: { code: "23505", message: "duplicate key" } }, { data: null, error: null });
+    const state = await createEntry(initialEntryFormState, form(fields));
+
+    expect(state.status).toBe("saved");
+    expect(calls[1]).toMatchObject({ table: "food_entries", payload: { grams: 60, portion_label: "unidad" } });
+  });
+
+  it("checks the total before saving the unit", async () => {
+    const state = await createEntry(initialEntryFormState, form({ ...fields, unitGrams: "10000" }));
+    expect(state).toMatchObject({ status: "error", fieldErrors: { amount: t.validation.totalTooLarge(MAX_ENTRY_GRAMS) } });
+    expect(calls).toHaveLength(0);
+  });
+
+  it("returns the unit weight error without touching the database", async () => {
+    const state = await createEntry(initialEntryFormState, form({ ...fields, unitGrams: "" }));
+    expect(state).toMatchObject({ status: "error", fieldErrors: { unitGrams: t.validation.required } });
+    expect(getFoodDetail).not.toHaveBeenCalled();
+    expect(calls).toHaveLength(0);
+  });
+
+  it("does not log the entry when the unit quota is full", async () => {
+    results.push({ data: null, error: { code: "23514", message: "row_quota:food_portions: at most 2000 rows per owner_id" } });
+    const state = await createEntry(initialEntryFormState, form(fields));
+    expect(state).toMatchObject({ status: "error", formError: t.errors.unitLimit });
+    expect(calls).toHaveLength(1);
+    expect(refresh).not.toHaveBeenCalled();
+  });
+
+  it("does not log the entry when the unit cannot be saved", async () => {
+    results.push({ data: null, error: { code: "42501", message: "rls" } });
+    const state = await createEntry(initialEntryFormState, form(fields));
+    expect(state).toMatchObject({ status: "error", formError: t.errors.unitFailed });
+    expect(calls).toHaveLength(1);
+  });
+
+  it("refuses a unit for a recipe", async () => {
+    const recipeFields = { date: "2026-10-14", meal: "breakfast", recipeId: "4", unit: "unit", amount: "1", unitGrams: "25" };
+    const state = await createEntry(initialEntryFormState, form(recipeFields));
+    expect(state).toMatchObject({ status: "error", formError: t.errors.unexpected });
+    expect(calls).toHaveLength(0);
+  });
+});
+
 describe("updateEntry", () => {
   const logged = { id: 42, food_id: 7, recipe_id: null, grams: 50, quantity: 1, portion_label: "1 roll" };
 
@@ -304,6 +398,37 @@ describe("updateEntry", () => {
       form({ entryId: "42", meal: "snack", unit: "g", amount: "10" }),
     );
     expect(state).toMatchObject({ status: "error", formError: t.errors.foodMissing });
+    expect(calls).toHaveLength(1);
+  });
+
+  it("defines a unit while editing a food entry and recomputes with it", async () => {
+    results.push(
+      { data: logged, error: null },
+      { data: { id: 91, label: t.units.unitLabel, grams: 25 }, error: null },
+      { data: { id: 42 }, error: null },
+    );
+    const state = await updateEntry(
+      initialEntryFormState,
+      form({ entryId: "42", meal: "lunch", unit: "unit", amount: "2", unitGrams: "25" }),
+    );
+
+    expect(state.status).toBe("saved");
+    expect(calls[1]).toMatchObject({ table: "food_portions", op: "insert", payload: { food_id: 7, owner_id: USER.id } });
+    expect(calls[2]).toMatchObject({
+      table: "food_entries",
+      op: "update",
+      payload: { meal: "lunch", grams: 50, quantity: 2, portion_label: t.units.unitLabel },
+    });
+  });
+
+  it("refuses to define a unit on a recipe entry", async () => {
+    const recipeEntry = { id: 42, food_id: null, recipe_id: 4, grams: 375, quantity: 1.5, portion_label: t.units.serving };
+    results.push({ data: recipeEntry, error: null });
+    const state = await updateEntry(
+      initialEntryFormState,
+      form({ entryId: "42", meal: "lunch", unit: "unit", amount: "2", unitGrams: "25" }),
+    );
+    expect(state).toMatchObject({ status: "error", formError: t.errors.unexpected });
     expect(calls).toHaveLength(1);
   });
 

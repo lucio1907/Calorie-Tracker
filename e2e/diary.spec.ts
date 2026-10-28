@@ -1,4 +1,4 @@
-import { appToday, captureScreen, expect, test } from "./support/fixtures";
+import { appToday, captureScreen, chooseOption, expect, test } from "./support/fixtures";
 
 test.describe("Diary", () => {
   test("adds, edits and deletes an entry", async ({ page, data }, testInfo) => {
@@ -38,6 +38,38 @@ test.describe("Diary", () => {
     await expect(editSheet).toBeHidden();
     await expect(page.getByRole("list", { name: "Registros de Almuerzo" })).toHaveCount(0);
     await expect.poll(() => data.count("food_entries")).toBe(0);
+  });
+
+  test("logs a catalog food by 'unidad' after defining its weight once", async ({ page, data }) => {
+    const bread = await data.sharedFood("E2E Pan lactal", { kcal: 270 });
+    const lunch = page.getByRole("list", { name: "Registros de Almuerzo" });
+
+    await page.goto("/diary");
+
+    // First time: "unidad" asks for the weight of 1 unit (25 g); 2 units = 50 g.
+    await page.getByRole("button", { name: "Agregar alimento a Almuerzo" }).click();
+    const addSheet = page.getByRole("dialog", { name: "Agregar a Almuerzo" });
+    await addSheet.getByLabel("Buscar alimentos").fill(bread);
+    await addSheet.getByRole("button", { name: new RegExp(bread) }).first().click();
+    await chooseOption(page, "Unidad", "unidad");
+    await addSheet.getByRole("textbox", { name: "Cantidad" }).fill("2");
+    await addSheet.getByRole("textbox", { name: "Peso de 1 unidad (g)" }).fill("25");
+    await expect(addSheet.getByText("· 50 g")).toBeVisible();
+    await addSheet.getByRole("button", { name: "Agregar al diario" }).click();
+    await expect(addSheet).toBeHidden();
+    await expect(lunch).toContainText("2 × unidad · 50 g");
+
+    // Next time: "unidad (25 g)" is a normal option, with no weight field.
+    await page.getByRole("button", { name: "Agregar alimento a Almuerzo" }).click();
+    await addSheet.getByLabel("Buscar alimentos").fill(bread);
+    await addSheet.getByRole("button", { name: new RegExp(bread) }).first().click();
+    await chooseOption(page, "Unidad", "unidad (25 g)");
+    await expect(addSheet.getByRole("textbox", { name: "Peso de 1 unidad (g)" })).toHaveCount(0);
+    await addSheet.getByRole("textbox", { name: "Cantidad" }).fill("1");
+    await addSheet.getByRole("button", { name: "Agregar al diario" }).click();
+    await expect(addSheet).toBeHidden();
+    await expect(lunch.getByRole("listitem")).toHaveCount(2);
+    await expect(lunch).toContainText("1 × unidad · 25 g");
   });
 
   test("shows only the selected day's entries", async ({ page, data }) => {

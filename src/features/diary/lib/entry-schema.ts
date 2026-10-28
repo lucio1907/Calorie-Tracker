@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { MAX_ENTRY_GRAMS, MEALS, type CalendarDate, type Meal } from "@/domain";
-import { toDecimal } from "@/features/foods/lib/food-schema";
+import { LIMITS, toDecimal } from "@/features/foods/lib/food-schema";
 import { diaryStrings } from "../strings";
 import { diaryDateSchema } from "./diary-date";
-import { MAX_PORTION_QUANTITY, parseUnit, type EntryUnit } from "./entry-amount";
+import { MAX_PORTION_QUANTITY, parseUnit, toUnitGrams, type EntryUnit, type UnitChoice } from "./entry-amount";
 import type { EntryFieldErrors, EntryFieldName, EntryFormValues } from "./types";
 
 const v = diaryStrings.validation;
@@ -42,7 +42,7 @@ export type ParseEntryResult<T> =
   | { ok: true; value: T }
   | { ok: false; fieldErrors: EntryFieldErrors; formError: string; values: EntryFormValues };
 
-const VISIBLE_FIELDS: EntryFieldName[] = ["meal", "unit", "amount"];
+const VISIBLE_FIELDS: EntryFieldName[] = ["meal", "unit", "amount", "unitGrams"];
 
 /** The visible fields as typed, echoed back after a failed submit. */
 export function readEntryFormValues(formData: FormData): EntryFormValues {
@@ -55,7 +55,7 @@ export function readEntryFormValues(formData: FormData): EntryFormValues {
 }
 
 /** Amount text -> number within the range of its unit (grams or portion count). */
-function parseAmount(raw: unknown, unit: EntryUnit): { ok: true; value: number } | { ok: false; error: string } {
+function parseAmount(raw: unknown, unit: UnitChoice): { ok: true; value: number } | { ok: false; error: string } {
   const parsed = decimalSchema.safeParse(raw ?? undefined);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? v.number };
   const amount = parsed.data;
@@ -64,21 +64,38 @@ function parseAmount(raw: unknown, unit: EntryUnit): { ok: true; value: number }
   return amount > 0 && amount <= max ? { ok: true, value: amount } : { ok: false, error: message };
 }
 
-type Fields = { meal: Meal | null; amount: number | null; fieldErrors: EntryFieldErrors };
+/** Weight of one unit being defined: the bounds of a food portion, rounded to 2 decimals. */
+function parseUnitGrams(raw: unknown): { ok: true; value: number } | { ok: false; error: string } {
+  const parsed = decimalSchema.safeParse(raw ?? undefined);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? v.number };
+  const grams = toUnitGrams(parsed.data);
+  return grams !== null ? { ok: true, value: grams } : { ok: false, error: v.gramsRange(LIMITS.portionGrams.max) };
+}
 
-/** Validates meal + amount; hidden fields are checked by the callers. */
-function parseVisible(formData: FormData, unit: EntryUnit | null): Fields {
+type Fields = { meal: Meal | null; unit: EntryUnit | null; amount: number | null; fieldErrors: EntryFieldErrors };
+
+/** Validates meal + amount (+ the weight of a unit being defined); hidden fields are checked by the callers. */
+function parseVisible(formData: FormData, choice: UnitChoice | null): Fields {
   const fieldErrors: EntryFieldErrors = {};
   const meal = mealSchema.safeParse(formData.get("meal"));
   if (!meal.success) fieldErrors.meal = v.required;
 
   let amount: number | null = null;
-  if (unit) {
-    const parsed = parseAmount(formData.get("amount"), unit);
+  let unit: EntryUnit | null = null;
+  if (choice) {
+    const parsed = parseAmount(formData.get("amount"), choice);
     if (parsed.ok) amount = parsed.value;
     else fieldErrors.amount = parsed.error;
+
+    if (choice.kind === "newUnit") {
+      const grams = parseUnitGrams(formData.get("unitGrams"));
+      if (grams.ok) unit = { kind: "newUnit", grams: grams.value };
+      else fieldErrors.unitGrams = grams.error;
+    } else {
+      unit = choice;
+    }
   }
-  return { meal: meal.success ? meal.data : null, amount, fieldErrors };
+  return { meal: meal.success ? meal.data : null, unit, amount, fieldErrors };
 }
 
 function tampered(formData: FormData): ParseEntryResult<never> {
@@ -103,12 +120,14 @@ function parseSource(formData: FormData): EntrySource | null {
 export function parseCreateEntryForm(formData: FormData): ParseEntryResult<CreateEntryInput> {
   const date = diaryDateSchema.safeParse(formData.get("date"));
   const source = parseSource(formData);
-  const unit = parseUnit(formData.get("unit"));
-  // Hidden fields or a <select> value the UI never renders: not the user's typo.
-  if (!date.success || !source || !unit) return tampered(formData);
+  const choice = parseUnit(formData.get("unit"));
+  // Hidden fields or a <select> value the UI never renders (recipes have no "unidad"): not the user's typo.
+  if (!date.success || !source || !choice || (choice.kind === "newUnit" && source.kind === "recipe")) {
+    return tampered(formData);
+  }
 
-  const { meal, amount, fieldErrors } = parseVisible(formData, unit);
-  if (meal === null || amount === null) return invalid(formData, fieldErrors);
+  const { meal, unit, amount, fieldErrors } = parseVisible(formData, choice);
+  if (meal === null || unit === null || amount === null) return invalid(formData, fieldErrors);
   return { ok: true, value: { date: date.data, meal, source, unit, amount } };
 }
 
@@ -116,11 +135,11 @@ export function parseCreateEntryForm(formData: FormData): ParseEntryResult<Creat
 export function parseUpdateEntryForm(formData: FormData): ParseEntryResult<UpdateEntryInput> {
   const entryId = idSchema.safeParse(formData.get("entryId"));
   const rawUnit = formData.get("unit");
-  const unit = rawUnit === null ? null : parseUnit(rawUnit);
-  if (!entryId.success || (rawUnit !== null && !unit)) return tampered(formData);
+  const choice = rawUnit === null ? null : parseUnit(rawUnit);
+  if (!entryId.success || (rawUnit !== null && !choice)) return tampered(formData);
 
-  const { meal, amount, fieldErrors } = parseVisible(formData, unit);
-  if (meal === null || (unit && amount === null)) return invalid(formData, fieldErrors);
+  const { meal, unit, amount, fieldErrors } = parseVisible(formData, choice);
+  if (meal === null || (choice && (unit === null || amount === null))) return invalid(formData, fieldErrors);
   return {
     ok: true,
     value: { entryId: entryId.data, meal, change: unit && amount !== null ? { unit, amount } : null },

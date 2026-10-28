@@ -15,7 +15,7 @@ Objective: prefill the settings weight input, let each user log any food by "uni
 |---|---|---|---|---|
 | T1 | S1, S4 | inline | done (unit RED→GREEN; e2e pending until T2 lands) | b348906 |
 | T2 | S3, S4 | delegated (context backstop) | done (RED→GREEN per rule; vitest 118, pgTAP 327) | see L5 |
-| T3 | S2, S4 | delegated (context backstop) | pending | |
+| T3 | S2, S4 | delegated (context backstop) | done (RED→GREEN; vitest 656, pgTAP 359) | see L6 |
 
 ## Log
 
@@ -24,3 +24,4 @@ Objective: prefill the settings weight input, let each user log any food by "uni
 - **L3** (2026-10-28, user choice): S2 unit weight source = "Cada usuario la define (Recomendado)".
 - **L4** Routes: T1 inline. T2 and T3 run one after the other through bounded writers (parent-context backstop); both touch `src/lib/supabase/database.types.ts`, so they are sequential, not parallel. T3 changes RLS (high-risk item 2) and gets its own commit and an independent verifier.
 - **L5** (2026-10-28): T2 landed. `search_foods` gains `result_offset integer default 0` (old 3-arg signature dropped in `20261028120000_search_foods_pagination.sql`; 3-arg calls still work). `/api/foods/search?page=N` (1-500) returns `{ foods, hasNextPage }` (fetches 21 rows); without `page` it returns `{ foods }` as before, so the diary sheet and recipe form are unchanged. Risk: item 1 (migration) / item 3 (function signature): hosted needs the migration before this code deploys. Advisories: keyboard focus drops when Siguiente becomes disabled on the last page; one aborted extra request when typing on page 2+.
+- **L6** (2026-10-28): T3 landed. `food_portions.owner_id` (null = food owner's portion; set = private unit), unique nulls not distinct (food_id, label, owner_id), policies rewritten, per-user cap of 2000 personal units (`20261028140000_personal_food_units.sql`). Entry form offers "unidad" when missing, asks "Peso de 1 unidad (g)", creates the unit then logs quantity x grams (create and edit; recipes excluded). Risk: item 2 (RLS) and item 1 (migration): independent verifier + hosted migration before deploy. Open: a user can't fix or delete a mistyped personal unit on a shared food (read-only on the food page).

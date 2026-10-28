@@ -87,14 +87,14 @@ isOneToOne: false
                   ]
                 },"food_portions": {
                   Row: {
-                    "created_at": string,"food_id": number,"grams": number,"id": number,"label": string
+                    "created_at": string,"food_id": number,"grams": number,"id": number,"label": string,"owner_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"food_id": number,"grams": number,"id"?: never,"label": string
+                    "created_at"?: string,"food_id": number,"grams": number,"id"?: never,"label": string,"owner_id"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"food_id"?: number,"grams"?: number,"id"?: never,"label"?: string
+                    "created_at"?: string,"food_id"?: number,"grams"?: number,"id"?: never,"label"?: string,"owner_id"?: string | null
                   }
                   Relationships: [
                     {
