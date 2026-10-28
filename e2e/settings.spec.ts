@@ -17,6 +17,10 @@ test.describe("Settings", () => {
     await page.getByRole("button", { name: "Registrar peso" }).click();
     await expect(page.getByText("Peso guardado.")).toBeVisible();
     await expect(page.getByText("Último: 78,5 kg (hoy)")).toBeVisible();
+    // The field keeps the latest weight instead of going blank, also after a reload.
+    await expect(page.getByLabel("Peso actual (kg)")).toHaveValue("78,5");
+    await page.reload();
+    await expect(page.getByLabel("Peso actual (kg)")).toHaveValue("78,5");
 
     await choose(page, "Sexo", "Femenino");
     await typeDate(page, "Fecha de nacimiento", "14031992");

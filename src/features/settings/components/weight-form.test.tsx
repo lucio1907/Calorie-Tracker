@@ -17,9 +17,15 @@ describe("WeightForm", () => {
     expect(screen.getByRole("button", { name: w.save })).toBeEnabled();
   });
 
+  it("starts with the latest logged weight", () => {
+    render(<WeightForm state={initialWeightFormState} latestKg="78,5" />);
+
+    expect(screen.getByLabelText(w.kg)).toHaveValue("78,5");
+  });
+
   it("keeps the typed value and shows the error after a failed submit", () => {
     const error = settingsStrings.validation.weightRange(20, 400);
-    render(<WeightForm state={{ status: "error", fieldError: error, formError: null, value: "800" }} />);
+    render(<WeightForm state={{ status: "error", fieldError: error, formError: null, value: "800" }} latestKg="78,5" />);
 
     const kg = screen.getByLabelText(w.kg);
     expect(kg).toHaveValue("800");
@@ -27,9 +33,10 @@ describe("WeightForm", () => {
     expect(kg).toHaveAccessibleDescription(`${error} ${w.hint}`);
   });
 
-  it("confirms a save", () => {
-    render(<WeightForm state={{ status: "saved", fieldError: null, formError: null, value: "" }} />);
+  it("confirms a save and keeps the saved weight in the field", () => {
+    render(<WeightForm state={{ status: "saved", fieldError: null, formError: null, value: "" }} latestKg="79" />);
 
     expect(screen.getByRole("status")).toHaveTextContent(w.saved);
+    expect(screen.getByLabelText(w.kg)).toHaveValue("79");
   });
 });
