@@ -22,6 +22,12 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Tailwind v4 leaves buttons on the default cursor; clickable ones get the pointer. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
   /* Visible keyboard focus everywhere; mouse clicks stay clean. */
   :focus-visible {
     outline: 2px solid var(--color-focus);
