@@ -5,6 +5,7 @@ import type { CalendarDate } from "@/domain";
 import { getCurrentUser } from "@/features/auth/data/current-user";
 import type { ActionResult } from "@/features/foods/lib/types";
 import { getLatestWeight } from "@/features/settings/data/settings";
+import type { LatestWeight } from "@/features/settings/lib/types";
 import { isRowQuotaViolation } from "@/lib/supabase/row-quota";
 import { createClient } from "@/lib/supabase/server";
 import { getActivity } from "../data/activity";
@@ -53,21 +54,24 @@ const SAVED: ActivityFormState = { status: "saved", fieldErrors: {}, formError: 
 
 type Snapshot = { ok: true; kcal: number } | { ok: false; state: ActivityFormState };
 
-/** kcal for `minutes` of `activity` with the caller's weight on or before `date`. */
-async function computeSnapshot(
-  formData: FormData,
-  userId: string,
-  activity: CatalogActivity,
-  date: CalendarDate,
-  minutes: number,
-): Promise<Snapshot> {
-  let weight;
+/** The caller's weight on or before `date`; "error" when the lookup fails (logged). */
+async function loadWeight(userId: string, date: CalendarDate): Promise<LatestWeight | null | "error"> {
   try {
-    weight = await getLatestWeight(userId, date);
+    return await getLatestWeight(userId, date);
   } catch (error) {
     console.error("[activity] weight lookup failed", error);
-    return { ok: false, state: failed(formData, t.errors.saveFailed) };
+    return "error";
   }
+}
+
+/** kcal for `minutes` of `activity` with the caller's weight on or before the entry date. */
+function computeSnapshot(
+  formData: FormData,
+  activity: CatalogActivity,
+  weight: LatestWeight | null | "error",
+  minutes: number,
+): Snapshot {
+  if (weight === "error") return { ok: false, state: failed(formData, t.errors.saveFailed) };
   if (!weight) return { ok: false, state: failed(formData, t.errors.noWeight, true) };
 
   const kcal = activityKcal(activity.met, weight.kg, minutes);
@@ -97,11 +101,15 @@ export async function createActivityEntry(_previous: ActivityFormState, formData
   if (!parsed.ok) return invalid(parsed);
   const input = parsed.value;
 
-  const activity = await loadActivity(input.activityId);
+  // Independent lookups: run them together.
+  const [activity, weight] = await Promise.all([
+    loadActivity(input.activityId),
+    loadWeight(user.id, input.date),
+  ]);
   if (activity === "error") return failed(formData, t.errors.saveFailed);
   if (!activity) return failed(formData, t.errors.activityMissing);
 
-  const snapshot = await computeSnapshot(formData, user.id, activity, input.date, input.minutes);
+  const snapshot = computeSnapshot(formData, activity, weight, input.minutes);
   if (!snapshot.ok) return snapshot.state;
 
   const supabase = await createClient();
@@ -150,11 +158,14 @@ export async function updateActivityEntry(_previous: ActivityFormState, formData
   if (!entry) return failed(formData, t.errors.entryMissing);
   if (entry.activity_id === null) return failed(formData, t.errors.activityMissing);
 
-  const activity = await loadActivity(entry.activity_id);
+  const [activity, weight] = await Promise.all([
+    loadActivity(entry.activity_id),
+    loadWeight(user.id, entry.entry_date),
+  ]);
   if (activity === "error") return failed(formData, t.errors.saveFailed);
   if (!activity) return failed(formData, t.errors.activityMissing);
 
-  const snapshot = await computeSnapshot(formData, user.id, activity, entry.entry_date, input.minutes);
+  const snapshot = computeSnapshot(formData, activity, weight, input.minutes);
   if (!snapshot.ok) return snapshot.state;
 
   const { data, error } = await supabase

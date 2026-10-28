@@ -50,8 +50,9 @@ export const needsSecondFactor = cache(async (): Promise<boolean> => {
  * Server Actions use getCurrentUser() and rely on RLS for the MFA rule.
  */
 export async function requireUser(): Promise<CurrentUser> {
-  const user = await getCurrentUser();
+  // Independent Auth calls: run them together, then decide in the same order.
+  const [user, mustVerify] = await Promise.all([getCurrentUser(), needsSecondFactor()]);
   if (!user) redirect("/login");
-  if (await needsSecondFactor()) redirect(VERIFY_PATH);
+  if (mustVerify) redirect(VERIFY_PATH);
   return user;
 }

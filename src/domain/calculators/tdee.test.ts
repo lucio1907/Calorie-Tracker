@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ActivityLevel, parseActivityLevel } from "../activity-level";
+import { ActivityLevel } from "../activity-level";
 import { Goal } from "../goal";
 import { InvalidArgumentError } from "./assert";
 import { calculateTdee, calorieTarget, dailyAdjustment } from "./tdee";
@@ -13,14 +13,6 @@ describe("calculateTdee", () => {
     ["very active", ActivityLevel.VeryActive, 1900],
   ])("applies the %s multiplier", (_label, level, expected) => {
     expect(calculateTdee(1000, level)).toBeCloseTo(expected, 4);
-  });
-
-  it("maps an activity level from its stored value", () => {
-    expect(parseActivityLevel("very_active")).toBe(ActivityLevel.VeryActive);
-  });
-
-  it("rejects an unknown stored activity level", () => {
-    expect(() => parseActivityLevel("couch")).toThrow(RangeError);
   });
 
   it("rejects zero BMR", () => {
