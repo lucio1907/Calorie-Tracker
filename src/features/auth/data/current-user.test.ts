@@ -39,6 +39,24 @@ describe("requireUser", () => {
     await expect(requireUser()).rejects.toThrow("NEXT_REDIRECT /login");
   });
 
+  it("sends an invalid session to /login before the factor check", async () => {
+    getClaims.mockResolvedValue({ data: null, error: null });
+    getAuthenticatorAssuranceLevel.mockResolvedValue(levels("aal1", "aal2"));
+    await expect(requireUser()).rejects.toThrow("NEXT_REDIRECT /login");
+    expect(redirect).toHaveBeenCalledTimes(1);
+  });
+
+  it("checks the claims and the factors at the same time", async () => {
+    let resolveClaims: (value: unknown) => void = () => {};
+    getClaims.mockReturnValue(new Promise((resolve) => (resolveClaims = resolve)));
+
+    const pending = requireUser();
+    await vi.waitFor(() => expect(getAuthenticatorAssuranceLevel).toHaveBeenCalled());
+    resolveClaims({ data: { claims: { sub: "user-a", email: "a@local.test" } }, error: null });
+
+    await expect(pending).resolves.toEqual({ id: "user-a", email: "a@local.test" });
+  });
+
   it("sends an aal1 session of a user with a verified factor to the challenge", async () => {
     getAuthenticatorAssuranceLevel.mockResolvedValue(levels("aal1", "aal2"));
     await expect(requireUser()).rejects.toThrow("NEXT_REDIRECT /login/verify");
