@@ -93,6 +93,58 @@ describe("parseCreateEntryForm", () => {
   });
 });
 
+describe("parseCreateEntryForm with a unit being defined", () => {
+  const withUnit = { ...validCreate, unit: "unit", amount: "2", unitGrams: "25,5" };
+
+  it("parses the unit weight with a decimal comma", () => {
+    expect(parseCreateEntryForm(form(withUnit))).toMatchObject({
+      ok: true,
+      value: { unit: { kind: "newUnit", grams: 25.5 }, amount: 2 },
+    });
+  });
+
+  it("rounds the unit weight to 2 decimals", () => {
+    expect(parseCreateEntryForm(form({ ...withUnit, unitGrams: "25,555" }))).toMatchObject({
+      ok: true,
+      value: { unit: { kind: "newUnit", grams: 25.56 } },
+    });
+  });
+
+  it("requires the unit weight", () => {
+    expect(parseCreateEntryForm(form({ ...withUnit, unitGrams: "" }))).toMatchObject({
+      ok: false,
+      fieldErrors: { unitGrams: v.required },
+      formError: v.fix,
+    });
+  });
+
+  it.each([["0"], ["0,001"], ["-5"], ["10000,01"]])("rejects a unit weight of %s", (unitGrams) => {
+    expect(parseCreateEntryForm(form({ ...withUnit, unitGrams }))).toMatchObject({
+      ok: false,
+      fieldErrors: { unitGrams: v.gramsRange(10000) },
+    });
+  });
+
+  it("checks the amount as a number of units", () => {
+    expect(parseCreateEntryForm(form({ ...withUnit, amount: "1001" }))).toMatchObject({
+      ok: false,
+      fieldErrors: { amount: v.quantityRange },
+    });
+  });
+
+  it("refuses a unit for a recipe (only foods have units)", () => {
+    const fields = { date: "2026-10-14", meal: "lunch", recipeId: "4", unit: "unit", amount: "1", unitGrams: "25" };
+    expect(parseCreateEntryForm(form(fields))).toMatchObject({ ok: false, formError: diaryStrings.errors.unexpected });
+  });
+
+  it("echoes the typed unit weight after a failed submit", () => {
+    expect(parseCreateEntryForm(form({ ...withUnit, amount: "" }))).toMatchObject({
+      ok: false,
+      values: { unit: "unit", amount: "", unitGrams: "25,5" },
+    });
+  });
+});
+
 describe("parseUpdateEntryForm", () => {
   const validUpdate = { entryId: "42", meal: "dinner", unit: "3", amount: "2" };
 
@@ -114,6 +166,13 @@ describe("parseUpdateEntryForm", () => {
     expect(parseUpdateEntryForm(form({ ...validUpdate, amount: "" }))).toMatchObject({
       ok: false,
       fieldErrors: { amount: v.required },
+    });
+  });
+
+  it("parses a unit being defined", () => {
+    expect(parseUpdateEntryForm(form({ ...validUpdate, unit: "unit", unitGrams: "25" }))).toMatchObject({
+      ok: true,
+      value: { change: { unit: { kind: "newUnit", grams: 25 }, amount: 2 } },
     });
   });
 

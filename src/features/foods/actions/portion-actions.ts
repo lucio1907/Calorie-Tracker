@@ -11,7 +11,9 @@ import { foodsStrings as t } from "../strings";
 /*
  * Portions of the user's own foods. RLS on food_portions only allows writes
  * when the parent food belongs to the caller, so a shared catalog food (or
- * someone else's) simply affects 0 rows.
+ * someone else's) simply affects 0 rows. The one exception is the caller's
+ * personal "unidad" on a shared food (owner_id = caller, created by the diary
+ * entry actions), which only that caller can see and change.
  */
 
 const UNIQUE_VIOLATION = "23505";

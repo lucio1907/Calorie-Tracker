@@ -116,6 +116,12 @@ export const searchQuerySchema = z.preprocess(
   z.string().max(100),
 );
 
+/** Results per page on the Foods screen. */
+export const FOODS_PAGE_SIZE = 20;
+
+/** 1-based results page from the query string: digits only, capped so the offset stays small. */
+export const foodsPageSchema = z.string().regex(/^\d{1,3}$/).transform(Number).pipe(z.number().int().min(1).max(500));
+
 /** Open Food Facts name search: short queries return noise and burn the rate limit. */
 export const offQuerySchema = z.preprocess(trim, z.string().min(3).max(100));
 

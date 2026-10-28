@@ -1,8 +1,9 @@
 "use client";
 
 import { CookingPot, Plus } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Button, ButtonLink, PageHeader, Sheet } from "@/components/ui";
+import { FoodPagination } from "../components/food-pagination";
 import { FoodResults } from "../components/food-results";
 import { FoodSearchBar } from "../components/food-search-bar";
 import { useFoodSearch } from "../hooks/use-food-search";
@@ -32,12 +33,37 @@ function panelTitle(panel: Panel): string {
   }
 }
 
-/** Foods screen: search, favorites filter, barcode lookup, results and the side panel. */
-export function FoodsScreenContainer({ initialFoods }: { initialFoods: FoodSummary[] }) {
+type FoodsScreenContainerProps = {
+  /** Server-rendered first page for an empty query. */
+  initialFoods: FoodSummary[];
+  initialHasNextPage: boolean;
+};
+
+/** Foods screen: search, favorites filter, barcode lookup, paged results and the side panel. */
+export function FoodsScreenContainer({ initialFoods, initialHasNextPage }: FoodsScreenContainerProps) {
   const [query, setQuery] = useState("");
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [page, setPage] = useState(1);
   const [panel, setPanel] = useState<Panel | null>(null);
-  const { foods, status, reload } = useFoodSearch(query, favoritesOnly, initialFoods);
+  const search = useFoodSearch(query, favoritesOnly, initialFoods, { page, initialHasNextPage });
+  const { foods, status, reload } = search;
+  const resultsRef = useRef<HTMLDivElement>(null);
+
+  // A new search or filter starts over from the first page.
+  function changeQuery(next: string) {
+    setQuery(next);
+    setPage(1);
+  }
+
+  function changeFavoritesOnly(next: boolean) {
+    setFavoritesOnly(next);
+    setPage(1);
+  }
+
+  function changePage(next: number) {
+    setPage(next);
+    resultsRef.current?.scrollIntoView?.({ block: "start" });
+  }
 
   const openDetail = useCallback((foodId: number, title: string | null = null) => {
     setPanel({ kind: "detail", foodId, title });
@@ -112,9 +138,9 @@ export function FoodsScreenContainer({ initialFoods }: { initialFoods: FoodSumma
       <div className="grid gap-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,360px)] lg:items-start">
         <FoodSearchBar
           query={query}
-          onQueryChange={setQuery}
+          onQueryChange={changeQuery}
           favoritesOnly={favoritesOnly}
-          onFavoritesOnlyChange={setFavoritesOnly}
+          onFavoritesOnlyChange={changeFavoritesOnly}
         />
         <BarcodeLookupContainer onFound={(foodId) => {
           reload();
@@ -122,15 +148,20 @@ export function FoodsScreenContainer({ initialFoods }: { initialFoods: FoodSumma
         }} />
       </div>
 
-      <FoodResults
-        foods={foods}
-        status={status}
-        query={query}
-        favoritesOnly={favoritesOnly}
-        onSelect={(food) => openDetail(food.id, food.name)}
-        onRetry={reload}
-        onSearchOff={() => setPanel({ kind: "off", query: query.trim() })}
-      />
+      <div ref={resultsRef} className="flex flex-col gap-16">
+        <FoodResults
+          foods={foods}
+          status={status}
+          query={query}
+          favoritesOnly={favoritesOnly}
+          onSelect={(food) => openDetail(food.id, food.name)}
+          onRetry={reload}
+          onSearchOff={() => setPanel({ kind: "off", query: query.trim() })}
+        />
+        {status === "error" ? null : (
+          <FoodPagination page={search.page} hasNextPage={search.hasNextPage} onPageChange={changePage} />
+        )}
+      </div>
 
       <Sheet
         open={panel !== null}

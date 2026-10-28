@@ -102,4 +102,35 @@ describe("useFoodSearch", () => {
     expect(String(fetchMock.mock.calls[0][0])).toBe("/api/foods/search?q=&favorites=1");
     expect(result.current).toMatchObject({ foods: initial, status: "error" });
   });
+
+  it("starts paged searches on the server-rendered first page", () => {
+    const initial = [food(1, "Arroz")];
+    const { result } = renderHook(() => useFoodSearch("", false, initial, { page: 1, initialHasNextPage: true }));
+
+    expect(result.current).toMatchObject({ foods: initial, page: 1, hasNextPage: true, status: "idle" });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("asks for the requested page and reports the page on screen", async () => {
+    let answer: (response: Response) => void = () => {};
+    fetchMock.mockImplementation(() => new Promise((resolve) => (answer = resolve)));
+    const initial = [food(1, "Arroz")];
+    const { result, rerender } = renderHook(
+      ({ page }) => useFoodSearch("", false, initial, { page, initialHasNextPage: true }),
+      { initialProps: { page: 1 } },
+    );
+
+    rerender({ page: 2 });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    // The first page stays on screen (and keeps its paging info) until the second arrives.
+    expect(String(fetchMock.mock.calls[0][0])).toBe("/api/foods/search?q=&page=2");
+    expect(result.current).toMatchObject({ foods: initial, page: 1, hasNextPage: true, status: "loading" });
+
+    await act(async () => {
+      answer(new Response(JSON.stringify({ foods: [food(21, "Yerba")], hasNextPage: false }), { status: 200 }));
+    });
+    expect(result.current).toMatchObject({ foods: [food(21, "Yerba")], page: 2, hasNextPage: false, status: "idle" });
+  });
 });

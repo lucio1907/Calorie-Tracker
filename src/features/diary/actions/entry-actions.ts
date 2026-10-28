@@ -9,7 +9,15 @@ import { getRecipe } from "@/features/recipes/data/recipes";
 import type { Database } from "@/lib/supabase/database.types";
 import { isRowQuotaViolation } from "@/lib/supabase/row-quota";
 import { createClient } from "@/lib/supabase/server";
-import { amountChanged, resolveEntryAmount, type AmountError, type EntryUnit } from "../lib/entry-amount";
+import {
+  amountChanged,
+  findUnitPortion,
+  resolveEntryAmount,
+  UNIT_LABEL,
+  type AmountError,
+  type EntryUnit,
+  type PortionOption,
+} from "../lib/entry-amount";
 import { entryLabel } from "../lib/entry-label";
 import {
   entryIdSchema,
@@ -29,6 +37,9 @@ import { diaryStrings as t } from "../strings";
  * the recipe's ingredients) as stored (RLS decides what the caller can see),
  * never taken from the browser. Each action re-checks the session and scopes writes to the
  * caller; RLS enforces the same rules again.
+ * Logging by "unidad" for the first time also saves the caller's unit
+ * (food_portions row owned by them; on their own food, a regular portion)
+ * before the entry, so it shows up as a normal option next time.
  * After a write, refresh() re-renders the diary in the same round trip
  * (its data is read per request, not cached).
  * Docs: node_modules/next/dist/docs/01-app/02-guides/server-actions.md
@@ -66,21 +77,36 @@ const SAVED: EntryFormState = { status: "saved", fieldErrors: {}, formError: nul
 
 /** What an entry logs, loaded as stored: the food or recipe, its soft link and its label. */
 type Loaded =
-  | { ok: true; food: LoggableFood; link: { food_id: number } | { recipe_id: number }; label: string }
+  | {
+      ok: true;
+      food: LoggableFood;
+      link: { food_id: number } | { recipe_id: number };
+      label: string;
+      /** The food belongs to the caller (false for recipes and shared foods). */
+      ownFood: boolean;
+    }
   | { ok: false; error: string };
+
+type LoadedSource = Extract<Loaded, { ok: true }>;
 
 async function loadSource(source: EntrySource, userId: string): Promise<Loaded> {
   try {
     if (source.kind === "food") {
       const food = await getFoodDetail(source.foodId, userId);
       if (!food) return { ok: false, error: t.errors.foodMissing };
-      return { ok: true, food, link: { food_id: food.id }, label: entryLabel(food) };
+      return { ok: true, food, link: { food_id: food.id }, label: entryLabel(food), ownFood: food.isOwn };
     }
     const recipe = await getRecipe(source.recipeId, userId);
     if (!recipe) return { ok: false, error: t.errors.recipeMissing };
     const asFood = recipeAsFood(recipe);
     if (!asFood.ok) return { ok: false, error: recipeProblemMessage(asFood.error) };
-    return { ok: true, food: asFood.food, link: { recipe_id: recipe.id }, label: entryLabel({ name: recipe.name, brand: null }) };
+    return {
+      ok: true,
+      food: asFood.food,
+      link: { recipe_id: recipe.id },
+      label: entryLabel({ name: recipe.name, brand: null }),
+      ownFood: false,
+    };
   } catch (error) {
     console.error("[diary] source lookup failed", error);
     return { ok: false, error: source.kind === "food" ? t.errors.foodMissing : t.errors.recipeMissing };
@@ -99,8 +125,63 @@ function amountColumns(food: LoggableFood, amount: EntryAmount) {
   };
 }
 
-function resolve(food: LoggableFood, unit: EntryUnit, amount: number) {
-  return resolveEntryAmount(unit, amount, food.portions);
+const UNIQUE_VIOLATION = "23505";
+
+type SaveUnitResult = { ok: true; portion: PortionOption } | { ok: false; error: string };
+
+/**
+ * The caller's "unidad" for a food: the one they already have (a stale form),
+ * or a new one weighing `grams`. On their own food it is a regular portion
+ * (owner_id null), on a shared food a unit only they see (owner_id = caller).
+ */
+async function saveUnit(foodId: number, source: LoadedSource, grams: number, userId: string): Promise<SaveUnitResult> {
+  const existing = findUnitPortion(source.food.portions);
+  if (existing) return { ok: true, portion: existing };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("food_portions")
+    .insert({ food_id: foodId, label: UNIT_LABEL, grams, owner_id: source.ownFood ? null : userId })
+    .select("id, label, grams")
+    .single();
+  if (data) return { ok: true, portion: { id: data.id, label: data.label, grams: Number(data.grams) } };
+
+  if (error?.code === UNIQUE_VIOLATION) {
+    // Saved meanwhile (e.g. another tab): log with the stored weight.
+    const food = await getFoodDetail(foodId, userId).catch(() => null);
+    const stored = food ? findUnitPortion(food.portions) : undefined;
+    if (stored) return { ok: true, portion: stored };
+  }
+  if (isRowQuotaViolation(error)) return { ok: false, error: t.errors.unitLimit };
+  console.error("[diary] unit insert failed", error?.code, error?.message);
+  return { ok: false, error: t.errors.unitFailed };
+}
+
+type AmountResult = { ok: true; value: EntryAmount } | { ok: false; state: EntryFormState };
+
+/**
+ * Grams to log for `amount` of `unit`. A unit being defined is checked first
+ * (no unit is saved for an entry that would be rejected), then saved, and the
+ * entry uses the stored unit.
+ */
+async function amountToLog(
+  source: LoadedSource,
+  unit: EntryUnit,
+  amount: number,
+  userId: string,
+  formData: FormData,
+): Promise<AmountResult> {
+  const checked = resolveEntryAmount(unit, amount, source.food.portions);
+  if (!checked.ok) return { ok: false, state: amountFailed(formData, checked.error) };
+  if (unit.kind !== "newUnit") return checked;
+
+  // Only foods have units; the form never offers one for a recipe.
+  if (!("food_id" in source.link)) return { ok: false, state: failed(formData, t.errors.unexpected) };
+  const saved = await saveUnit(source.link.food_id, source, unit.grams, userId);
+  if (!saved.ok) return { ok: false, state: failed(formData, saved.error) };
+
+  const logged = resolveEntryAmount({ kind: "portion", portionId: saved.portion.id }, amount, [saved.portion]);
+  return logged.ok ? logged : { ok: false, state: amountFailed(formData, logged.error) };
 }
 
 /** Form action: logs `amount` of a food or recipe into a meal on a date. */
@@ -115,8 +196,8 @@ export async function createEntry(_previous: EntryFormState, formData: FormData)
   const source = await loadSource(input.source, user.id);
   if (!source.ok) return failed(formData, source.error);
 
-  const amount = resolve(source.food, input.unit, input.amount);
-  if (!amount.ok) return amountFailed(formData, amount.error);
+  const amount = await amountToLog(source, input.unit, input.amount, user.id, formData);
+  if (!amount.ok) return amount.state;
 
   const supabase = await createClient();
   const { error } = await supabase.from("food_entries").insert({
@@ -171,17 +252,16 @@ export async function updateEntry(_previous: EntryFormState, formData: FormData)
     if (!linked) return failed(formData, t.errors.foodMissing);
     const source = await loadSource(linked, user.id);
     if (!source.ok) return failed(formData, source.error);
-    const food = source.food;
 
-    const amount = resolve(food, input.change.unit, input.change.amount);
-    if (!amount.ok) return amountFailed(formData, amount.error);
+    const amount = await amountToLog(source, input.change.unit, input.change.amount, user.id, formData);
+    if (!amount.ok) return amount.state;
 
     const logged: EntryAmount = {
       grams: Number(entry.grams),
       quantity: entry.quantity === null ? null : Number(entry.quantity),
       portionLabel: entry.portion_label,
     };
-    if (amountChanged(logged, amount.value)) changes = { ...changes, ...amountColumns(food, amount.value) };
+    if (amountChanged(logged, amount.value)) changes = { ...changes, ...amountColumns(source.food, amount.value) };
   }
 
   const { data, error } = await supabase

@@ -1,7 +1,7 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { chooseOption } from "@/test-support/choose-option";
+import { chooseOption, formValues } from "@/test-support/choose-option";
 import { initialEntryFormState, type EntryFormState } from "../lib/types";
 import { diaryStrings } from "../strings";
 import { EntryForm, type EntryFormFood } from "./entry-form";
@@ -108,6 +108,62 @@ describe("EntryForm", () => {
     renderForm({ state });
     expect(screen.getByRole("alert")).toHaveTextContent(t.validation.fix);
     expect(screen.getByLabelText(t.entryForm.quantity)).toHaveAccessibleDescription(t.validation.quantityRange);
+  });
+
+  it("offers 'unidad' for a food without one and asks for the weight of 1 unit", async () => {
+    const user = userEvent.setup();
+    const { container } = renderForm({ canDefineUnit: true });
+    expect(screen.queryByLabelText(t.entryForm.unitGrams)).not.toBeInTheDocument();
+
+    await chooseOption(user, t.entryForm.unit, t.units.newUnitOption);
+    const amount = screen.getByLabelText(t.entryForm.quantity);
+    await user.clear(amount);
+    await user.type(amount, "2");
+    expect(preview().getByText(t.entryForm.previewEmpty)).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText(t.entryForm.unitGrams), "25");
+    // 2 units x 25 g = 50 g of bread: 134.5 kcal -> "135".
+    expect(preview().getByText("· 50 g")).toBeInTheDocument();
+    expect(preview().getByText("135")).toBeInTheDocument();
+    expect(formValues(container.querySelector("form"))).toMatchObject({ unit: "unit", amount: "2", unitGrams: "25" });
+  });
+
+  it("lists the user's unit as a normal option once it exists, without the weight field", async () => {
+    const user = userEvent.setup();
+    const withUnit = { ...bread, portions: [...bread.portions, { id: 8, label: "unidad", grams: 25 }] };
+    renderForm({ food: withUnit, canDefineUnit: true });
+
+    await user.click(screen.getByLabelText(t.entryForm.unit));
+    const options = (await screen.findAllByRole("option")).map((option) => option.textContent);
+    expect(options).toEqual([
+      t.units.portionOption("1 roll", "50"),
+      t.units.portionOption("unidad", "25"),
+      t.units.gramsOption,
+    ]);
+    await user.click(screen.getByRole("option", { name: t.units.portionOption("unidad", "25") }));
+    expect(screen.queryByLabelText(t.entryForm.unitGrams)).not.toBeInTheDocument();
+    expect(preview().getByText("· 25 g")).toBeInTheDocument();
+  });
+
+  it("does not offer 'unidad' when units cannot be defined (recipes)", async () => {
+    const user = userEvent.setup();
+    renderForm();
+    await user.click(screen.getByLabelText(t.entryForm.unit));
+    const options = (await screen.findAllByRole("option")).map((option) => option.textContent);
+    expect(options).toEqual([t.units.portionOption("1 roll", "50"), t.units.gramsOption]);
+  });
+
+  it("shows the server's error on the unit weight", () => {
+    const state: EntryFormState = {
+      status: "error",
+      fieldErrors: { unitGrams: t.validation.required },
+      formError: t.validation.fix,
+      values: {},
+    };
+    renderForm({ canDefineUnit: true, defaults: { meal: "lunch", unit: "unit", amount: "2" }, state });
+    expect(screen.getByLabelText(t.entryForm.unitGrams)).toHaveAccessibleDescription(
+      expect.stringContaining(t.validation.required),
+    );
   });
 
   it("only offers the meal when the food was deleted, and shows the logged values", () => {

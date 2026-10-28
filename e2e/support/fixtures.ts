@@ -110,6 +110,21 @@ export class E2EData {
     return row.id;
   }
 
+  /**
+   * A shared catalog food (owner_id null, like an ARGENFOODS row), named per
+   * user so parallel projects never share it. Replaces an earlier copy, which
+   * also drops any personal units left on it by a previous run.
+   */
+  async sharedFood(name: string, per100: { kcal: number }): Promise<string> {
+    const uniqueName = `${name} ${this.userId.slice(0, 8)}`;
+    await must("shared food cleanup", this.admin.from("foods").delete().is("owner_id", null).eq("name", uniqueName));
+    await must(
+      "shared food",
+      this.admin.from("foods").insert({ owner_id: null, source: "argenfoods", name: uniqueName, kcal_per_100g: per100.kcal }),
+    );
+    return uniqueName;
+  }
+
   async foodEntry(entry: { date: string; meal: string; foodId?: number; label: string; grams: number; kcal: number }): Promise<void> {
     await must(
       "food entry",

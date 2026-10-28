@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
+import { FOODS_PAGE_SIZE } from "../lib/food-schema";
 import { isFoodSource, type FoodDetail, type FoodSource, type FoodSummary } from "../lib/types";
 
 /*
@@ -32,18 +33,41 @@ function toSummary(row: SearchRow): FoodSummary {
   };
 }
 
-export type SearchFoodsOptions = { query: string; favoritesOnly: boolean; limit?: number };
+export type SearchFoodsOptions = { query: string; favoritesOnly: boolean; limit?: number; offset?: number };
 
 /** Trigram name search over own + shared foods (public.search_foods, SECURITY INVOKER). */
-export async function searchFoods({ query, favoritesOnly, limit = 30 }: SearchFoodsOptions): Promise<FoodSummary[]> {
+export async function searchFoods({
+  query,
+  favoritesOnly,
+  limit = 30,
+  offset = 0,
+}: SearchFoodsOptions): Promise<FoodSummary[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("search_foods", {
     search_query: query,
     favorites_only: favoritesOnly,
     result_limit: limit,
+    result_offset: offset,
   });
   if (error) throw new Error(`search_foods failed: ${error.message}`);
   return data.map(toSummary);
+}
+
+export type FoodsPage = { foods: FoodSummary[]; hasNextPage: boolean };
+
+/** One 1-based page of searchFoods; asks for one extra row to know whether another page follows. */
+export async function searchFoodsPage({
+  query,
+  favoritesOnly,
+  page,
+}: Omit<SearchFoodsOptions, "limit" | "offset"> & { page: number }): Promise<FoodsPage> {
+  const foods = await searchFoods({
+    query,
+    favoritesOnly,
+    limit: FOODS_PAGE_SIZE + 1,
+    offset: (page - 1) * FOODS_PAGE_SIZE,
+  });
+  return { foods: foods.slice(0, FOODS_PAGE_SIZE), hasNextPage: foods.length > FOODS_PAGE_SIZE };
 }
 
 /** The caller's most recently logged distinct foods (public.recent_foods, SECURITY INVOKER). */
