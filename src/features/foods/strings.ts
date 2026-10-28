@@ -20,6 +20,10 @@ export const foodsStrings = {
     tryOff: "Buscar en Open Food Facts",
     perHundred: "cada 100 g",
     favorite: "Favorito",
+    pagination: "Páginas de resultados",
+    previousPage: "Anterior",
+    nextPage: "Siguiente",
+    page: (page: number) => `Página ${page}`,
   },
 
   sources: {

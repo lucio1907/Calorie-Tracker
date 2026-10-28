@@ -13,8 +13,8 @@ Objective: prefill the settings weight input, let each user log any food by "uni
 
 | ID | Specs | Route | Status | Commit |
 |---|---|---|---|---|
-| T1 | S1, S4 | inline | pending | |
-| T2 | S3, S4 | delegated (context backstop) | pending | |
+| T1 | S1, S4 | inline | done (unit RED→GREEN; e2e pending until T2 lands) | b348906 |
+| T2 | S3, S4 | delegated (context backstop) | done (RED→GREEN per rule; vitest 118, pgTAP 327) | see L5 |
 | T3 | S2, S4 | delegated (context backstop) | pending | |
 
 ## Log
@@ -23,3 +23,4 @@ Objective: prefill the settings weight input, let each user log any food by "uni
 - **L2** (2026-10-28): Exploration. The entry form already offers food portions besides grams (`src/features/diary/lib/entry-amount.ts`), but catalog (ARGENFOODS) foods have no portions and `food_portions` RLS only lets the food owner write (`src/features/foods/actions/portion-actions.ts`). `search_foods(search_query, favorites_only, result_limit)` has no offset (`supabase/migrations/20261014154113_foods_search_and_import_key.sql:66`).
 - **L3** (2026-10-28, user choice): S2 unit weight source = "Cada usuario la define (Recomendado)".
 - **L4** Routes: T1 inline. T2 and T3 run one after the other through bounded writers (parent-context backstop); both touch `src/lib/supabase/database.types.ts`, so they are sequential, not parallel. T3 changes RLS (high-risk item 2) and gets its own commit and an independent verifier.
+- **L5** (2026-10-28): T2 landed. `search_foods` gains `result_offset integer default 0` (old 3-arg signature dropped in `20261028120000_search_foods_pagination.sql`; 3-arg calls still work). `/api/foods/search?page=N` (1-500) returns `{ foods, hasNextPage }` (fetches 21 rows); without `page` it returns `{ foods }` as before, so the diary sheet and recipe form are unchanged. Risk: item 1 (migration) / item 3 (function signature): hosted needs the migration before this code deploys. Advisories: keyboard focus drops when Siguiente becomes disabled on the last page; one aborted extra request when typing on page 2+.
