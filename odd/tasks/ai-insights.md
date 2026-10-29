@@ -75,3 +75,9 @@ Route evidence: T2 and T3 are independent units with disjoint edit surfaces, eac
   - The overview now says the balance "trabaja en contra" of the lose goal and cites protein 95 g vs. 150 g. The sign is read correctly.
   - 1 of the 3 calls failed the schema: the overview was over 400 chars.
   - Fix: the prompt still asks for 400 / 200 chars and 3 items. The schema now accepts up to 800 / 300 chars and drops extra items (hard cap 10), so a slightly long answer no longer spends a daily attempt for nothing.
+- **L11** (2026-10-29) Native review approved (reliability lens, acknowledged) with 3 advisories. The independent verifier found S1–S6 pass, no blockers, 3 advisories. One correction batch (90f20f2):
+  - `getStoredInsightOrNull` on Progress: a failed read logs and shows the button instead of breaking the screen.
+  - The key is read before `takeInsightSlot`, so a missing key spends no slot.
+  - On 23505 with an invalid stored row, `saveInsight` returns the new summary without storing it.
+  - Tests: 4 RED, then 97 files / 954 passed. Typecheck and eslint clean.
+  - Open decision: upstream 429/5xx/timeout or an invalid answer still spends a daily slot (shared free quota vs. user retries).
