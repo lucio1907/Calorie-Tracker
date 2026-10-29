@@ -63,6 +63,9 @@ test.describe("Foods", () => {
     await expect(askAnother).toBeVisible();
     await askAnother.getByRole("button", { name: "No", exact: true }).click();
     await expect(askAnother).toBeHidden();
+    // "No" continues to the created food's detail panel; close it to search.
+    await expect(page.getByRole("dialog", { name: "E2E Granola" })).toBeVisible();
+    await page.keyboard.press("Escape");
 
     await page.getByLabel("Buscar alimentos").fill("E2E Granola");
     await page.getByRole("group", { name: "Categoría" }).getByRole("button", { name: "Creados por mí" }).click();
