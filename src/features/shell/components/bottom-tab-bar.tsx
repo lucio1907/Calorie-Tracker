@@ -59,7 +59,8 @@ export function BottomTabBar({ leading, trailing, logHref, pathname, onNavigate,
       // Stays on top and still while page content transitions (see globals.css).
       className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] [view-transition-name:tab-bar] md:hidden"
     >
-      <ul className="mx-auto flex max-w-[480px] items-center px-8">
+      {/* Even gaps and some vertical room keep the five targets apart on narrow phones. */}
+      <ul className="mx-auto flex max-w-[560px] items-center gap-4 px-12 py-8">
         {leading.map((item) => (
           <TabLink key={item.href} item={item} pathname={pathname} onNavigate={onNavigate} onSettled={onSettled} />
         ))}
@@ -70,7 +71,7 @@ export function BottomTabBar({ leading, trailing, logHref, pathname, onNavigate,
             onClick={onLogClick}
             onNavigate={() => onNavigate?.(logHref)}
             aria-label={shellStrings.logAccessible}
-            className="flex min-h-48 min-w-48 items-center justify-center gap-4 rounded-full bg-action px-16 text-body font-medium text-on-action shadow-subtle transition-[background-color,transform] duration-150 ease-out active:bg-action-hover motion-safe:active:scale-95"
+            className="flex min-h-48 min-w-48 items-center justify-center gap-4 rounded-full bg-action px-14 text-body font-medium text-on-action shadow-subtle transition-[background-color,transform] duration-150 ease-out active:bg-action-hover motion-safe:active:scale-95"
           >
             <Plus aria-hidden="true" size={18} />
             <span>{shellStrings.log}</span>

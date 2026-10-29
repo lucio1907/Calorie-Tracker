@@ -42,7 +42,7 @@ export function AppShell({ sidebar, sidebarFooter, tabBar, children }: AppShellP
       <main
         id={MAIN_ID}
         tabIndex={-1}
-        className="px-16 pt-24 pb-[calc(88px+env(safe-area-inset-bottom))] outline-none md:pb-48 md:pl-[calc(72px+24px)] md:pr-24 lg:pl-[calc(240px+32px)] lg:pr-32"
+        className="px-16 pt-24 pb-[calc(104px+env(safe-area-inset-bottom))] outline-none md:pb-48 md:pl-[calc(72px+24px)] md:pr-24 lg:pl-[calc(240px+32px)] lg:pr-32"
       >
         <div className="mx-auto w-full max-w-page">{children}</div>
       </main>
