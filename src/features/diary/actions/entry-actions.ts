@@ -4,6 +4,7 @@ import { refresh } from "next/cache";
 import { MAX_ENTRY_GRAMS, nutrientSnapshot } from "@/domain";
 import { getCurrentUser } from "@/features/auth/data/current-user";
 import { getFoodDetail } from "@/features/foods/data/foods";
+import { formatAmount } from "@/features/foods/lib/format";
 import type { ActionResult } from "@/features/foods/lib/types";
 import { getRecipe } from "@/features/recipes/data/recipes";
 import type { Database } from "@/lib/supabase/database.types";
@@ -130,13 +131,23 @@ const UNIQUE_VIOLATION = "23505";
 type SaveUnitResult = { ok: true; portion: PortionOption } | { ok: false; error: string };
 
 /**
+ * A unit the caller already has (a stale form, or saved meanwhile) is only
+ * used when it weighs what they typed, so the entry never logs a total other
+ * than the one the form previewed.
+ */
+function storedUnitResult(stored: PortionOption, grams: number): SaveUnitResult {
+  if (stored.grams === grams) return { ok: true, portion: stored };
+  return { ok: false, error: t.errors.unitWeightDiffers(formatAmount(stored.grams)) };
+}
+
+/**
  * The caller's "unidad" for a food: the one they already have (a stale form),
  * or a new one weighing `grams`. On their own food it is a regular portion
  * (owner_id null), on a shared food a unit only they see (owner_id = caller).
  */
 async function saveUnit(foodId: number, source: LoadedSource, grams: number, userId: string): Promise<SaveUnitResult> {
   const existing = findUnitPortion(source.food.portions);
-  if (existing) return { ok: true, portion: existing };
+  if (existing) return storedUnitResult(existing, grams);
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -147,10 +158,10 @@ async function saveUnit(foodId: number, source: LoadedSource, grams: number, use
   if (data) return { ok: true, portion: { id: data.id, label: data.label, grams: Number(data.grams) } };
 
   if (error?.code === UNIQUE_VIOLATION) {
-    // Saved meanwhile (e.g. another tab): log with the stored weight.
+    // Saved meanwhile (e.g. another tab).
     const food = await getFoodDetail(foodId, userId).catch(() => null);
     const stored = food ? findUnitPortion(food.portions) : undefined;
-    if (stored) return { ok: true, portion: stored };
+    if (stored) return storedUnitResult(stored, grams);
   }
   if (isRowQuotaViolation(error)) return { ok: false, error: t.errors.unitLimit };
   console.error("[diary] unit insert failed", error?.code, error?.message);

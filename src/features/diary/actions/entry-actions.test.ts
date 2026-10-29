@@ -283,24 +283,45 @@ describe("createEntry with a unit being defined", () => {
     expect(calls[0]).toMatchObject({ table: "food_portions", payload: { owner_id: null } });
   });
 
-  it("logs with the unit the caller already has instead of saving another one", async () => {
-    getFoodDetail.mockResolvedValue({ ...bread, portions: [...bread.portions, { id: 8, label: "unidad", grams: 30 }] });
+  it("logs with the unit the caller already has when it weighs what they typed", async () => {
+    getFoodDetail.mockResolvedValue({ ...bread, portions: [...bread.portions, { id: 8, label: "unidad", grams: 25 }] });
     const state = await createEntry(initialEntryFormState, form(fields));
 
     expect(state.status).toBe("saved");
     expect(calls).toHaveLength(1);
-    expect(calls[0]).toMatchObject({ table: "food_entries", payload: { grams: 60, quantity: 2, portion_label: "unidad" } });
+    expect(calls[0]).toMatchObject({ table: "food_entries", payload: { grams: 50, quantity: 2, portion_label: "unidad" } });
   });
 
-  it("logs with the unit saved meanwhile when the insert hits the unique key", async () => {
+  it("logs nothing when the unit the caller already has weighs something else than they typed", async () => {
+    getFoodDetail.mockResolvedValue({ ...bread, portions: [...bread.portions, { id: 8, label: "unidad", grams: 30 }] });
+    const state = await createEntry(initialEntryFormState, form(fields));
+
+    expect(state).toMatchObject({ status: "error", formError: t.errors.unitWeightDiffers("30") });
+    expect(calls).toHaveLength(0);
+    expect(refresh).not.toHaveBeenCalled();
+  });
+
+  it("logs nothing when a unit with another weight was saved meanwhile (unique key)", async () => {
     getFoodDetail
       .mockResolvedValueOnce(bread)
       .mockResolvedValueOnce({ ...bread, portions: [...bread.portions, { id: 8, label: "unidad", grams: 30 }] });
+    results.push({ data: null, error: { code: "23505", message: "duplicate key" } });
+    const state = await createEntry(initialEntryFormState, form(fields));
+
+    expect(state).toMatchObject({ status: "error", formError: t.errors.unitWeightDiffers("30") });
+    expect(calls).toHaveLength(1);
+    expect(refresh).not.toHaveBeenCalled();
+  });
+
+  it("logs with the unit saved meanwhile when it weighs what they typed (unique key)", async () => {
+    getFoodDetail
+      .mockResolvedValueOnce(bread)
+      .mockResolvedValueOnce({ ...bread, portions: [...bread.portions, { id: 8, label: "unidad", grams: 25 }] });
     results.push({ data: null, error: { code: "23505", message: "duplicate key" } }, { data: null, error: null });
     const state = await createEntry(initialEntryFormState, form(fields));
 
     expect(state.status).toBe("saved");
-    expect(calls[1]).toMatchObject({ table: "food_entries", payload: { grams: 60, portion_label: "unidad" } });
+    expect(calls[1]).toMatchObject({ table: "food_entries", payload: { grams: 50, portion_label: "unidad" } });
   });
 
   it("checks the total before saving the unit", async () => {
