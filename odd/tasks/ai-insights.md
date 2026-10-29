@@ -86,3 +86,8 @@ Route evidence: T2 and T3 are independent units with disjoint edit surfaces, eac
   - New `dailyLimit` copy, README updated, and a container test (summary replaces the button; error keeps the button; stored summary makes no call).
   - The changed function was applied to the LOCAL DB with psql; no reset, so local data was kept.
   - Checks: pgTAP 16 files / 411 PASS (RED before: 2 failed), vitest 98 files / 957 passed, typecheck and eslint clean.
+- **L13** (2026-10-29) Third native review approved and acknowledged. Advisory: `max_tokens` 600 could cut off answers the schema accepts.
+  - User: "si subi el tope u hace el push y abri el pr a development".
+  - `MAX_TOKENS` is now 1200. `finish_reason: "length"` now raises `InsightUnavailableError` ("cut off at the token limit").
+  - Tests: 2 RED, then 93 insights tests passed. Typecheck and eslint clean.
+  - Left as advisories: no direct test for `LinkSettled` (shipped in #23), and the `daily_macro_totals` span check accepts 367 days inclusive, the same as `daily_energy_totals`; the app only uses 7/30/90.

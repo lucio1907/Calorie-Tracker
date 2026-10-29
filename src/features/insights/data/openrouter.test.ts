@@ -62,7 +62,19 @@ describe("requestInsightCompletion", () => {
     expect(body).not.toHaveProperty("provider");
     expect(body.reasoning).toEqual({ effort: "none" });
     expect(body.temperature).toBeTypeOf("number");
-    expect(body.max_tokens).toBeTypeOf("number");
+    // Room for the longest answer the schema accepts (800 + 6 × 300 chars of
+    // Spanish JSON); free models cost nothing per token.
+    expect(body.max_tokens).toBe(1200);
+  });
+
+  it("reports an answer cut off at the token limit as unavailable, even when it parses", async () => {
+    fetchMock.mockResolvedValue(
+      json({
+        model: INSIGHT_MODELS[0],
+        choices: [{ finish_reason: "length", message: { role: "assistant", content: '{"overview":"ok","wins":[]}' } }],
+      }),
+    );
+    await expect(requestInsightCompletion(PROMPT)).rejects.toThrow(/token limit/);
   });
 
   it("only routes to free models", () => {

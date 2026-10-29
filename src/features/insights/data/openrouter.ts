@@ -29,7 +29,8 @@ export const INSIGHT_MODELS = ["nvidia/nemotron-3.5-lightning:free", "google/gem
 const TIMEOUT_MS = 20_000;
 /** A summary is a few KB; anything this large is not a real answer. */
 const MAX_BODY_BYTES = 256 * 1024;
-const MAX_TOKENS = 600;
+/** Room for the longest answer insight-schema accepts; free models cost nothing per token. */
+const MAX_TOKENS = 1200;
 const TEMPERATURE = 0.4;
 
 /** OpenRouter did not answer usefully (network error, timeout, 5xx, malformed or non-JSON content). */
@@ -106,10 +107,13 @@ export async function requestInsightCompletion({
   return { content: parseContent(messageContent(envelope)), model: answeringModel(envelope) };
 }
 
-/** `choices[0].message.content`, which must be a non-empty string. */
+/** `choices[0].message.content`, which must be a non-empty string from an answer that was not cut off. */
 function messageContent(envelope: unknown): string {
   const choices = isObject(envelope) ? envelope.choices : null;
   const first: unknown = Array.isArray(choices) ? choices[0] : null;
+  if (isObject(first) && first.finish_reason === "length") {
+    throw new InsightUnavailableError("OpenRouter answer was cut off at the token limit");
+  }
   const message = isObject(first) ? first.message : null;
   const content = isObject(message) ? message.content : null;
   if (typeof content !== "string" || content.trim() === "") {
