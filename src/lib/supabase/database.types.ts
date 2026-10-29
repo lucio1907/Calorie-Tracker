@@ -119,6 +119,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"insights": {
+                  Row: {
+                    "content": NonNullable<Json>,"created_at": string,"generated_on": string,"id": number,"model": string,"owner_id": string,"range_days": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "content": NonNullable<Json>,"created_at"?: string,"generated_on": string,"id"?: never,"model": string,"owner_id"?: string,"range_days": number
+                  }
+                  Update: {
+                    "content"?: NonNullable<Json>,"created_at"?: string,"generated_on"?: string,"id"?: never,"model"?: string,"owner_id"?: string,"range_days"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"profile_versions": {
                   Row: {
                     "activity_level": string | null,"birth_date": string | null,"carbs_share_pct": number,"created_at": string,"effective_date": string,"fat_share_pct": number,"goal": string,"goal_kg_per_week": number,"height_cm": number | null,"protein_g_per_kg": number,"sex": string | null,"user_id": string
@@ -213,7 +227,10 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "consume_off_request":
+            "consume_insight_request":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"consume_off_request":
 { Args: { "request_kind": string }; Returns: boolean
                            },
 "consume_sign_in_attempt":
@@ -222,6 +239,11 @@ isOneToOne: false
 "daily_energy_totals":
 { Args: { "end_date": string,"start_date": string }; Returns: {
               "entry_date": string,"exercise_kcal": number,"food_kcal": number
+            }[]
+                           },
+"daily_macro_totals":
+{ Args: { "end_date": string,"start_date": string }; Returns: {
+              "carbs_g": number,"entry_date": string,"fat_g": number,"protein_g": number
             }[]
                            },
 "off_barcode_recently_missed":
