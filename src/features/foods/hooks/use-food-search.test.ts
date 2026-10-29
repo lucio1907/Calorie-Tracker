@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { FoodSummary } from "../lib/types";
+import type { FoodFilter, FoodSummary } from "../lib/types";
 import { SEARCH_DEBOUNCE_MS, useFoodSearch } from "./use-food-search";
 
 function food(id: number, name: string): FoodSummary {
@@ -39,7 +39,7 @@ afterEach(() => {
 describe("useFoodSearch", () => {
   it("shows the server-rendered results without fetching", () => {
     const initial = [food(1, "Arroz")];
-    const { result } = renderHook(() => useFoodSearch("", false, initial));
+    const { result } = renderHook(() => useFoodSearch("", "all", initial));
 
     expect(result.current).toMatchObject({ foods: initial, status: "idle" });
     expect(fetchMock).not.toHaveBeenCalled();
@@ -47,7 +47,7 @@ describe("useFoodSearch", () => {
 
   it("debounces typing into a single request for the last query", async () => {
     fetchMock.mockImplementation(() => respondWith([food(2, "Avena")]));
-    const { result, rerender } = renderHook(({ query }) => useFoodSearch(query, false, []), {
+    const { result, rerender } = renderHook(({ query }) => useFoodSearch(query, "all", []), {
       initialProps: { query: "" },
     });
 
@@ -71,7 +71,7 @@ describe("useFoodSearch", () => {
       signals.push(init!.signal!);
       return new Promise(() => {});
     });
-    const { rerender } = renderHook(({ query }) => useFoodSearch(query, false, []), { initialProps: { query: "" } });
+    const { rerender } = renderHook(({ query }) => useFoodSearch(query, "all", []), { initialProps: { query: "" } });
 
     rerender({ query: "pan" });
     await act(async () => {
@@ -87,25 +87,25 @@ describe("useFoodSearch", () => {
     expect(signals[1].aborted).toBe(false);
   });
 
-  it("asks for favorites only and reports errors while keeping the previous results", async () => {
+  it("asks for one category and reports errors while keeping the previous results", async () => {
     const initial = [food(1, "Arroz")];
     fetchMock.mockResolvedValue(new Response("{}", { status: 500 }));
-    const { result, rerender } = renderHook(({ favorites }) => useFoodSearch("", favorites, initial), {
-      initialProps: { favorites: false },
+    const { result, rerender } = renderHook(({ filter }) => useFoodSearch("", filter, initial), {
+      initialProps: { filter: "all" as FoodFilter },
     });
 
-    rerender({ favorites: true });
+    rerender({ filter: "custom" });
     await act(async () => {
       await vi.runAllTimersAsync();
     });
 
-    expect(String(fetchMock.mock.calls[0][0])).toBe("/api/foods/search?q=&favorites=1");
+    expect(String(fetchMock.mock.calls[0][0])).toBe("/api/foods/search?q=&filter=custom");
     expect(result.current).toMatchObject({ foods: initial, status: "error" });
   });
 
   it("starts paged searches on the server-rendered first page", () => {
     const initial = [food(1, "Arroz")];
-    const { result } = renderHook(() => useFoodSearch("", false, initial, { page: 1, initialHasNextPage: true }));
+    const { result } = renderHook(() => useFoodSearch("", "all", initial, { page: 1, initialHasNextPage: true }));
 
     expect(result.current).toMatchObject({ foods: initial, page: 1, hasNextPage: true, status: "idle" });
     expect(fetchMock).not.toHaveBeenCalled();
@@ -116,7 +116,7 @@ describe("useFoodSearch", () => {
     fetchMock.mockImplementation(() => new Promise((resolve) => (answer = resolve)));
     const initial = [food(1, "Arroz")];
     const { result, rerender } = renderHook(
-      ({ page }) => useFoodSearch("", false, initial, { page, initialHasNextPage: true }),
+      ({ page }) => useFoodSearch("", "all", initial, { page, initialHasNextPage: true }),
       { initialProps: { page: 1 } },
     );
 

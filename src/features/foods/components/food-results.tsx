@@ -1,7 +1,7 @@
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui";
 import { formatAmount, formatKcal } from "../lib/format";
-import type { FoodSummary } from "../lib/types";
+import type { FoodFilter, FoodSummary } from "../lib/types";
 import { foodsStrings } from "../strings";
 import { SourceBadge } from "./source-badge";
 
@@ -14,7 +14,7 @@ type FoodResultsProps = {
   foods: FoodSummary[];
   status: FoodResultsStatus;
   query: string;
-  favoritesOnly: boolean;
+  filter: FoodFilter;
   onSelect: (food: FoodSummary) => void;
   onRetry: () => void;
   /** Offers an Open Food Facts search for longer queries; omit to hide it. */
@@ -57,8 +57,17 @@ function FoodRow({ food, onSelect }: { food: FoodSummary; onSelect: (food: FoodS
 }
 
 /** Search results as Dashboard Table Rows, with loading, error and empty states. */
-export function FoodResults({ foods, status, query, favoritesOnly, onSelect, onRetry, onSearchOff }: FoodResultsProps) {
+/** Empty-state copy: the user's own lists explain how to fill them; searches name the text. */
+function emptyMessage(filter: FoodFilter, trimmed: string): string {
+  if (filter === "favorites") return t.noFavorites;
+  if (filter === "custom" && !trimmed) return t.noCustom;
+  return trimmed ? t.noMatches(trimmed) : t.emptyCatalog;
+}
+
+export function FoodResults({ foods, status, query, filter, onSelect, onRetry, onSearchOff }: FoodResultsProps) {
   const trimmed = query.trim();
+  // Open Food Facts can add catalog foods, not favorites or the user's own.
+  const offerOff = onSearchOff && trimmed.length >= 3 && (filter === "all" || filter === "off");
 
   if (status === "error") {
     return (
@@ -70,11 +79,11 @@ export function FoodResults({ foods, status, query, favoritesOnly, onSelect, onR
   }
 
   if (foods.length === 0 && status !== "loading") {
-    const message = favoritesOnly ? t.noFavorites : trimmed ? t.noMatches(trimmed) : t.emptyCatalog;
+    const message = emptyMessage(filter, trimmed);
     return (
       <div className="flex flex-col items-start gap-12 rounded-largecards bg-surface-muted p-16">
         <p className="text-body-lg text-ink-muted">{message}</p>
-        {onSearchOff && !favoritesOnly && trimmed.length >= 3 ? <Button onClick={onSearchOff}>{t.tryOff}</Button> : null}
+        {offerOff ? <Button onClick={onSearchOff}>{t.tryOff}</Button> : null}
       </div>
     );
   }
@@ -94,7 +103,7 @@ export function FoodResults({ foods, status, query, favoritesOnly, onSelect, onR
           <FoodRow key={food.id} food={food} onSelect={onSelect} />
         ))}
       </ul>
-      {onSearchOff && trimmed.length >= 3 && !favoritesOnly ? (
+      {offerOff ? (
         <div>
           <Button variant="ghost" onClick={onSearchOff}>
             {t.tryOff}

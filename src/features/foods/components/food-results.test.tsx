@@ -35,7 +35,7 @@ const polenta: FoodSummary = {
 
 function renderResults(props: Partial<Parameters<typeof FoodResults>[0]> = {}) {
   const handlers = { onSelect: vi.fn(), onRetry: vi.fn(), onSearchOff: vi.fn() };
-  render(<FoodResults foods={[arroz, polenta]} status="idle" query="" favoritesOnly={false} {...handlers} {...props} />);
+  render(<FoodResults foods={[arroz, polenta]} status="idle" query="" filter="all" {...handlers} {...props} />);
   return handlers;
 }
 
@@ -86,9 +86,23 @@ describe("FoodResults", () => {
   });
 
   it("explains an empty favorites filter without suggesting a catalog search", () => {
-    renderResults({ foods: [], query: "galletitas", favoritesOnly: true });
+    renderResults({ foods: [], query: "galletitas", filter: "favorites" });
 
     expect(screen.getByText(t.noFavorites)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: t.tryOff })).not.toBeInTheDocument();
+  });
+
+  it("explains an empty created-by-me filter without suggesting a catalog search", () => {
+    renderResults({ foods: [], query: "", filter: "custom" });
+
+    expect(screen.getByText(t.noCustom)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: t.tryOff })).not.toBeInTheDocument();
+  });
+
+  it("still suggests Open Food Facts when only that source is shown", () => {
+    renderResults({ foods: [], query: "galletitas", filter: "off" });
+
+    expect(screen.getByText(t.noMatches("galletitas"))).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: t.tryOff })).toBeInTheDocument();
   });
 });

@@ -2,7 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import { FOODS_PAGE_SIZE } from "../lib/food-schema";
-import { isFoodSource, type FoodDetail, type FoodSource, type FoodSummary } from "../lib/types";
+import { isFoodSource, type FoodDetail, type FoodFilter, type FoodSource, type FoodSummary } from "../lib/types";
 
 /*
  * Server-only reads for the foods feature. Every query runs with the caller's
@@ -33,12 +33,12 @@ function toSummary(row: SearchRow): FoodSummary {
   };
 }
 
-export type SearchFoodsOptions = { query: string; favoritesOnly: boolean; limit?: number; offset?: number };
+export type SearchFoodsOptions = { query: string; filter: FoodFilter; limit?: number; offset?: number };
 
 /** Trigram name search over own + shared foods (public.search_foods, SECURITY INVOKER). */
 export async function searchFoods({
   query,
-  favoritesOnly,
+  filter,
   limit = 30,
   offset = 0,
 }: SearchFoodsOptions): Promise<FoodSummary[]> {
@@ -46,11 +46,13 @@ export async function searchFoods({
   // result_offset only past the first page: the first page and the unpaged
   // search then also work against the 3-argument search_foods, so deploying
   // the code before the pagination migration leaves food search working.
+  // source_filter likewise only when narrowing to one source.
   const { data, error } = await supabase.rpc("search_foods", {
     search_query: query,
-    favorites_only: favoritesOnly,
+    favorites_only: filter === "favorites",
     result_limit: limit,
     ...(offset > 0 ? { result_offset: offset } : {}),
+    ...(isFoodSource(filter) ? { source_filter: filter } : {}),
   });
   if (error) throw new Error(`search_foods failed: ${error.message}`);
   return data.map(toSummary);
@@ -61,12 +63,12 @@ export type FoodsPage = { foods: FoodSummary[]; hasNextPage: boolean };
 /** One 1-based page of searchFoods; asks for one extra row to know whether another page follows. */
 export async function searchFoodsPage({
   query,
-  favoritesOnly,
+  filter,
   page,
 }: Omit<SearchFoodsOptions, "limit" | "offset"> & { page: number }): Promise<FoodsPage> {
   const foods = await searchFoods({
     query,
-    favoritesOnly,
+    filter,
     limit: FOODS_PAGE_SIZE + 1,
     offset: (page - 1) * FOODS_PAGE_SIZE,
   });

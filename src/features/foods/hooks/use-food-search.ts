@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { FoodSummary } from "../lib/types";
+import type { FoodFilter, FoodSummary } from "../lib/types";
 import { useDebouncedValue } from "./use-debounced-value";
 
 export const SEARCH_DEBOUNCE_MS = 250;
@@ -17,12 +17,12 @@ type Loaded = Results & { key: string; failed: boolean };
 
 async function requestFoods(
   query: string,
-  favoritesOnly: boolean,
+  filter: FoodFilter,
   page: number | undefined,
   signal: AbortSignal,
 ): Promise<Results> {
   const params = new URLSearchParams({ q: query });
-  if (favoritesOnly) params.set("favorites", "1");
+  if (filter !== "all") params.set("filter", filter);
   if (page !== undefined) params.set("page", String(page));
   const response = await fetch(`/api/foods/search?${params}`, { signal, cache: "no-store" });
   if (!response.ok) throw new Error(`search failed: ${response.status}`);
@@ -39,14 +39,14 @@ async function requestFoods(
  */
 export function useFoodSearch(
   query: string,
-  favoritesOnly: boolean,
+  filter: FoodFilter,
   initialFoods: FoodSummary[],
   paging?: FoodSearchPaging,
 ) {
   const debouncedQuery = useDebouncedValue(query.trim(), SEARCH_DEBOUNCE_MS);
   const [reloadCount, setReloadCount] = useState(0);
   const page = paging?.page;
-  const key = `${favoritesOnly ? 1 : 0}|${reloadCount}|${page ?? ""}|${debouncedQuery}`;
+  const key = `${filter}|${reloadCount}|${page ?? ""}|${debouncedQuery}`;
 
   const [loaded, setLoaded] = useState<Loaded>(() => ({
     key,
@@ -62,7 +62,7 @@ export function useFoodSearch(
   useEffect(() => {
     if (shownKey.current === key) return;
     const controller = new AbortController();
-    requestFoods(debouncedQuery, favoritesOnly, page, controller.signal)
+    requestFoods(debouncedQuery, filter, page, controller.signal)
       .then((results) => {
         shownKey.current = key;
         setLoaded({ ...results, key, failed: false });
@@ -73,7 +73,7 @@ export function useFoodSearch(
         setLoaded((previous) => ({ ...previous, key, failed: true }));
       });
     return () => controller.abort();
-  }, [key, debouncedQuery, favoritesOnly, page]);
+  }, [key, debouncedQuery, filter, page]);
 
   const reload = useCallback(() => setReloadCount((count) => count + 1), []);
   const pending = loaded.key !== key || debouncedQuery !== query.trim();

@@ -26,7 +26,7 @@ export async function DiaryPage({ searchParams }: DiaryPageProps) {
   const [entries, recentFoods, initialFoods, recipes] = await Promise.all([
     getDiaryEntries(user.id, date),
     getRecentFoods(),
-    searchFoods({ query: "", favoritesOnly: false }),
+    searchFoods({ query: "", filter: "all" }),
     getRecipes(user.id),
   ]);
 

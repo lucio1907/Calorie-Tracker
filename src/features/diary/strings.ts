@@ -63,6 +63,7 @@ export const diaryStrings = {
     recentHeading: "Recientes",
     noRecent: "Los alimentos que registres aparecen acá.",
     newFood: "Nuevo alimento",
+    barcode: "Código de barras",
     newFoodTitle: "Nuevo alimento",
     offTitle: "Open Food Facts",
     back: "Volver a la búsqueda",

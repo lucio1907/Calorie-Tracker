@@ -6,6 +6,20 @@ export function isFoodSource(value: unknown): value is FoodSource {
   return typeof value === "string" && (FOOD_SOURCES as readonly string[]).includes(value);
 }
 
+/**
+ * Category the food lists can be narrowed to, in chip order: every food, the
+ * caller's own created foods (source "custom"; Open Food Facts imports are
+ * also owned by the caller but are their own category), favorites, or one
+ * shared source.
+ */
+export const FOOD_FILTERS = ["all", "custom", "favorites", "argenfoods", "off"] as const;
+
+export type FoodFilter = (typeof FOOD_FILTERS)[number];
+
+export function isFoodFilter(value: unknown): value is FoodFilter {
+  return typeof value === "string" && (FOOD_FILTERS as readonly string[]).includes(value);
+}
+
 /** Row in search results. Nutrients are per 100 g. */
 export type FoodSummary = {
   id: number;

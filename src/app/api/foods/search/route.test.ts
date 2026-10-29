@@ -98,6 +98,38 @@ describe("GET /api/foods/search", () => {
     expect(body.foods).toHaveLength(5);
   });
 
+  it.each(["custom", "argenfoods", "off"])("filter=%s searches only that source", async (filter) => {
+    const response = await search({ q: "pan", filter, page: "1" });
+
+    expect(response.status).toBe(200);
+    expect(rpc).toHaveBeenCalledWith("search_foods", {
+      search_query: "pan",
+      favorites_only: false,
+      result_limit: 8,
+      source_filter: filter,
+    });
+  });
+
+  it("filter=favorites searches only favorites, like favorites=1", async () => {
+    await search({ q: "pan", filter: "favorites" });
+
+    expect(rpc).toHaveBeenCalledWith("search_foods", { search_query: "pan", favorites_only: true, result_limit: 30 });
+  });
+
+  it("filter=all searches every source", async () => {
+    await search({ q: "pan", filter: "all" });
+
+    expect(rpc).toHaveBeenCalledWith("search_foods", { search_query: "pan", favorites_only: false, result_limit: 30 });
+  });
+
+  it.each(["mine", "", "CUSTOM"])("rejects filter=%j without searching", async (filter) => {
+    const response = await search({ q: "pan", filter });
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "invalid filter" });
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
   it.each(["0", "-1", "abc", "1.5", "", "501"])("rejects page=%j without searching", async (page) => {
     const response = await search({ q: "pan", page });
 
