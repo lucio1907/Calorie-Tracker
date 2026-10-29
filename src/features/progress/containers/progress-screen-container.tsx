@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Button, PageHeader, Sheet } from "@/components/ui";
 import type { CalendarDate } from "@/domain";
+import { InsightCardContainer, type Insight } from "@/features/insights";
 import { CalorieHistoryView } from "../components/calorie-history-view";
 import { RangeNav } from "../components/range-nav";
 import { WeightChart } from "../components/weight-chart";
@@ -28,12 +29,14 @@ type ProgressScreenContainerProps = {
   /** Latest weight on or before today (prefills "Log weight"); null when none. */
   latestKg: number | null;
   history: CalorieHistory;
+  /** Today's stored AI summary for the range; null until one is generated. */
+  insight: Insight | null;
 };
 
 /**
  * Progress screen: range selector, weight trend chart, the weight log (each
- * entry opens the editor) and the daily calorie balance history, plus the
- * sheet hosting the log / edit weight forms. Mutations refresh the
+ * entry opens the editor), the AI summary card and the daily calorie balance
+ * history, plus the sheet hosting the log / edit weight forms. Mutations refresh the
  * server-rendered screen in the same round trip.
  */
 export function ProgressScreenContainer({
@@ -45,6 +48,7 @@ export function ProgressScreenContainer({
   log,
   latestKg,
   history,
+  insight,
 }: ProgressScreenContainerProps) {
   const [panel, setPanel] = useState<Panel | null>(null);
   const close = useCallback(() => setPanel(null), []);
@@ -68,6 +72,9 @@ export function ProgressScreenContainer({
         <WeightChart trend={trend} from={from} to={to} rangeDays={range} />
         <WeightEntryList rows={log} today={today} onEdit={(entry) => setPanel({ kind: "edit", entry })} />
       </div>
+
+      {/* Keyed by range: each range has its own summary, pending state and error. */}
+      <InsightCardContainer key={range} range={range} initialInsight={insight} />
 
       <CalorieHistoryView history={history} />
 
