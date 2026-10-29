@@ -183,10 +183,11 @@ export function TodayView({ dateLabel, summary }: TodayViewProps) {
       />
 
       {summary.status === "ready" ? (
-        <>
+        // Desktop: balance and macros side by side, like Progress (chart + log).
+        <div className="grid gap-24 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
           <BalanceCard summary={summary} />
           <MacrosCard summary={summary} />
-        </>
+        </div>
       ) : summary.status === "underage" ? (
         <EmptyState
           message={t.underageMessage(summary.minAgeYears)}

@@ -1,6 +1,7 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { FOODS_PAGE_SIZE } from "../lib/food-schema";
 import type { FoodSummary } from "../lib/types";
 import { foodsStrings } from "../strings";
 import { FoodsScreenContainer } from "./foods-screen-container";
@@ -57,7 +58,7 @@ afterEach(() => {
 });
 
 function renderScreen() {
-  render(<FoodsScreenContainer initialFoods={foods(1, 20)} initialHasNextPage />);
+  render(<FoodsScreenContainer initialFoods={foods(1, FOODS_PAGE_SIZE)} initialHasNextPage />);
   return screen.getByRole("navigation", { name: t.pagination });
 }
 
@@ -69,11 +70,11 @@ async function goToPage2(pagination: HTMLElement) {
 }
 
 describe("FoodsScreenContainer paging", () => {
-  it("shows the server-rendered first page of 20 foods", () => {
+  it("shows the server-rendered first page of FOODS_PAGE_SIZE foods", () => {
     const pagination = renderScreen();
 
     const results = screen.getByRole("region", { name: t.resultsHeading });
-    expect(within(results).getAllByRole("button", { name: /Alimento/ })).toHaveLength(20);
+    expect(within(results).getAllByRole("button", { name: /Alimento/ })).toHaveLength(FOODS_PAGE_SIZE);
     expect(pagination).toHaveTextContent(t.page(1));
     expect(fetchMock).not.toHaveBeenCalled();
   });

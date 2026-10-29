@@ -32,4 +32,23 @@ describe("useOptimisticPathname", () => {
 
     expect(result.current.pathname).toBe("/settings");
   });
+
+  it("goes back to the real pathname when the navigation ends without leaving the page", () => {
+    const { result } = renderHook(() => useOptimisticPathname());
+    act(() => result.current.onNavigate("/diary"));
+
+    act(() => result.current.onSettled("/diary"));
+
+    expect(result.current.pathname).toBe("/today");
+  });
+
+  it("keeps the newer destination when an earlier link settles", () => {
+    const { result } = renderHook(() => useOptimisticPathname());
+    act(() => result.current.onNavigate("/diary"));
+    act(() => result.current.onNavigate("/settings"));
+
+    act(() => result.current.onSettled("/diary"));
+
+    expect(result.current.pathname).toBe("/settings");
+  });
 });

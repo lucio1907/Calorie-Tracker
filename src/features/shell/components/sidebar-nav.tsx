@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cn, PAGE_TRANSITION } from "@/components/ui";
 import { isActive, type NavItem } from "../nav-items";
+import { LinkSettled } from "./link-settled";
 import { shellStrings } from "../strings";
 
 type SidebarNavProps = {
@@ -8,13 +9,15 @@ type SidebarNavProps = {
   pathname: string;
   /** Called on a client navigation to `href` (marks the item before the route commits). */
   onNavigate?: (href: string) => void;
+  /** Called when the navigation to `href` is no longer pending. */
+  onSettled?: (href: string) => void;
 };
 
 /**
  * Sidebar Nav Items. Tablet (md): icon rail with visually hidden labels.
  * Desktop (lg): icon + label. Active item uses the soft blue fill.
  */
-export function SidebarNav({ items, pathname, onNavigate }: SidebarNavProps) {
+export function SidebarNav({ items, pathname, onNavigate, onSettled }: SidebarNavProps) {
   return (
     <nav aria-label={shellStrings.primaryNav}>
       <ul className="flex flex-col gap-4">
@@ -35,6 +38,7 @@ export function SidebarNav({ items, pathname, onNavigate }: SidebarNavProps) {
               >
                 <Icon aria-hidden="true" size={20} className={active ? "text-brand" : "text-ink-muted"} />
                 <span className="md:sr-only lg:not-sr-only">{label}</span>
+                <LinkSettled onSettled={onSettled ? () => onSettled(href) : undefined} />
               </Link>
             </li>
           );

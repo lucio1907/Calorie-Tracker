@@ -28,7 +28,8 @@ type SettingsPageProps = {
  */
 export function SettingsPage({ accountActions }: SettingsPageProps) {
   return (
-    <div className="stagger flex flex-col gap-24">
+    // Forms read better narrow: capped on desktop instead of spanning the 1200px page.
+    <div className="stagger flex flex-col gap-24 lg:max-w-[760px]">
       <PageHeader title={s.title} description={s.description} />
 
       <Suspense fallback={<PageSkeleton />}>

@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { MouseEvent } from "react";
 import { cn, PAGE_TRANSITION } from "@/components/ui";
 import { isActive, type NavItem } from "../nav-items";
+import { LinkSettled } from "./link-settled";
 import { shellStrings } from "../strings";
 
 type BottomTabBarProps = {
@@ -12,13 +13,15 @@ type BottomTabBarProps = {
   pathname: string;
   /** Called on a client navigation to `href` (marks the tab before the route commits). */
   onNavigate?: (href: string) => void;
+  /** Called when the navigation to `href` is no longer pending. */
+  onSettled?: (href: string) => void;
   /** Click on the center log action; preventDefault() cancels its navigation. */
   onLogClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
 };
 
-type TabLinkProps = { item: NavItem; pathname: string; onNavigate?: (href: string) => void };
+type TabLinkProps = Pick<BottomTabBarProps, "pathname" | "onNavigate" | "onSettled"> & { item: NavItem };
 
-function TabLink({ item, pathname, onNavigate }: TabLinkProps) {
+function TabLink({ item, pathname, onNavigate, onSettled }: TabLinkProps) {
   const active = isActive(pathname, item.href);
   const Icon = item.icon;
   return (
@@ -42,13 +45,14 @@ function TabLink({ item, pathname, onNavigate }: TabLinkProps) {
           <Icon aria-hidden="true" size={22} className="my-4" />
         )}
         <span>{item.label}</span>
+        <LinkSettled onSettled={onSettled ? () => onSettled(item.href) : undefined} />
       </Link>
     </li>
   );
 }
 
 /** Mobile (< md) bottom tab bar with the filled brand "+ Log" CTA in the center. */
-export function BottomTabBar({ leading, trailing, logHref, pathname, onNavigate, onLogClick }: BottomTabBarProps) {
+export function BottomTabBar({ leading, trailing, logHref, pathname, onNavigate, onSettled, onLogClick }: BottomTabBarProps) {
   return (
     <nav
       aria-label={shellStrings.tabBarNav}
@@ -57,7 +61,7 @@ export function BottomTabBar({ leading, trailing, logHref, pathname, onNavigate,
     >
       <ul className="mx-auto flex max-w-[480px] items-center px-8">
         {leading.map((item) => (
-          <TabLink key={item.href} item={item} pathname={pathname} onNavigate={onNavigate} />
+          <TabLink key={item.href} item={item} pathname={pathname} onNavigate={onNavigate} onSettled={onSettled} />
         ))}
         <li className="flex flex-1 justify-center">
           <Link
@@ -70,10 +74,11 @@ export function BottomTabBar({ leading, trailing, logHref, pathname, onNavigate,
           >
             <Plus aria-hidden="true" size={18} />
             <span>{shellStrings.log}</span>
+            <LinkSettled onSettled={onSettled ? () => onSettled(logHref) : undefined} />
           </Link>
         </li>
         {trailing.map((item) => (
-          <TabLink key={item.href} item={item} pathname={pathname} onNavigate={onNavigate} />
+          <TabLink key={item.href} item={item} pathname={pathname} onNavigate={onNavigate} onSettled={onSettled} />
         ))}
       </ul>
     </nav>
