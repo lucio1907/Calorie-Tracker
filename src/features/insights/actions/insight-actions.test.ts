@@ -29,6 +29,9 @@ vi.mock("@/features/progress/data/progress", () => ({
   getDailyMacroTotals: (...args: unknown[]) => getDailyMacroTotals(...args),
 }));
 
+const getOpenRouterApiKey = vi.fn();
+vi.mock("../data/openrouter-env", () => ({ getOpenRouterApiKey: () => getOpenRouterApiKey() }));
+
 const requestInsightCompletion = vi.fn();
 vi.mock("../data/openrouter", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../data/openrouter")>()),
@@ -75,6 +78,7 @@ beforeEach(() => {
   getCurrentUser.mockReset().mockResolvedValue({ id: "user-a", email: "a@example.com" });
   getStoredInsight.mockResolvedValue(null);
   takeInsightSlot.mockResolvedValue(undefined);
+  getOpenRouterApiKey.mockReset().mockReturnValue("test-key");
   loadProgressData.mockResolvedValue(progress(1800));
   getDailyMacroTotals.mockResolvedValue([{ date: "2026-10-15", protein: 90, carbs: 200, fat: 60 }]);
   requestInsightCompletion.mockResolvedValue({ content: { ...content, extra: "dropped" }, model: MODEL });
@@ -130,6 +134,18 @@ describe("generateInsight", () => {
     expect(JSON.parse(user)).toMatchObject({ rangeDays: 7, loggedDays: 1 });
     expect(user).not.toContain("a@example.com");
     expect(user).not.toContain("user-a");
+  });
+
+  it("does not spend a daily generation when the OpenRouter key is missing", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    getOpenRouterApiKey.mockImplementation(() => {
+      throw new Error("OPENROUTER_API_KEY is not set.");
+    });
+
+    await expect(generateInsight(7)).resolves.toEqual({ ok: false, error: t.unexpected });
+    expect(takeInsightSlot).not.toHaveBeenCalled();
+    expect(requestInsightCompletion).not.toHaveBeenCalled();
+    consoleError.mockRestore();
   });
 
   it("reports the daily limit without calling the model", async () => {

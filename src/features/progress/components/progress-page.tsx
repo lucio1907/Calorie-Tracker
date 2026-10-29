@@ -1,5 +1,5 @@
 import { requireUser } from "@/features/auth/data/current-user";
-import { getStoredInsight } from "@/features/insights/data/insights";
+import { getStoredInsightOrNull } from "@/features/insights/data/insights";
 import { appToday } from "@/lib/app-time";
 import { requestNow } from "@/lib/request-time";
 import { ProgressScreenContainer } from "../containers/progress-screen-container";
@@ -22,7 +22,7 @@ export async function ProgressPage({ searchParams }: ProgressPageProps) {
 
   const [{ from, to, trend, log, latestKg, history }, insight] = await Promise.all([
     loadProgressData(user.id, range, today),
-    getStoredInsight(user.id, range, today),
+    getStoredInsightOrNull(user.id, range, today),
   ]);
 
   return (

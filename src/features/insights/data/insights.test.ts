@@ -26,7 +26,7 @@ const rpc = vi.fn(() => Promise.resolve(rpcResult));
 
 vi.mock("@/lib/supabase/server", () => ({ createClient: async () => ({ from, rpc }) }));
 
-const { getStoredInsight, InsightLimitError, saveInsight, takeInsightSlot } = await import("./insights");
+const { getStoredInsight, getStoredInsightOrNull, InsightLimitError, saveInsight, takeInsightSlot } = await import("./insights");
 
 const content = { overview: "Venís bien.", wins: ["Registraste 5 días."], improvements: [] };
 const row = { content, model: "nvidia/nemotron-3.5-lightning:free", generated_on: "2026-10-19", range_days: 7 };
@@ -109,8 +109,31 @@ describe("saveInsight", () => {
     expect(calls[1].op).toBe("select");
   });
 
+  it("returns the new summary without storing it when the stored one no longer matches the schema", async () => {
+    const stale = { ...row, content: { overview: "" } };
+    results.push({ data: null, error: { code: "23505", message: "duplicate" } }, { data: stale, error: null });
+
+    await expect(saveInsight("user-a", input)).resolves.toEqual({ ...insight, model: input.model });
+  });
+
   it("throws on other insert errors", async () => {
     results.push({ data: null, error: { code: "23514", message: "check" } });
     await expect(saveInsight("user-a", input)).rejects.toThrow("check");
+  });
+});
+
+describe("getStoredInsightOrNull", () => {
+  it("is null instead of throwing on a read error, so the Progress screen still renders", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    results.push({ data: null, error: { message: "relation does not exist" } });
+
+    await expect(getStoredInsightOrNull("user-a", 7, "2026-10-19")).resolves.toBeNull();
+    expect(consoleError).toHaveBeenCalledOnce();
+    consoleError.mockRestore();
+  });
+
+  it("returns the stored summary", async () => {
+    results.push({ data: row, error: null });
+    await expect(getStoredInsightOrNull("user-a", 7, "2026-10-19")).resolves.toEqual(insight);
   });
 });

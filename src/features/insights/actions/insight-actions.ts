@@ -8,6 +8,7 @@ import { PROGRESS_RANGES, rangeBounds } from "@/features/progress/lib/progress-r
 import { appToday } from "@/lib/app-time";
 import { getStoredInsight, InsightLimitError, saveInsight, takeInsightSlot } from "../data/insights";
 import { InsightRateLimitedError, InsightUnavailableError, requestInsightCompletion } from "../data/openrouter";
+import { getOpenRouterApiKey } from "../data/openrouter-env";
 import { buildInsightInput } from "../lib/insight-input";
 import { buildInsightMessages } from "../lib/insight-prompt";
 import { insightContentSchema, type Insight } from "../lib/insight-schema";
@@ -41,6 +42,8 @@ export async function generateInsight(rangeDays: number): Promise<ActionResult<I
     const [progress, macros] = await Promise.all([loadProgressData(user.id, range, today), getDailyMacroTotals(from, to)]);
     if (progress.history.loggedDays === 0) return { ok: false, error: t.notEnoughData };
 
+    // A missing key fails here, before it can spend one of the day's generations.
+    getOpenRouterApiKey();
     await takeInsightSlot();
     const input = buildInsightInput({ ...progress, rangeDays: range, macros });
     const answer = await requestInsightCompletion(buildInsightMessages(input));

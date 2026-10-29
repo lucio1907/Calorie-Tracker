@@ -45,6 +45,20 @@ export async function getStoredInsight(userId: string, rangeDays: number, day: C
   return data ? toInsight(data) : null;
 }
 
+/**
+ * getStoredInsight for the Progress screen: a failed read (e.g. the code
+ * deployed before the insights migration) shows the generate button instead
+ * of taking the whole screen down with it.
+ */
+export async function getStoredInsightOrNull(userId: string, rangeDays: number, day: CalendarDate): Promise<Insight | null> {
+  try {
+    return await getStoredInsight(userId, rangeDays, day);
+  } catch (error) {
+    console.error("[insights] stored summary read failed", error instanceof Error ? error.message : error);
+    return null;
+  }
+}
+
 /** Takes one of the caller's daily generations. Throws InsightLimitError when none is left. */
 export async function takeInsightSlot(): Promise<void> {
   const supabase = await createClient();
@@ -57,7 +71,9 @@ export type NewInsight = { rangeDays: number; day: CalendarDate; content: Insigh
 
 /**
  * Stores a validated summary. When a parallel request already stored one for
- * the same range and day, that one wins and is returned instead.
+ * the same range and day, that one wins and is returned instead; if that row
+ * no longer matches the schema, the new summary is returned unstored rather
+ * than failing after the generation was spent.
  */
 export async function saveInsight(userId: string, { rangeDays, day, content, model }: NewInsight): Promise<Insight> {
   const supabase = await createClient();
@@ -69,7 +85,7 @@ export async function saveInsight(userId: string, { rangeDays, day, content, mod
 
   if (error?.code === UNIQUE_VIOLATION) {
     const stored = await getStoredInsight(userId, rangeDays, day);
-    if (stored) return stored;
+    return stored ?? { ...content, model, generatedOn: day, rangeDays };
   }
   if (error) throw new Error(`insert insight ${rangeDays}d on ${day}: ${error.message}`);
 
