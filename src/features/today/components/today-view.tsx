@@ -92,7 +92,7 @@ function BalanceCard({ summary }: { summary: ReadySummary }) {
         {equation.map((item) => (
           <div
             key={item.label}
-            className={cn("flex flex-col gap-4 rounded-[14px] p-12", item.burned ? "bg-burned-wash text-burned-ink" : "bg-canvas")}
+            className={cn("flex min-w-0 flex-col gap-4 rounded-[14px] p-8 min-[375px]:p-12", item.burned ? "bg-burned-wash text-burned-ink" : "bg-canvas")}
           >
             <dt className={cn("text-caption", !item.burned && "text-ink-muted")}>{item.label}</dt>
             <dd className={cn("tabular font-semibold", !item.burned && "text-ink")}>{item.value}</dd>

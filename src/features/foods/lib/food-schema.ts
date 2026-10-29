@@ -116,8 +116,8 @@ export const searchQuerySchema = z.preprocess(
   z.string().max(100),
 );
 
-/** Results per page on the Foods screen. */
-export const FOODS_PAGE_SIZE = 20;
+/** Results per page on the Foods screen (few enough to fit one phone screen). */
+export const FOODS_PAGE_SIZE = 7;
 
 /** 1-based results page from the query string: digits only, capped so the offset stays small. */
 export const foodsPageSchema = z.string().regex(/^\d{1,3}$/).transform(Number).pipe(z.number().int().min(1).max(500));

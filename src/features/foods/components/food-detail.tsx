@@ -99,7 +99,7 @@ export function FoodDetail({
             href={SOURCE_LINKS[food.source](food.barcode)}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-4 font-medium text-brand underline-offset-2 hover:underline"
+            className="-my-12 inline-flex min-h-44 items-center gap-4 font-medium text-brand underline-offset-2 hover:underline"
           >
             {t.viewSource}
             <ExternalLink aria-hidden="true" size={12} />

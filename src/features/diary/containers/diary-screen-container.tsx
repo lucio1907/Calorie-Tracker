@@ -2,13 +2,14 @@
 
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AnchoredTransition, Button, dayTransitionType, PageHeader, Sheet } from "@/components/ui";
 import type { CalendarDate, Meal } from "@/domain";
 import { FoodFormContainer } from "@/features/foods/containers/food-form-container";
 import { OffSearchContainer } from "@/features/foods/containers/off-search-container";
 import type { FoodSummary } from "@/features/foods/lib/types";
 import type { Recipe } from "@/features/recipes/lib/types";
+import { LOG_FOOD_EVENT } from "@/features/shell/nav-items";
 import { DateNav, diaryHref } from "../components/date-nav";
 import { DayTotals } from "../components/day-totals";
 import { MealSection } from "../components/meal-section";
@@ -69,6 +70,13 @@ export function DiaryScreenContainer({
   const router = useRouter();
   const [panel, setPanel] = useState<Panel | null>(null);
   const close = useCallback(() => setPanel(null), []);
+
+  // The tab bar's "+ Log" action, tapped while this screen is already open.
+  useEffect(() => {
+    const open = () => setPanel({ kind: "pick", meal: suggestedMeal });
+    window.addEventListener(LOG_FOOD_EVENT, open);
+    return () => window.removeEventListener(LOG_FOOD_EVENT, open);
+  }, [suggestedMeal]);
 
   function renderPanel(current: Panel) {
     switch (current.kind) {
