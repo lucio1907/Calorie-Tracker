@@ -111,7 +111,8 @@ and day is stored in `public.insights` and shown again on reload without a new c
   `src/features/insights/data/openrouter.ts`).
 - **Limits**: OpenRouter's free tier allows 20 requests per minute and 50 per day per account (1000 per
   day once 10 credits were ever bought), shared by every user of the deployment. Each user gets at most
-  3 generations per day (`consume_insight_request`, app time zone), and a range without logged food
+  10 generation attempts per day, failed ones included (`consume_insight_request`, app time zone);
+  stored summaries are one per range and day, and a range without logged food
   never calls the model.
 - **Privacy**: free providers may log prompts. Only aggregated numbers are sent (averages, day counts,
   weight trend, goal direction, macros vs. targets); never the name, email, birth date or food names.

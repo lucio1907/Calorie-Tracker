@@ -10,7 +10,7 @@ Plan: `~/.claude/plans/necesito-hacer-una-implementacion-elegant-anchor.md` (app
 - **S2** "Quiero usar un modelo completamente gratuito de openrouter, necesito que me recomiendes cual es el que mejor anda para estos tipos de resumenes y tiene baja latencia". After the T1 benchmark (L7): primary `nvidia/nemotron-3.5-lightning:free`, fallback `google/gemma-4-26b-a4b-it:free`. Only `:free` models are used, and no JSON mode is requested (the primary lacks it); the reply is parsed and validated instead.
 - **S3** Placement chosen by the user: "Progreso, con botón". A card on Progress with a "Generar resumen" button for the selected range (7, 30 or 90 days). One summary per user, range and day, stored and shown again on reload without a new call.
 - **S4** (assumption, approved in the plan) Only aggregated numbers are sent to the model: never name, email, birth date or food names.
-- **S5** (assumption, approved in the plan) At most 3 generations per user per day (app time zone), so one account cannot use up the account-wide free quota (50/day). Rate-limited, unavailable and daily-limit cases show a message, not an error page.
+- **S5** (rewritten after L12) At most 10 generation attempts per user per day (app time zone). Failed attempts count too, so a retry loop cannot drain the account-wide free quota (50/day). Stored summaries stay at one per range and day, so at most 3 per day. Rate-limited, unavailable and limit cases show a message, not an error page. Limit message: "Llegaste al límite de intentos de hoy. Probá mañana."
 - **S6** (assumption, approved in the plan) The key is `OPENROUTER_API_KEY`, server-only. A missing key fails with a clear error and never reaches the browser.
 
 ## Tasks
@@ -81,3 +81,8 @@ Route evidence: T2 and T3 are independent units with disjoint edit surfaces, eac
   - On 23505 with an invalid stored row, `saveInsight` returns the new summary without storing it.
   - Tests: 4 RED, then 97 files / 954 passed. Typecheck and eslint clean.
   - Open decision: upstream 429/5xx/timeout or an invalid answer still spends a daily slot (shared free quota vs. user retries).
+- **L12** (2026-10-29, user) On whether a failed attempt should count: "el unico usuario soy yo ya que es una app para mi, que me recomendas". Recommendation: raise the cap to 10 attempts, failed ones included. User: "si aplicalo".
+  - Done: `max_requests` 3 → 10 in the migration (not applied to hosted yet), with the pgTAP case for 10 + refused 11th.
+  - New `dailyLimit` copy, README updated, and a container test (summary replaces the button; error keeps the button; stored summary makes no call).
+  - The changed function was applied to the LOCAL DB with psql; no reset, so local data was kept.
+  - Checks: pgTAP 16 files / 411 PASS (RED before: 2 failed), vitest 98 files / 957 passed, typecheck and eslint clean.

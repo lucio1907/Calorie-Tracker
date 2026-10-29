@@ -22,7 +22,10 @@
 -- 3. public.consume_insight_request(): every summary is generated with a free
 --    OpenRouter model whose quota is shared by the whole deployment (one API
 --    key, 50 requests per day). Without a per-user limit one account could
---    spend it for everyone, so each user gets at most 3 generations per day.
+--    spend it for everyone, so each user gets at most 10 generation attempts
+--    per day. Failed attempts (upstream 429/5xx, timeouts, invalid answers)
+--    count too, which keeps a retry loop from draining the shared quota; the
+--    stored summaries themselves are already one per range and day.
 --    The day is the app's calendar day (America/Argentina/Buenos_Aires,
 --    APP_TIME_ZONE in src/lib/app-time.ts), so the limit resets at the same
 --    midnight the diary uses. The counters live in `private` (no Data API
@@ -158,7 +161,7 @@ declare
   caller uuid := (select auth.uid());
   -- The app's calendar day (APP_TIME_ZONE in src/lib/app-time.ts).
   current_day date := (pg_catalog.now() at time zone 'America/Argentina/Buenos_Aires')::date;
-  max_requests constant int := 3;
+  max_requests constant int := 10;
 begin
   if caller is null then
     raise exception 'not signed in' using errcode = '42501';
@@ -185,7 +188,7 @@ end;
 $$;
 
 comment on function public.consume_insight_request() is
-  'Takes one AI summary generation slot for the caller in the current app day (America/Argentina/Buenos_Aires); false when the 3 per day are used.';
+  'Takes one AI summary generation slot for the caller in the current app day (America/Argentina/Buenos_Aires); false when the 10 attempts per day are used.';
 
 revoke all on function public.consume_insight_request() from public, anon;
 grant execute on function public.consume_insight_request() to authenticated;

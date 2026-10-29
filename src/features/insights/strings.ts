@@ -10,7 +10,7 @@ export const insightsStrings = {
   note: (date: string) => `Generado por IA el ${date}. Es orientativo, no reemplaza a un profesional.`,
 
   errors: {
-    dailyLimit: "Ya generaste 3 resúmenes hoy. Probá mañana.",
+    dailyLimit: "Llegaste al límite de intentos de hoy. Probá mañana.",
     busy: "El servicio de IA está ocupado. Probá de nuevo en unos minutos.",
     unavailable: "No se pudo generar el resumen. Probá de nuevo.",
     notEnoughData: "Registrá comidas al menos un día de este período para tener un resumen.",
