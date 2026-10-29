@@ -46,4 +46,22 @@ describe("Dialog", () => {
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
+
+  it("keeps its close to itself, so a Sheet it opens over stays open", () => {
+    const sheetClose = vi.fn();
+    const onClose = vi.fn();
+    render(
+      <dialog open onClose={sheetClose}>
+        <Dialog open onClose={onClose} title="Saved">
+          <button type="button">Yes</button>
+        </Dialog>
+      </dialog>,
+    );
+
+    fireEvent(screen.getByRole("dialog", { name: "Saved" }), new Event("close"));
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(sheetClose).not.toHaveBeenCalled();
+  });
 });
+

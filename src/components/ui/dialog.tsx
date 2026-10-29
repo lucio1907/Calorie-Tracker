@@ -35,7 +35,12 @@ export function Dialog({ open, onClose, title, description, children }: DialogPr
       ref={ref}
       aria-labelledby={titleId}
       aria-describedby={description ? descriptionId : undefined}
-      onClose={onClose}
+      onClose={(event) => {
+        // React propagates close through the component tree, not the DOM: a
+        // Dialog rendered inside a Sheet would otherwise close the Sheet too.
+        event.stopPropagation();
+        onClose();
+      }}
       className="dialog-motion m-auto w-[calc(100%-32px)] max-w-400 rounded-largecards border border-border bg-surface p-24 text-ink backdrop:bg-ink-strong/40"
     >
       <div className="flex flex-col gap-16">
