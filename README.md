@@ -97,6 +97,26 @@ kept for 7 days.
 - **Open Food Facts** (ODbL): packaged products, fetched server-side only (barcode lookup and name search
   limited to Argentina). A product is stored as the user's own food only when looked up or picked.
 
+## AI summaries
+
+Progress has a **Resumen con IA** card: "Generar resumen" asks a free [OpenRouter](https://openrouter.ai)
+model how the selected range (7, 30 or 90 days) went and what to improve. One summary per user, range
+and day is stored in `public.insights` and shown again on reload without a new call.
+
+- **Key**: set `OPENROUTER_API_KEY` in `.env.local` (and in Vercel for Production and Preview). It is
+  server-only: never prefix it with `NEXT_PUBLIC_`. Create a free key at https://openrouter.ai/keys; no
+  credits are needed. Without it, generating shows an error and the rest of Progress still works.
+- **Models**: only `:free` models, which cost nothing: `nvidia/nemotron-3.5-lightning:free` first, then
+  `google/gemma-4-26b-a4b-it:free` as the fallback (`INSIGHT_MODELS` in
+  `src/features/insights/data/openrouter.ts`).
+- **Limits**: OpenRouter's free tier allows 20 requests per minute and 50 per day per account (1000 per
+  day once 10 credits were ever bought), shared by every user of the deployment. Each user gets at most
+  10 generation attempts per day, failed ones included (`consume_insight_request`, app time zone);
+  stored summaries are one per range and day, and a range without logged food
+  never calls the model.
+- **Privacy**: free providers may log prompts. Only aggregated numbers are sent (averages, day counts,
+  weight trend, goal direction, macros vs. targets); never the name, email, birth date or food names.
+
 ## Layout
 
 ```

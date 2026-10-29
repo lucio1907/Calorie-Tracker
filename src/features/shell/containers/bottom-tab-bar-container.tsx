@@ -7,7 +7,7 @@ import { isActive, LOG_FOOD_EVENT, LOG_HREF, TAB_BAR_LEADING, TAB_BAR_TRAILING }
 
 export function BottomTabBarContainer() {
   const actual = usePathname();
-  const { pathname, onNavigate } = useOptimisticPathname();
+  const { pathname, onNavigate, onSettled } = useOptimisticPathname();
   return (
     <BottomTabBar
       leading={TAB_BAR_LEADING}
@@ -15,6 +15,7 @@ export function BottomTabBarContainer() {
       logHref={LOG_HREF}
       pathname={pathname}
       onNavigate={onNavigate}
+      onSettled={onSettled}
       onLogClick={(event) => {
         // A link to the page already on screen would do nothing: open the add-food sheet instead.
         if (!isActive(actual, LOG_HREF)) return;

@@ -42,6 +42,15 @@ test.describe("Progress", () => {
     await captureScreen(page, testInfo, "progress");
   });
 
+  test("shows the AI summary card with its generate button", async ({ page }) => {
+    await page.goto("/progress?range=7");
+
+    // Only the card is checked: clicking would call OpenRouter.
+    const card = page.getByRole("region", { name: "Resumen con IA" });
+    await expect(card).toBeVisible();
+    await expect(card.getByRole("button", { name: "Generar resumen" })).toBeEnabled();
+  });
+
   test("edits and deletes a weight entry", async ({ page, data }) => {
     const today = appToday();
     await data.weight(addDays(today, -2), 75);

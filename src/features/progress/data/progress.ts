@@ -56,6 +56,23 @@ export async function getDailyEnergyTotals(from: CalendarDate, to: CalendarDate)
   }));
 }
 
+/** Protein, carbs and fat grams summed for one day (days without food entries are absent). */
+export type DailyMacros = { date: CalendarDate; protein: number; carbs: number; fat: number };
+
+/** Protein, carbs and fat grams per day from `from` to `to`, summed in the database (one row per day with food). */
+export async function getDailyMacroTotals(from: CalendarDate, to: CalendarDate): Promise<DailyMacros[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("daily_macro_totals", { start_date: from, end_date: to });
+  if (error) throw new Error(`macro totals ${from}..${to}: ${error.message}`);
+
+  return data.map((row) => ({
+    date: row.entry_date,
+    protein: Number(row.protein_g),
+    carbs: Number(row.carbs_g),
+    fat: Number(row.fat_g),
+  }));
+}
+
 const VERSION_COLUMNS = `effective_date, ${TARGET_PROFILE_COLUMNS}` as const;
 
 /**
