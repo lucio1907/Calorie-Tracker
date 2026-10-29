@@ -23,7 +23,7 @@ function renderForm(state: ActivityFormState = initialActivityFormState) {
 
 describe("previewActivityKcal", () => {
   it("uses the same rules as the server", () => {
-    expect(previewActivityKcal(9.3, 70, "30")).toBe(326);
+    expect(previewActivityKcal(9.3, 70, "30")).toBe(291);
     expect(previewActivityKcal(9.3, 70, "")).toBeNull();
     expect(previewActivityKcal(9.3, 70, "12.5")).toBeNull();
   });
@@ -35,14 +35,14 @@ describe("ActivityEntryForm", () => {
     renderForm();
 
     expect(screen.getByText(t.form.previewBasis("9,3", "70"))).toBeInTheDocument();
-    expect(screen.getByText("326")).toBeInTheDocument();
+    expect(screen.getByText("291")).toBeInTheDocument();
 
     const minutes = screen.getByLabelText(t.form.minutes);
     await user.clear(minutes);
     expect(screen.getByText(t.form.previewEmpty)).toBeInTheDocument();
     await user.type(minutes, "60");
-    // 9.3 x 70 x 1 h = 651.
-    expect(screen.getByText("651")).toBeInTheDocument();
+    // (9.3 - 1) x 70 x 1 h = 581.
+    expect(screen.getByText("581")).toBeInTheDocument();
   });
 
   it("posts only the hidden ids and the duration", () => {

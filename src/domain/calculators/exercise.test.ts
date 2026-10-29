@@ -4,15 +4,22 @@ import { exerciseKcal } from "./exercise";
 
 describe("exerciseKcal", () => {
   it.each([
-    // 8 * 70 * 30 / 60 = 280.
-    ["running half hour", 8, 70, 30, 280],
-    // 3.5 * 72.5 * 45 / 60 = 190.3125 -> 190.
-    ["walking rounds down", 3.5, 72.5, 45, 190],
-    // 6 * 65 * 47 / 60 = 305.5 -> 306.
-    ["half rounds up", 6, 65, 47, 306],
-    // 10 * 80 * 90 / 60 = 1200.
-    ["long session", 10, 80, 90, 1200],
-  ])("%s: MET x weight x hours", (_label, met, weightKg, minutes, expected) => {
+    // (8 - 1) * 70 * 30 / 60 = 245.
+    ["running half hour", 8, 70, 30, 245],
+    // (3.5 - 1) * 72.5 * 45 / 60 = 135.9375 -> 136.
+    ["walking rounds", 3.5, 72.5, 45, 136],
+    // (6 - 1) * 65 * 47 / 60 = 254.58 -> 255.
+    ["rounds to nearest", 6, 65, 47, 255],
+    // (2 - 1) * 61 * 30 / 60 = 30.5 -> 31.
+    ["half rounds up", 2, 61, 30, 31],
+    // (10 - 1) * 80 * 90 / 60 = 1080.
+    ["long session", 10, 80, 90, 1080],
+    // (2.3 - 1) * 70 * 30 / 60 = 45.5 -> 46, with no binary rounding drift.
+    ["decimal MET half", 2.3, 70, 30, 46],
+    // At rest (MET 1) nothing is burned beyond the BMR the target already counts.
+    ["resting MET", 1, 70, 60, 0],
+    ["below resting MET", 0.9, 70, 60, 0],
+  ])("%s: (MET - 1) x weight x hours", (_label, met, weightKg, minutes, expected) => {
     expect(exerciseKcal(met, weightKg, minutes)).toBe(expected);
   });
 

@@ -142,6 +142,7 @@ export function ProfileForm({ defaults, today, weightKg, state, action, pending 
             required
             options={ACTIVITY_OPTIONS}
             placeholder={p.activityPlaceholder}
+            hint={p.activityHint}
             {...choice("activityLevel")}
           />
         </div>
