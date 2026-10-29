@@ -24,6 +24,13 @@ export const TAB_BAR_TRAILING: readonly NavItem[] = [SIDEBAR_ITEMS[4], SIDEBAR_I
 /** Logging starts in the diary (today's day, then pick a meal and a food). */
 export const LOG_HREF = "/diary";
 
+/**
+ * Window event the "+ Log" action dispatches when the diary is already on
+ * screen (a link to the same page would do nothing): the diary opens its
+ * add-food sheet instead.
+ */
+export const LOG_FOOD_EVENT = "shell:log-food";
+
 /** True when `pathname` is the item's route or one of its children. */
 export function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);

@@ -33,7 +33,7 @@ export function PortionForm({
       {Object.entries(hidden).map(([name, value]) => (
         <input key={name} type="hidden" name={name} value={value} />
       ))}
-      <fieldset disabled={pending} className="grid grid-cols-[1fr_112px] items-start gap-8">
+      <fieldset disabled={pending} className="grid grid-cols-[minmax(0,1fr)_112px] items-start gap-8">
         <TextField
           label={t.labelField}
           name="label"

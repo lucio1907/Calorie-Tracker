@@ -24,7 +24,7 @@ export function TextField({ label, error, hint, className, ...inputProps }: Text
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
         className={cn(
-          "min-h-44 rounded-inputs border bg-surface px-12 py-8 text-body-lg text-input-text placeholder:text-ink-subtle",
+          "min-h-44 w-full min-w-0 rounded-inputs border bg-surface px-12 py-8 text-body-lg text-input-text placeholder:text-ink-subtle",
           error ? "border-danger-ink" : "border-input-border",
         )}
         {...inputProps}

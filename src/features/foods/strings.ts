@@ -36,6 +36,7 @@ export const foodsStrings = {
     label: "Escanear o ingresar código de barras",
     hint: "De 8 a 14 dígitos.",
     scan: "Escanear con la cámara",
+    aimHint: "Centrá el código de barras dentro del recuadro",
     stopScan: "Detener la cámara",
     cameraPreview: "Vista previa de la cámara. Apuntala al código de barras.",
     cameraDenied: "Se denegó el acceso a la cámara. Permitilo en la configuración del navegador o escribí el código.",
