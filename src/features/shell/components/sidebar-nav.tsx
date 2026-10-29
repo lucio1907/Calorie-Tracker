@@ -6,13 +6,15 @@ import { shellStrings } from "../strings";
 type SidebarNavProps = {
   items: readonly NavItem[];
   pathname: string;
+  /** Called on a client navigation to `href` (marks the item before the route commits). */
+  onNavigate?: (href: string) => void;
 };
 
 /**
  * Sidebar Nav Items. Tablet (md): icon rail with visually hidden labels.
  * Desktop (lg): icon + label. Active item uses the soft blue fill.
  */
-export function SidebarNav({ items, pathname }: SidebarNavProps) {
+export function SidebarNav({ items, pathname, onNavigate }: SidebarNavProps) {
   return (
     <nav aria-label={shellStrings.primaryNav}>
       <ul className="flex flex-col gap-4">
@@ -23,6 +25,7 @@ export function SidebarNav({ items, pathname }: SidebarNavProps) {
               <Link
                 href={href}
                 transitionTypes={[PAGE_TRANSITION]}
+                onNavigate={() => onNavigate?.(href)}
                 aria-current={active ? "page" : undefined}
                 title={label}
                 className={cn(

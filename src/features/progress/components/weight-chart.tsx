@@ -160,8 +160,10 @@ export function WeightChart({ trend, from, to, rangeDays }: WeightChartProps) {
                 {hovered ? (
                   <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute top-0 z-10 w-max max-w-200 -translate-x-1/2 rounded-inputs border border-border bg-surface px-8 py-4 text-caption text-ink shadow-sm"
-                    style={{ left: `${Math.min(85, Math.max(15, hovered.at.x))}%` }}
+                    // Shifted back by the point's own share of its width, so it stays inside the plot
+                    // (and the page) at any x, on narrow screens too.
+                    className="pointer-events-none absolute top-0 z-10 w-max max-w-[min(200px,100%)] rounded-inputs border border-border bg-surface px-8 py-4 text-caption text-ink shadow-sm"
+                    style={{ left: `${hovered.at.x}%`, transform: `translateX(-${hovered.at.x}%)` }}
                   >
                     {t.tooltip(
                       formatShortDate(hovered.point.date),

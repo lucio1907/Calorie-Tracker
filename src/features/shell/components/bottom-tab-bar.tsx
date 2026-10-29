@@ -1,5 +1,6 @@
 import { Plus } from "lucide-react";
 import Link from "next/link";
+import type { MouseEvent } from "react";
 import { cn, PAGE_TRANSITION } from "@/components/ui";
 import { isActive, type NavItem } from "../nav-items";
 import { shellStrings } from "../strings";
@@ -9,9 +10,15 @@ type BottomTabBarProps = {
   trailing: readonly NavItem[];
   logHref: string;
   pathname: string;
+  /** Called on a client navigation to `href` (marks the tab before the route commits). */
+  onNavigate?: (href: string) => void;
+  /** Click on the center log action; preventDefault() cancels its navigation. */
+  onLogClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
 };
 
-function TabLink({ item, pathname }: { item: NavItem; pathname: string }) {
+type TabLinkProps = { item: NavItem; pathname: string; onNavigate?: (href: string) => void };
+
+function TabLink({ item, pathname, onNavigate }: TabLinkProps) {
   const active = isActive(pathname, item.href);
   const Icon = item.icon;
   return (
@@ -19,6 +26,7 @@ function TabLink({ item, pathname }: { item: NavItem; pathname: string }) {
       <Link
         href={item.href}
         transitionTypes={[PAGE_TRANSITION]}
+        onNavigate={() => onNavigate?.(item.href)}
         aria-current={active ? "page" : undefined}
         className={cn(
           "flex min-h-56 flex-col items-center justify-center gap-4 rounded-buttons text-caption transition-[color,transform] duration-150 ease-out motion-safe:active:scale-95",
@@ -40,7 +48,7 @@ function TabLink({ item, pathname }: { item: NavItem; pathname: string }) {
 }
 
 /** Mobile (< md) bottom tab bar with the filled brand "+ Log" CTA in the center. */
-export function BottomTabBar({ leading, trailing, logHref, pathname }: BottomTabBarProps) {
+export function BottomTabBar({ leading, trailing, logHref, pathname, onNavigate, onLogClick }: BottomTabBarProps) {
   return (
     <nav
       aria-label={shellStrings.tabBarNav}
@@ -49,12 +57,14 @@ export function BottomTabBar({ leading, trailing, logHref, pathname }: BottomTab
     >
       <ul className="mx-auto flex max-w-[480px] items-center px-8">
         {leading.map((item) => (
-          <TabLink key={item.href} item={item} pathname={pathname} />
+          <TabLink key={item.href} item={item} pathname={pathname} onNavigate={onNavigate} />
         ))}
         <li className="flex flex-1 justify-center">
           <Link
             href={logHref}
             transitionTypes={[PAGE_TRANSITION]}
+            onClick={onLogClick}
+            onNavigate={() => onNavigate?.(logHref)}
             aria-label={shellStrings.logAccessible}
             className="flex min-h-48 min-w-48 items-center justify-center gap-4 rounded-full bg-action px-16 text-body font-medium text-on-action shadow-subtle transition-[background-color,transform] duration-150 ease-out active:bg-action-hover motion-safe:active:scale-95"
           >
@@ -63,7 +73,7 @@ export function BottomTabBar({ leading, trailing, logHref, pathname }: BottomTab
           </Link>
         </li>
         {trailing.map((item) => (
-          <TabLink key={item.href} item={item} pathname={pathname} />
+          <TabLink key={item.href} item={item} pathname={pathname} onNavigate={onNavigate} />
         ))}
       </ul>
     </nav>

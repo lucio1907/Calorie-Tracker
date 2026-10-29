@@ -125,7 +125,7 @@ export function Calendar<T extends DateValue>({ today, className, ...props }: Ca
                   // "Today" is the server's app-time-zone day, never the browser's clock or zone.
                   const isToday = day.toString() === today;
                   return cn(
-                    "m-auto flex size-44 items-center justify-center rounded-full text-body tabular-nums outline-none transition-[background-color,color,transform] duration-150",
+                    "m-auto flex size-36 min-[375px]:size-44 items-center justify-center rounded-full text-body tabular-nums outline-none transition-[background-color,color,transform] duration-150",
                     "data-[focus-visible]:outline-2 data-[focus-visible]:outline-offset-2 data-[focus-visible]:outline-focus",
                     blocked
                       ? "cursor-not-allowed text-silver"

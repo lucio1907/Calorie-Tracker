@@ -103,7 +103,7 @@ export function OffSearchPanel({
                     className="shrink-0 px-12"
                   >
                     <Plus aria-hidden="true" size={16} />
-                    <span>{adding ? t.adding : t.add}</span>
+                    <span className="sr-only sm:not-sr-only">{adding ? t.adding : t.add}</span>
                   </Button>
                 </li>
               );

@@ -19,13 +19,18 @@ export function BarcodeScanner({ videoRef, scanning, error, onStart, onStop, dis
   return (
     <div className="flex flex-col gap-8">
       {scanning ? (
-        <video
-          ref={videoRef}
-          muted
-          playsInline
-          aria-label={t.cameraPreview}
-          className="aspect-video w-full rounded-cards bg-surface-alt object-cover"
-        />
+        <div className="relative overflow-hidden rounded-cards bg-surface-alt">
+          <video ref={videoRef} muted playsInline aria-label={t.cameraPreview} className="aspect-video w-full object-cover" />
+          {/* Aiming guide: a barcode-shaped window, the rest of the preview dimmed by its shadow. */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            <div className="relative h-2/5 w-4/5 max-w-320 rounded-buttons border-2 border-white shadow-[0_0_0_9999px_rgb(0_0_0/0.45)]">
+              <div className="absolute inset-x-8 top-1/2 h-2 -translate-y-1/2 rounded-full bg-red-500/80 motion-safe:animate-pulse" />
+            </div>
+          </div>
+          <p className="pointer-events-none absolute inset-x-0 bottom-8 px-16 text-center text-caption font-medium text-white">
+            {t.aimHint}
+          </p>
+        </div>
       ) : null}
       <div>
         <Button onClick={scanning ? onStop : onStart} disabled={disabled}>

@@ -65,8 +65,8 @@ describe("GET /api/foods/search", () => {
     expect(body).not.toHaveProperty("hasNextPage");
   });
 
-  it("returns 20 foods per page and says when another page follows", async () => {
-    rpc.mockResolvedValue({ data: rows(21), error: null });
+  it("returns 7 foods per page and says when another page follows", async () => {
+    rpc.mockResolvedValue({ data: rows(8), error: null });
 
     const response = await search({ q: "", page: "1" });
     const body = await response.json();
@@ -74,10 +74,10 @@ describe("GET /api/foods/search", () => {
     expect(rpc).toHaveBeenCalledWith("search_foods", {
       search_query: "",
       favorites_only: false,
-      result_limit: 21,
+      result_limit: 8,
       result_offset: 0,
     });
-    expect(body.foods.map((food: { id: number }) => food.id)).toEqual(rows(20).map((food) => food.id));
+    expect(body.foods.map((food: { id: number }) => food.id)).toEqual(rows(7).map((food) => food.id));
     expect(body.hasNextPage).toBe(true);
   });
 
@@ -90,8 +90,8 @@ describe("GET /api/foods/search", () => {
     expect(rpc).toHaveBeenCalledWith("search_foods", {
       search_query: "pan",
       favorites_only: true,
-      result_limit: 21,
-      result_offset: 40,
+      result_limit: 8,
+      result_offset: 14,
     });
     expect(body).toMatchObject({ hasNextPage: false });
     expect(body.foods).toHaveLength(5);
