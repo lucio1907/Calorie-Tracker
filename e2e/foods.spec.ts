@@ -59,8 +59,34 @@ test.describe("Foods", () => {
     await captureScreen(page, testInfo, "foods-new");
     await sheet.getByRole("button", { name: "Guardar alimento" }).click();
 
+    const askAnother = page.getByRole("dialog", { name: "Alimento guardado" });
+    await expect(askAnother).toBeVisible();
+    await askAnother.getByRole("button", { name: "No", exact: true }).click();
+    await expect(askAnother).toBeHidden();
+    // "No" continues to the created food's detail panel; close it to search.
+    await expect(page.getByRole("dialog", { name: "E2E Granola" })).toBeVisible();
+    await page.keyboard.press("Escape");
+
     await page.getByLabel("Buscar alimentos").fill("E2E Granola");
+    await page.getByRole("group", { name: "Categoría" }).getByRole("button", { name: "Creados por mí" }).click();
     await expect(page.getByRole("region", { name: "Resultados" }).getByRole("button", { name: /E2E Granola/ })).toBeVisible();
+  });
+
+  test("offers to add another food after creating one", async ({ page }) => {
+    await page.goto("/foods");
+    await page.getByRole("button", { name: "Nuevo alimento" }).click();
+
+    const sheet = page.getByRole("dialog", { name: "Nuevo alimento" });
+    await sheet.getByLabel("Nombre").fill("E2E Otro");
+    await sheet.getByLabel("Energía (kcal)").fill("100");
+    await sheet.getByLabel("Proteínas (g)").fill("1");
+    await sheet.getByLabel("Carbohidratos (g)").fill("2");
+    await sheet.getByLabel("Grasas (g)").fill("3");
+    await sheet.getByRole("button", { name: "Guardar alimento" }).click();
+
+    await page.getByRole("dialog", { name: "Alimento guardado" }).getByRole("button", { name: "Sí, agregar otro" }).click();
+
+    await expect(sheet.getByLabel("Nombre")).toHaveValue("");
   });
 
   test("validates the custom food form", async ({ page }) => {

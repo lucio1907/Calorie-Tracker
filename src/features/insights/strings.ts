@@ -9,6 +9,22 @@ export const insightsStrings = {
   improvements: "Qué mejorar",
   note: (date: string) => `Generado por IA el ${date}. Es orientativo, no reemplaza a un profesional.`,
 
+  /** Sidebar label of the AI section. */
+  nav: "IA",
+  page: {
+    title: "Resúmenes de IA",
+    description: "Generá un resumen nuevo y repasá todos los anteriores.",
+    rangeLabel: "Período del resumen",
+  },
+  history: {
+    heading: "Resúmenes anteriores",
+    list: "Resúmenes guardados",
+    empty: "Todavía no generaste ningún resumen. Los que generes aparecen acá.",
+    range: (days: number) => `${days} días`,
+    note: "Generados por IA. Son orientativos, no reemplazan a un profesional.",
+    failed: "No se pudieron cargar los resúmenes anteriores. Recargá la página para volver a intentar.",
+  },
+
   errors: {
     dailyLimit: "Llegaste al límite de intentos de hoy. Probá mañana.",
     busy: "El servicio de IA está ocupado. Probá de nuevo en unos minutos.",

@@ -107,8 +107,8 @@ describe("createActivityEntry", () => {
           activity_id: 8,
           label: "Running, 10 km/h",
           minutes: 30,
-          // 9.3 x 70 kg x 0.5 h = 325.5 -> 326.
-          kcal: 326,
+          // (9.3 - 1) x 70 kg x 0.5 h = 290.5 -> 291.
+          kcal: 291,
         },
       },
     ]);
@@ -220,8 +220,8 @@ describe("updateActivityEntry", () => {
       {
         table: "activity_entries",
         op: "update",
-        // 9.3 x 80 kg x 1 h = 744.
-        payload: { minutes: 60, kcal: 744 },
+        // (9.3 - 1) x 80 kg x 1 h = 664.
+        payload: { minutes: 60, kcal: 664 },
         filters: [
           ["id", 42],
           ["user_id", USER.id],

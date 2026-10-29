@@ -1,3 +1,5 @@
+import type { FoodFilter } from "./lib/types";
+
 /** User-facing copy for the foods feature. Translate here. */
 export const foodsStrings = {
   title: "Alimentos",
@@ -5,10 +7,22 @@ export const foodsStrings = {
   newFood: "Nuevo alimento",
   recipes: "Recetas",
 
+  addMore: {
+    heading: "Más formas de agregar",
+    description: "Escaneá un código de barras o buscá un producto envasado en Open Food Facts.",
+  },
+
   search: {
     label: "Buscar alimentos",
     placeholder: "p. ej. arroz, dulce de leche",
-    favoritesOnly: "Favoritos",
+    filterLabel: "Categoría",
+    filters: {
+      all: "Todos",
+      custom: "Creados por mí",
+      favorites: "Favoritos",
+      argenfoods: "ARGENFOODS",
+      off: "Open Food Facts",
+    } satisfies Record<FoodFilter, string>,
     loading: "Buscando…",
     error: "La búsqueda falló. Revisá tu conexión y probá de nuevo.",
     retry: "Reintentar",
@@ -17,6 +31,7 @@ export const foodsStrings = {
     emptyCatalog: "Todavía no hay alimentos. Agregá los tuyos o importá el catálogo.",
     noMatches: (query: string) => `Ningún alimento coincide con “${query}”.`,
     noFavorites: "Todavía no tenés favoritos. Abrí un alimento y tocá la estrella para agregarlo.",
+    noCustom: "Todavía no creaste alimentos. Tocá “Nuevo alimento” para agregar el primero.",
     tryOff: "Buscar en Open Food Facts",
     perHundred: "cada 100 g",
     favorite: "Favorito",
@@ -150,6 +165,12 @@ export const foodsStrings = {
     failed: "No se pudo guardar el alimento. Probá de nuevo.",
     duplicateBarcode: "Ya tenés un alimento con este código de barras.",
     limitReached: "Llegaste al máximo de alimentos.",
+    addAnother: {
+      title: "Alimento guardado",
+      description: "¿Querés agregar otro alimento?",
+      yes: "Sí, agregar otro",
+      no: "No",
+    },
   },
 
   validation: {

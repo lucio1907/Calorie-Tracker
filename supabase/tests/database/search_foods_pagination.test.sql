@@ -18,11 +18,11 @@ select hasnt_function(
   'the three-argument signature is replaced, not overloaded'
 );
 select ok(
-  has_function_privilege('authenticated', 'public.search_foods(text, boolean, integer, integer)', 'execute'),
+  has_function_privilege('authenticated', 'public.search_foods(text, boolean, integer, integer, text)', 'execute'),
   'authenticated can run the paged search'
 );
 select ok(
-  not has_function_privilege('anon', 'public.search_foods(text, boolean, integer, integer)', 'execute'),
+  not has_function_privilege('anon', 'public.search_foods(text, boolean, integer, integer, text)', 'execute'),
   'anon cannot run the paged search'
 );
 

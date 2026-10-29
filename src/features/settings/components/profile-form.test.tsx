@@ -32,6 +32,8 @@ describe("ProfileForm", () => {
     expect(screen.getByRole("group", { name: p.birthDate })).toHaveTextContent("10/1/1996");
     expect(screen.getByLabelText(p.heightCm)).toHaveValue("180");
     expect(screen.getByLabelText(p.activityLevel)).toHaveTextContent(s.activityLevels.moderate);
+    // The level is daily life only: workouts are logged in Activity and added on top.
+    expect(screen.getByLabelText(p.activityLevel)).toHaveAccessibleDescription(p.activityHint);
     expect(screen.getByLabelText(p.goal)).toHaveTextContent(s.goals.lose);
     expect(screen.getByLabelText(p.goalKgPerWeek)).toHaveValue("0,5");
     expect(screen.getByLabelText(p.proteinGPerKg)).toHaveValue("1,8");

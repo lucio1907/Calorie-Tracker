@@ -3,6 +3,7 @@ import { Button, Card } from "@/components/ui";
 import { formatShortDate } from "@/features/progress/lib/format";
 import type { Insight } from "../lib/insight-schema";
 import { insightsStrings as t } from "../strings";
+import { InsightSummary } from "./insight-summary";
 
 type InsightCardProps = {
   /** Today's stored summary for the range; null until one is generated. */
@@ -32,33 +33,10 @@ function PendingPlaceholder() {
   );
 }
 
-function Section({ id, heading, items }: { id: string; heading: string; items: readonly string[] }) {
-  if (items.length === 0) return null;
-  return (
-    <div className="flex flex-col gap-8">
-      <h3 id={id} className="text-body font-semibold text-ink">
-        {heading}
-      </h3>
-      <ul aria-labelledby={id} className="flex list-disc flex-col gap-4 pl-20 text-body text-ink">
-        {items.map((item, index) => (
-          <li key={index} className="break-words">
-            {item}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 function Summary({ insight }: { insight: Insight }) {
   return (
     <div className="flex flex-col gap-16">
-      <div className="flex flex-col gap-8">
-        <h3 className="text-body font-semibold text-ink">{t.overview}</h3>
-        <p className="text-body break-words text-ink">{insight.overview}</p>
-      </div>
-      <Section id="insight-wins" heading={t.wins} items={insight.wins} />
-      <Section id="insight-improvements" heading={t.improvements} items={insight.improvements} />
+      <InsightSummary insight={insight} idPrefix="insight" headingLevel={3} />
       <p className="text-caption text-ink-muted">{t.note(formatShortDate(insight.generatedOn))}</p>
     </div>
   );

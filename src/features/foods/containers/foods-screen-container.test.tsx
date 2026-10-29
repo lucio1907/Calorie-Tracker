@@ -15,6 +15,14 @@ vi.mock("../actions/food-actions", () => ({
 }));
 vi.mock("../actions/portion-actions", () => ({}));
 
+// jsdom has no modal dialogs: open/close the <dialog> by toggling its attribute.
+HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
+  this.setAttribute("open", "");
+};
+HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) {
+  this.removeAttribute("open");
+};
+
 const t = foodsStrings.search;
 
 function food(id: number): FoodSummary {
@@ -89,13 +97,28 @@ describe("FoodsScreenContainer paging", () => {
     await waitFor(() => expect(pagination).toHaveTextContent(t.page(1)));
   });
 
-  it("goes back to page 1 when the favorites filter changes", async () => {
+  it("goes back to page 1 when the category changes", async () => {
     const pagination = renderScreen();
     await goToPage2(pagination);
 
-    await userEvent.click(screen.getByRole("button", { name: t.favoritesOnly }));
+    await userEvent.click(screen.getByRole("button", { name: t.filters.custom }));
 
-    await waitFor(() => expect(requestedUrls().at(-1)).toBe("/api/foods/search?q=&favorites=1&page=1"));
+    await waitFor(() => expect(requestedUrls().at(-1)).toBe("/api/foods/search?q=&filter=custom&page=1"));
     await waitFor(() => expect(pagination).toHaveTextContent(t.page(1)));
+  });
+});
+
+describe("FoodsScreenContainer layout", () => {
+  it("keeps the other ways to add foods together beside the results", async () => {
+    renderScreen();
+
+    const more = screen.getByRole("complementary", { name: foodsStrings.addMore.heading });
+    expect(within(more).getByLabelText(foodsStrings.barcode.label)).toBeInTheDocument();
+    const results = screen.getByRole("region", { name: t.resultsHeading });
+    expect(results.compareDocumentPosition(more) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    await userEvent.click(within(more).getByRole("button", { name: t.tryOff }));
+
+    expect(await screen.findByRole("dialog", { name: foodsStrings.off.heading })).toBeInTheDocument();
   });
 });

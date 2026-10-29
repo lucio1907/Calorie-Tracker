@@ -13,7 +13,7 @@ export async function RecipesPage() {
   const user = await requireUser();
   const [recipes, initialFoods] = await Promise.all([
     getRecipes(user.id),
-    searchFoods({ query: "", favoritesOnly: false }),
+    searchFoods({ query: "", filter: "all" }),
   ]);
   return <RecipesScreenContainer recipes={recipes} initialFoods={initialFoods} />;
 }

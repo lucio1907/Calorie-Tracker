@@ -27,8 +27,9 @@ type DateNavProps = {
 };
 
 /**
- * Previous / next day links, the current day's name (a button opening a
- * calendar to jump to any day) and a jump back to today.
+ * Previous / next day links around the current day's name (a button opening
+ * a calendar to jump to any day), as one compact control that takes only the
+ * width it needs, and a jump back to today beside it.
  */
 export function DateNav({ date, today, onPick, basePath = "/diary" }: DateNavProps) {
   const href = (day: CalendarDate) => dayHref(basePath, day, today);
@@ -38,19 +39,20 @@ export function DateNav({ date, today, onPick, basePath = "/diary" }: DateNavPro
   const next = addDays(date, 1);
 
   return (
-    <nav aria-label={t.label} className="flex flex-col gap-8">
-      <div className="flex items-center gap-8">
+    <nav aria-label={t.label} className="flex flex-wrap items-center justify-center gap-8 self-center">
+      <div className="inline-flex items-center gap-4 rounded-buttons border border-border bg-surface p-4">
         {previous >= MIN_DIARY_DATE ? (
           <ButtonLink
             href={href(previous)}
             transitionTypes={[DAY_BACK]}
             aria-label={t.previous}
+            variant="ghost"
             className="w-44 shrink-0 px-0"
           >
             <ChevronLeft aria-hidden="true" size={20} />
           </ButtonLink>
         ) : null}
-        <div className="flex min-w-0 flex-1 justify-center" aria-live="polite">
+        <div className="flex min-w-0 justify-center" aria-live="polite">
           <CalendarPopover
             value={date}
             min={MIN_DIARY_DATE}
@@ -59,7 +61,7 @@ export function DateNav({ date, today, onPick, basePath = "/diary" }: DateNavPro
             timeZone={APP_TIME_ZONE}
             onChange={onPick}
             label={t.pickDate}
-            triggerClassName="flex min-h-44 min-w-0 items-center gap-8 rounded-buttons px-12 py-4 text-center transition-[background-color,transform] duration-150 hover:bg-surface-alt motion-safe:active:scale-[0.98]"
+            triggerClassName="flex min-h-44 min-w-160 items-center justify-center gap-8 rounded-buttons px-12 py-4 text-center transition-[background-color,transform] duration-150 hover:bg-surface-alt motion-safe:active:scale-[0.98]"
           >
             <span className="flex min-w-0 flex-col items-center">
               <span className="sr-only">{t.pickDate}: </span>
@@ -70,18 +72,16 @@ export function DateNav({ date, today, onPick, basePath = "/diary" }: DateNavPro
           </CalendarPopover>
         </div>
         {next <= MAX_DIARY_DATE ? (
-          <ButtonLink href={href(next)} transitionTypes={[DAY_FORWARD]} aria-label={t.next} className="w-44 shrink-0 px-0">
+          <ButtonLink href={href(next)} transitionTypes={[DAY_FORWARD]} aria-label={t.next} variant="ghost" className="w-44 shrink-0 px-0">
             <ChevronRight aria-hidden="true" size={20} />
           </ButtonLink>
         ) : null}
       </div>
-      {/* Only off today: an always-reserved row left a blank gap above the day's content. */}
+      {/* Only off today. */}
       {date !== today ? (
-        <div className="flex justify-center">
-          <ButtonLink href={basePath} transitionTypes={[dayTransitionType(date, today)]} className="shrink-0">
-            {t.today}
-          </ButtonLink>
-        </div>
+        <ButtonLink href={basePath} transitionTypes={[dayTransitionType(date, today)]} className="shrink-0">
+          {t.today}
+        </ButtonLink>
       ) : null}
     </nav>
   );
