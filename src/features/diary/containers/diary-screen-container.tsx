@@ -162,7 +162,8 @@ export function DiaryScreenContainer({
 
       {day.entryCount === 0 ? <p className="text-body text-ink-muted">{t.day.empty}</p> : null}
 
-      <div className="flex flex-col gap-16">
+      {/* Desktop: two columns of meals instead of rows stretched across the page. */}
+      <div className="grid gap-16 lg:grid-cols-2 lg:items-start">
         {day.meals.map((section) => (
           <MealSection
             key={section.meal}
