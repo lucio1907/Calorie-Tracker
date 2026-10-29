@@ -7,6 +7,7 @@ export { cn } from "./cn";
 export { DatePicker } from "./date-picker";
 export { EmptyState } from "./empty-state";
 export { formActionProps } from "./form-action-props";
+export { Logo } from "./logo";
 export { PageHeader } from "./page-header";
 export { PillBadge } from "./pill-badge";
 export { popoverClassName } from "./popover";
