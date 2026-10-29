@@ -18,8 +18,8 @@ Plan: `~/.claude/plans/necesito-hacer-una-implementacion-elegant-anchor.md` (app
 | ID | Specs | Route | Status | Evidence |
 |---|---|---|---|---|
 | T1 | S2 | inline (scratch script) | blocked: needs the user's `OPENROUTER_API_KEY` | — |
-| T2 | S3, S5 | delegated (parallel with T3) | done | RED: ai_insights planned 52 ran 0; GREEN: 16 files, 411 tests; types diff only new objects; parent spot check: 411 passed |
-| T3 | S2, S6 | delegated (parallel with T2) | done | RED: test files failed to load (no module); GREEN: 25 passed; typecheck + eslint clean; parent spot check: 25 passed |
+| T2 | S3, S5 | delegated (parallel with T3) | done (commit bd099a0) | RED: ai_insights planned 52 ran 0; GREEN: 16 files, 411 tests; types diff only new objects; parent spot check: 411 passed |
+| T3 | S2, S6 | delegated (parallel with T2) | done (commit a340d5c) | RED: test files failed to load (no module); GREEN: 25 passed; typecheck + eslint clean; parent spot check: 25 passed |
 | T4 | S1, S4 | pending | pending | — |
 | T5 | S1, S3, S5 | pending | pending | — |
 
