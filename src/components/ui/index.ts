@@ -5,6 +5,7 @@ export { CalendarPopover } from "./calendar-popover";
 export { Card } from "./card";
 export { cn } from "./cn";
 export { DatePicker } from "./date-picker";
+export { Dialog } from "./dialog";
 export { EmptyState } from "./empty-state";
 export { formActionProps } from "./form-action-props";
 export { Logo } from "./logo";
