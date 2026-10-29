@@ -9,9 +9,9 @@ import { getOpenRouterApiKey } from "./openrouter-env";
  * - `models` is OpenRouter's fallback list, tried in order; the response's
  *   `model` names the one that answered:
  *   https://openrouter.ai/docs/guides/routing/model-fallbacks
- * - `provider.require_parameters` routes only to providers that support every
- *   parameter sent (here JSON mode and reasoning off):
- *   https://openrouter.ai/docs/guides/routing/provider-selection
+ * - No `response_format` (JSON mode): the primary model does not support it,
+ *   and `provider.require_parameters` would then skip it. The prompt asks for
+ *   a JSON object and the reply is parsed here and validated by the caller.
  * - `reasoning.effort: "none"` disables reasoning entirely:
  *   https://openrouter.ai/docs/use-cases/reasoning-tokens
  */
@@ -19,8 +19,13 @@ import { getOpenRouterApiKey } from "./openrouter-env";
 const COMPLETIONS_URL = "https://openrouter.ai/api/v1/chat/completions";
 /** App attribution shown on openrouter.ai (`X-OpenRouter-Title`, formerly `X-Title`). */
 const APP_TITLE = "contador-calorias";
-/** Free models only, primary first. */
-export const INSIGHT_MODELS = ["google/gemma-4-26b-a4b-it:free", "nvidia/nemotron-3.5-super-vl:free"] as const;
+/**
+ * Free models only, primary first. Picked by a benchmark on 2026-10-29
+ * (odd/tasks/ai-insights.md, L7): nemotron-3.5-lightning answered 5/5 with
+ * valid JSON, ~0.3 s to the first token and ~3.4 s in total; gemma-4-26b-a4b
+ * was rate-limited upstream 5/5 at the time, so it is the fallback.
+ */
+export const INSIGHT_MODELS = ["nvidia/nemotron-3.5-lightning:free", "google/gemma-4-26b-a4b-it:free"] as const;
 const TIMEOUT_MS = 20_000;
 /** A summary is a few KB; anything this large is not a real answer. */
 const MAX_BODY_BYTES = 256 * 1024;
@@ -68,8 +73,6 @@ export async function requestInsightCompletion({
           { role: "system", content: system },
           { role: "user", content: user },
         ],
-        response_format: { type: "json_object" },
-        provider: { require_parameters: true },
         reasoning: { effort: "none" },
         temperature: TEMPERATURE,
         max_tokens: MAX_TOKENS,

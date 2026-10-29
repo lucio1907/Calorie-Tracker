@@ -35,7 +35,7 @@ afterEach(() => {
 });
 
 describe("requestInsightCompletion", () => {
-  it("posts a JSON-mode chat completion with model fallbacks, the key and a timeout", async () => {
+  it("posts a chat completion with free model fallbacks, the key and a timeout", async () => {
     fetchMock.mockResolvedValue(completion('{"overview":"ok"}'));
 
     await requestInsightCompletion(PROMPT);
@@ -51,13 +51,15 @@ describe("requestInsightCompletion", () => {
     expect(init.redirect).toBe("error");
     expect(init.cache).toBe("no-store");
 
-    expect(body.models).toEqual(["google/gemma-4-26b-a4b-it:free", "nvidia/nemotron-3.5-super-vl:free"]);
+    expect(body.models).toEqual(["nvidia/nemotron-3.5-lightning:free", "google/gemma-4-26b-a4b-it:free"]);
     expect(body.messages).toEqual([
       { role: "system", content: PROMPT.system },
       { role: "user", content: PROMPT.user },
     ]);
-    expect(body.response_format).toEqual({ type: "json_object" });
-    expect(body.provider).toEqual({ require_parameters: true });
+    // The primary model has no JSON mode: the prompt asks for JSON and the
+    // reply is parsed and validated instead (require_parameters would skip it).
+    expect(body).not.toHaveProperty("response_format");
+    expect(body).not.toHaveProperty("provider");
     expect(body.reasoning).toEqual({ effort: "none" });
     expect(body.temperature).toBeTypeOf("number");
     expect(body.max_tokens).toBeTypeOf("number");

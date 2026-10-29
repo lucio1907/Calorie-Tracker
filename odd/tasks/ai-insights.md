@@ -7,7 +7,7 @@ Plan: `~/.claude/plans/necesito-hacer-una-implementacion-elegant-anchor.md` (app
 ## Specs
 
 - **S1** "necesito hacer una implementacion para que un modelo de ia me de resumenes de que cosas tengo que mejorar y como vengo en general." Output: an overview ("cómo venís en general"), up to 3 things going well, and up to 3 things to improve, each citing the user's numbers.
-- **S2** "Quiero usar un modelo completamente gratuito de openrouter, necesito que me recomiendes cual es el que mejor anda para estos tipos de resumenes y tiene baja latencia". Recommended: primary `google/gemma-4-26b-a4b-it:free`, fallback `nvidia/nemotron-3.5-super-vl:free`. Only `:free` models are used. The choice is confirmed by the T1 latency benchmark.
+- **S2** "Quiero usar un modelo completamente gratuito de openrouter, necesito que me recomiendes cual es el que mejor anda para estos tipos de resumenes y tiene baja latencia". After the T1 benchmark (L7): primary `nvidia/nemotron-3.5-lightning:free`, fallback `google/gemma-4-26b-a4b-it:free`. Only `:free` models are used, and no JSON mode is requested (the primary lacks it); the reply is parsed and validated instead.
 - **S3** Placement chosen by the user: "Progreso, con botón". A card on Progress with a "Generar resumen" button for the selected range (7, 30 or 90 days). One summary per user, range and day, stored and shown again on reload without a new call.
 - **S4** (assumption, approved in the plan) Only aggregated numbers are sent to the model: never name, email, birth date or food names.
 - **S5** (assumption, approved in the plan) At most 3 generations per user per day (app time zone), so one account cannot use up the account-wide free quota (50/day). Rate-limited, unavailable and daily-limit cases show a message, not an error page.
@@ -17,11 +17,11 @@ Plan: `~/.claude/plans/necesito-hacer-una-implementacion-elegant-anchor.md` (app
 
 | ID | Specs | Route | Status | Evidence |
 |---|---|---|---|---|
-| T1 | S2 | inline (scratch script) | blocked: needs the user's `OPENROUTER_API_KEY` | — |
+| T1 | S2 | inline (scratch script) | done | benchmark L7; client updated (models, no response_format), 25 tests passed |
 | T2 | S3, S5 | delegated (parallel with T3) | done (commit bd099a0) | RED: ai_insights planned 52 ran 0; GREEN: 16 files, 411 tests; types diff only new objects; parent spot check: 411 passed |
 | T3 | S2, S6 | delegated (parallel with T2) | done (commit a340d5c) | RED: test files failed to load (no module); GREEN: 25 passed; typecheck + eslint clean; parent spot check: 25 passed |
-| T4 | S1, S4 | pending | pending | — |
-| T5 | S1, S3, S5 | pending | pending | — |
+| T4 | S1, S4 | delegated with T5 (context backstop) | in progress | — |
+| T5 | S1, S3, S5 | delegated with T4 (depends on T4) | in progress | — |
 
 - T1: latency benchmark, 5 calls per candidate (gemma-4-26b-a4b, nemotron-3.5-super-vl, nemotron-3.5-lightning): TTFT, total time, JSON validity.
 - T2: migration with `daily_macro_totals(start_date, end_date)`, table `public.insights` + RLS + aal2, `consume_insight_request()` (3/day), pgTAP tests, regenerated `database.types.ts`.
@@ -57,3 +57,11 @@ Route evidence: T2 and T3 are independent units with disjoint edit surfaces, eac
   - `service_role` gets full grants, following the house style.
   - The unique key doubles as the lookup index.
   - Types come from `npx supabase gen types typescript --local`. Always pass `--local`, because a hosted project is linked.
+- **L7** (2026-10-29, T1 benchmark: 5 streamed calls per model, with a realistic 7-day input and `reasoning: { effort: "none" }`)
+  - Key status (`GET /api/v1/key`): `is_free_tier: true`, `usage: 0`, free-model requests `used 0 / limit 50`.
+  - `gemma-4-26b-a4b:free`: 0/5. Every call got HTTP 429 "temporarily rate-limited upstream".
+  - `nemotron-3.5-super-vl:free`: 4/5 OK (one 502 empty response). Median TTFT about 33.3 s, total about 33.3 s, `cost 0`.
+  - `nemotron-3.5-lightning:free`: 5/5 OK with valid JSON (no JSON mode). Median TTFT 332 ms, total 3370 ms, `cost 0` on every call.
+  - Decision: primary lightning, fallback gemma-4-26b. Dropped `response_format` and `provider.require_parameters`, because lightning lacks JSON mode and would be skipped.
+  - Quality note: the sample overview read a positive balance (+250 kcal with a lose goal) as "vas bien encaminado". T4's prompt must spell out what the balance sign means for each goal.
+- **L8** (2026-10-29, user) "ya agregue la api key, esto no me va a cobrar nada por usarlo no?"
