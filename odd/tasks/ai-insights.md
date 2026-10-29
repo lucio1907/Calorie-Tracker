@@ -20,8 +20,8 @@ Plan: `~/.claude/plans/necesito-hacer-una-implementacion-elegant-anchor.md` (app
 | T1 | S2 | inline (scratch script) | done | benchmark L7; client updated (models, no response_format), 25 tests passed |
 | T2 | S3, S5 | delegated (parallel with T3) | done (commit bd099a0) | RED: ai_insights planned 52 ran 0; GREEN: 16 files, 411 tests; types diff only new objects; parent spot check: 411 passed |
 | T3 | S2, S6 | delegated (parallel with T2) | done (commit a340d5c) | RED: test files failed to load (no module); GREEN: 25 passed; typecheck + eslint clean; parent spot check: 25 passed |
-| T4 | S1, S4 | delegated with T5 (context backstop) | in progress | — |
-| T5 | S1, S3, S5 | delegated with T4 (depends on T4) | in progress | — |
+| T4 | S1, S4 | delegated with T5 (context backstop) | done (commit e320301) | RED: import failures, then 11 failing after the balance guidance; GREEN: lib + progress data 35 passed |
+| T5 | S1, S3, S5 | delegated with T4 (depends on T4) | done (commit 3c457b2) | vitest 97 files / 950 passed (parent spot check: same); typecheck + eslint clean; e2e progress 10 passed, instant-navigation 28 passed / 2 skipped |
 
 - T1: latency benchmark, 5 calls per candidate (gemma-4-26b-a4b, nemotron-3.5-super-vl, nemotron-3.5-lightning): TTFT, total time, JSON validity.
 - T2: migration with `daily_macro_totals(start_date, end_date)`, table `public.insights` + RLS + aal2, `consume_insight_request()` (3/day), pgTAP tests, regenerated `database.types.ts`.
@@ -65,3 +65,13 @@ Route evidence: T2 and T3 are independent units with disjoint edit surfaces, eac
   - Decision: primary lightning, fallback gemma-4-26b. Dropped `response_format` and `provider.require_parameters`, because lightning lacks JSON mode and would be skipped.
   - Quality note: the sample overview read a positive balance (+250 kcal with a lose goal) as "vas bien encaminado". T4's prompt must spell out what the balance sign means for each goal.
 - **L8** (2026-10-29, user) "ya agregue la api key, esto no me va a cobrar nada por usarlo no?"
+- **L9** (2026-10-29) T4 and T5 done by one writer. Deviations:
+  - The action loads the range before taking a slot, so 0 logged days never spends one.
+  - Added `errors.invalidRange`.
+  - Sex is left out of the input.
+  - `.env.example` could not be edited: a deny rule blocks every `.env*` path. The user has to add `OPENROUTER_API_KEY=` themselves.
+- **L10** (2026-10-29) Parent live check: the real prompt sent to lightning with the case that failed in L7 (lose goal, +250 kcal).
+  - 3 calls took 3.1 s, 3.5 s and 4.3 s, all `cost 0`.
+  - The overview now says the balance "trabaja en contra" of the lose goal and cites protein 95 g vs. 150 g. The sign is read correctly.
+  - 1 of the 3 calls failed the schema: the overview was over 400 chars.
+  - Fix: the prompt still asks for 400 / 200 chars and 3 items. The schema now accepts up to 800 / 300 chars and drops extra items (hard cap 10), so a slightly long answer no longer spends a daily attempt for nothing.
