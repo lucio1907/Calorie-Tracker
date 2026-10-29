@@ -1,10 +1,11 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { ArrowRight, Plus } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useState } from "react";
 import { Button, PageHeader, Sheet } from "@/components/ui";
 import type { CalendarDate } from "@/domain";
-import { InsightCardContainer, type Insight } from "@/features/insights";
+import { InsightCardContainer, insightsHref, type Insight } from "@/features/insights";
 import { CalorieHistoryView } from "../components/calorie-history-view";
 import { RangeNav } from "../components/range-nav";
 import { WeightChart } from "../components/weight-chart";
@@ -73,8 +74,18 @@ export function ProgressScreenContainer({
         <WeightEntryList rows={log} today={today} onEdit={(entry) => setPanel({ kind: "edit", entry })} />
       </div>
 
-      {/* Keyed by range: each range has its own summary, pending state and error. */}
-      <InsightCardContainer key={range} range={range} initialInsight={insight} />
+      <div className="flex flex-col gap-8">
+        {/* Keyed by range: each range has its own summary, pending state and error. */}
+        <InsightCardContainer key={range} range={range} initialInsight={insight} />
+        {/* The AI section is not in the mobile tab bar: this link is how phones reach it. */}
+        <Link
+          href={insightsHref(range)}
+          className="inline-flex min-h-44 items-center gap-4 self-end font-medium text-brand underline-offset-2 hover:underline"
+        >
+          {t.insights.seeAll}
+          <ArrowRight aria-hidden="true" size={16} />
+        </Link>
+      </div>
 
       <CalorieHistoryView history={history} />
 

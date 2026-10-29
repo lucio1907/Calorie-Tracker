@@ -45,6 +45,27 @@ export async function getStoredInsight(userId: string, rangeDays: number, day: C
   return data ? toInsight(data) : null;
 }
 
+/** Most summaries the AI section lists: months of daily summaries for every range. */
+export const INSIGHT_HISTORY_LIMIT = 100;
+
+/**
+ * The caller's stored summaries for the AI section, newest day first, then
+ * the shortest range. Rows that no longer match the schema are left out.
+ */
+export async function listInsights(userId: string): Promise<Insight[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("insights")
+    .select(COLUMNS)
+    .eq("owner_id", userId)
+    .order("generated_on", { ascending: false })
+    .order("range_days", { ascending: true })
+    .limit(INSIGHT_HISTORY_LIMIT);
+  if (error) throw new Error(`insight history: ${error.message}`);
+
+  return data.flatMap((row) => toInsight(row) ?? []);
+}
+
 /**
  * getStoredInsight for the Progress screen: a failed read (e.g. the code
  * deployed before the insights migration) shows the generate button instead
