@@ -24,7 +24,14 @@ export async function InsightsPage({ searchParams }: InsightsPageProps) {
   const today = appToday(now);
   const range = resolveProgressRange(rangeParam);
 
-  const [insight, history] = await Promise.all([getStoredInsightOrNull(user.id, range, today), listInsights(user.id)]);
+  const [insight, history] = await Promise.all([
+    getStoredInsightOrNull(user.id, range, today),
+    // The history is secondary: a failed read shows a message, the generate card still works.
+    listInsights(user.id).catch((error: unknown) => {
+      console.error("[insights] history read failed", error);
+      return null;
+    }),
+  ]);
 
   return (
     <div className="stagger flex flex-col gap-24">
@@ -40,7 +47,7 @@ export async function InsightsPage({ searchParams }: InsightsPageProps) {
         <h2 id="insight-history" className="text-body-lg font-semibold text-ink">
           {t.history.heading}
         </h2>
-        <InsightHistory insights={pastInsights(history, range, today)} />
+        <InsightHistory insights={history && pastInsights(history, range, today)} />
       </section>
     </div>
   );

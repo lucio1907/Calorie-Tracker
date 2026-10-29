@@ -22,6 +22,7 @@ export const insightsStrings = {
     empty: "Todavía no generaste ningún resumen. Los que generes aparecen acá.",
     range: (days: number) => `${days} días`,
     note: "Generados por IA. Son orientativos, no reemplazan a un profesional.",
+    failed: "No se pudieron cargar los resúmenes anteriores. Recargá la página para volver a intentar.",
   },
 
   errors: {

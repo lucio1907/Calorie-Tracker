@@ -48,8 +48,8 @@ type DiaryScreenContainerProps = {
   date: CalendarDate;
   today: CalendarDate;
   day: DiaryDay;
-  /** The day's calorie balance (target, food, exercise), shown beside the date. */
-  target: TodaySummary;
+  /** The day's calorie balance (target, food, exercise), shown beside the date; null when it could not be loaded. */
+  target: TodaySummary | null;
   /** Meal preselected by "Log food" (by time of day when viewing today). */
   suggestedMeal: Meal;
   recentFoods: FoodSummary[];
@@ -162,9 +162,11 @@ export function DiaryScreenContainer({
               today={today}
               onPick={(picked) => router.push(diaryHref(picked, today), { transitionTypes: [dayTransitionType(date, picked)] })}
             />
-            <div className="min-w-0 flex-1">
-              <DayTarget summary={target} />
-            </div>
+            {target ? (
+              <div className="min-w-0 flex-1">
+                <DayTarget summary={target} />
+              </div>
+            ) : null}
           </div>
         </div>
       </AnchoredTransition>

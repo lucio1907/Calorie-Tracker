@@ -1,16 +1,13 @@
 import { DayTransition } from "@/components/ui";
 import { requireUser } from "@/features/auth/data/current-user";
 import { getRecentFoods, searchFoods } from "@/features/foods/data/foods";
-import { getProfileVersions } from "@/features/progress/data/progress";
-import { profileOnDate } from "@/features/progress/lib/profile-history";
 import { getRecipes } from "@/features/recipes/data/recipes";
-import { getLatestWeight } from "@/features/settings/data/settings";
-import { getExerciseKcal, getTodayProfile } from "@/features/today/data/today";
 import { buildTodaySummary } from "@/features/today/lib/today-summary";
 import { appToday, suggestMealAt } from "@/lib/app-time";
 import { requestNow } from "@/lib/request-time";
-import { Meal, type CalendarDate } from "@/domain";
+import { Meal } from "@/domain";
 import { DiaryScreenContainer } from "../containers/diary-screen-container";
+import { getDayTargetInputs } from "../data/day-target";
 import { getDiaryEntries } from "../data/diary";
 import { resolveDiaryDate } from "../lib/diary-date";
 import { buildDiaryDay } from "../lib/diary-day";
@@ -18,15 +15,6 @@ import { buildDiaryDay } from "../lib/diary-day";
 type DiaryPageProps = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
-
-/**
- * The profile that applied on `date` (its version history), or the current
- * one when no version exists yet, so past days keep the target they had.
- */
-async function getProfileOn(userId: string, date: CalendarDate) {
-  const versions = await getProfileVersions(userId, date, date);
-  return profileOnDate(versions, date) ?? getTodayProfile(userId);
-}
 
 /**
  * Diary route content for ?date=YYYY-MM-DD (today in the app time zone when
@@ -37,18 +25,16 @@ export async function DiaryPage({ searchParams }: DiaryPageProps) {
   const today = appToday(now);
   const date = resolveDiaryDate(dateParam, today);
 
-  const [entries, recentFoods, initialFoods, recipes, profile, weight, exerciseKcal] = await Promise.all([
+  const [entries, recentFoods, initialFoods, recipes, targetInputs] = await Promise.all([
     getDiaryEntries(user.id, date),
     getRecentFoods(),
     searchFoods({ query: "", filter: "all" }),
     getRecipes(user.id),
-    getProfileOn(user.id, date),
-    getLatestWeight(user.id, date),
-    getExerciseKcal(user.id, date),
+    getDayTargetInputs(user.id, date),
   ]);
   const day = buildDiaryDay(entries);
   // The day's balance, as Today computes it, with that day's profile, weight and exercise.
-  const target = buildTodaySummary({ today: date, profile, weightKg: weight?.kg ?? null, food: day.totals, exerciseKcal });
+  const target = targetInputs ? buildTodaySummary({ today: date, food: day.totals, ...targetInputs }) : null;
 
   return (
     // A new day remounts the screen (closed sheet) and slides it in from the side it comes from.

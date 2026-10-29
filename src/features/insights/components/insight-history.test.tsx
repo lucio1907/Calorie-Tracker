@@ -46,4 +46,11 @@ describe("InsightHistory", () => {
     expect(screen.getByText(t.history.empty)).toBeInTheDocument();
     expect(screen.queryByRole("list", { name: t.history.list })).not.toBeInTheDocument();
   });
+
+  it("says the history could not be loaded instead of failing the page", () => {
+    render(<InsightHistory insights={null} />);
+
+    expect(screen.getByRole("alert")).toHaveTextContent(t.history.failed);
+    expect(screen.queryByRole("list", { name: t.history.list })).not.toBeInTheDocument();
+  });
 });

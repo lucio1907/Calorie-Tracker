@@ -6,8 +6,18 @@ import { InsightSummary } from "./insight-summary";
 
 const t = insightsStrings.history;
 
-/** Every stored summary, in the order given (newest first), or the empty state when there is none. */
-export function InsightHistory({ insights }: { insights: readonly Insight[] }) {
+/**
+ * Every stored summary, in the order given (newest first), or the empty state
+ * when there is none. `null` means the history could not be read.
+ */
+export function InsightHistory({ insights }: { insights: readonly Insight[] | null }) {
+  if (insights === null) {
+    return (
+      <p role="alert" className="rounded-inputs bg-danger-wash px-12 py-8 text-body text-danger-ink">
+        {t.failed}
+      </p>
+    );
+  }
   if (insights.length === 0) return <EmptyState message={t.empty} />;
 
   return (

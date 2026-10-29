@@ -56,7 +56,6 @@ function FoodRow({ food, onSelect }: { food: FoodSummary; onSelect: (food: FoodS
   );
 }
 
-/** Search results as Dashboard Table Rows, with loading, error and empty states. */
 /** Empty-state copy: the user's own lists explain how to fill them; searches name the text. */
 function emptyMessage(filter: FoodFilter, trimmed: string): string {
   if (filter === "favorites") return t.noFavorites;
@@ -64,6 +63,7 @@ function emptyMessage(filter: FoodFilter, trimmed: string): string {
   return trimmed ? t.noMatches(trimmed) : t.emptyCatalog;
 }
 
+/** Search results as Dashboard Table Rows, with loading, error and empty states. */
 export function FoodResults({ foods, status, query, filter, onSelect, onRetry, onSearchOff }: FoodResultsProps) {
   const trimmed = query.trim();
   // Open Food Facts can add catalog foods, not favorites or the user's own.
