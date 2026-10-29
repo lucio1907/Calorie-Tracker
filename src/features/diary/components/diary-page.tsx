@@ -1,10 +1,15 @@
 import { DayTransition } from "@/components/ui";
 import { requireUser } from "@/features/auth/data/current-user";
 import { getRecentFoods, searchFoods } from "@/features/foods/data/foods";
+import { getProfileVersions } from "@/features/progress/data/progress";
+import { profileOnDate } from "@/features/progress/lib/profile-history";
 import { getRecipes } from "@/features/recipes/data/recipes";
+import { getLatestWeight } from "@/features/settings/data/settings";
+import { getExerciseKcal, getTodayProfile } from "@/features/today/data/today";
+import { buildTodaySummary } from "@/features/today/lib/today-summary";
 import { appToday, suggestMealAt } from "@/lib/app-time";
 import { requestNow } from "@/lib/request-time";
-import { Meal } from "@/domain";
+import { Meal, type CalendarDate } from "@/domain";
 import { DiaryScreenContainer } from "../containers/diary-screen-container";
 import { getDiaryEntries } from "../data/diary";
 import { resolveDiaryDate } from "../lib/diary-date";
@@ -15,6 +20,15 @@ type DiaryPageProps = {
 };
 
 /**
+ * The profile that applied on `date` (its version history), or the current
+ * one when no version exists yet, so past days keep the target they had.
+ */
+async function getProfileOn(userId: string, date: CalendarDate) {
+  const versions = await getProfileVersions(userId, date, date);
+  return profileOnDate(versions, date) ?? getTodayProfile(userId);
+}
+
+/**
  * Diary route content for ?date=YYYY-MM-DD (today in the app time zone when
  * missing or invalid). Reads per request: must render inside <Suspense>.
  */
@@ -23,12 +37,18 @@ export async function DiaryPage({ searchParams }: DiaryPageProps) {
   const today = appToday(now);
   const date = resolveDiaryDate(dateParam, today);
 
-  const [entries, recentFoods, initialFoods, recipes] = await Promise.all([
+  const [entries, recentFoods, initialFoods, recipes, profile, weight, exerciseKcal] = await Promise.all([
     getDiaryEntries(user.id, date),
     getRecentFoods(),
     searchFoods({ query: "", filter: "all" }),
     getRecipes(user.id),
+    getProfileOn(user.id, date),
+    getLatestWeight(user.id, date),
+    getExerciseKcal(user.id, date),
   ]);
+  const day = buildDiaryDay(entries);
+  // The day's balance, as Today computes it, with that day's profile, weight and exercise.
+  const target = buildTodaySummary({ today: date, profile, weightKg: weight?.kg ?? null, food: day.totals, exerciseKcal });
 
   return (
     // A new day remounts the screen (closed sheet) and slides it in from the side it comes from.
@@ -36,7 +56,8 @@ export async function DiaryPage({ searchParams }: DiaryPageProps) {
       <DiaryScreenContainer
         date={date}
         today={today}
-        day={buildDiaryDay(entries)}
+        day={day}
+        target={target}
         // Time-of-day suggestions only make sense for today; other days start at breakfast.
         suggestedMeal={date === today ? suggestMealAt(now) : Meal.Breakfast}
         recentFoods={recentFoods}

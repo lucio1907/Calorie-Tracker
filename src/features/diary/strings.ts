@@ -41,6 +41,17 @@ export const diaryStrings = {
     editEntry: (label: string) => `Editar ${label}`,
   },
 
+  target: {
+    heading: "Objetivo del día",
+    remaining: "Te quedan",
+    over: "Te pasaste por",
+    eaten: (eaten: string, target: string) => `${eaten} de ${target} kcal`,
+    exercise: (kcal: string) => `+${kcal} kcal de ejercicio`,
+    incomplete: "Completá tu perfil para ver tu objetivo diario.",
+    underage: "No calculamos un objetivo diario para tu edad.",
+    completeProfile: "Ir a Ajustes",
+  },
+
   day: {
     totalsHeading: "Total del día",
     empty: "Todavía no registraste nada en este día.",

@@ -9,8 +9,10 @@ import { FoodFormContainer } from "@/features/foods/containers/food-form-contain
 import { OffSearchContainer } from "@/features/foods/containers/off-search-container";
 import type { FoodSummary } from "@/features/foods/lib/types";
 import type { Recipe } from "@/features/recipes/lib/types";
+import type { TodaySummary } from "@/features/today/lib/today-summary";
 import { LOG_FOOD_EVENT } from "@/features/shell/nav-items";
 import { DateNav, diaryHref } from "../components/date-nav";
+import { DayTarget } from "../components/day-target";
 import { DayTotals } from "../components/day-totals";
 import { MealSection } from "../components/meal-section";
 import type { DiaryDay } from "../lib/diary-day";
@@ -46,6 +48,8 @@ type DiaryScreenContainerProps = {
   date: CalendarDate;
   today: CalendarDate;
   day: DiaryDay;
+  /** The day's calorie balance (target, food, exercise), shown beside the date. */
+  target: TodaySummary;
   /** Meal preselected by "Log food" (by time of day when viewing today). */
   suggestedMeal: Meal;
   recentFoods: FoodSummary[];
@@ -54,7 +58,7 @@ type DiaryScreenContainerProps = {
 };
 
 /**
- * Diary screen: date navigation, day totals, meal sections, and the sheet
+ * Diary screen: date navigation beside the day's target, day totals, meal sections, and the sheet
  * that hosts the add-food flow (pick a food -> amount) and the entry editor.
  * Mutations refresh the server-rendered day in the same round trip.
  */
@@ -62,6 +66,7 @@ export function DiaryScreenContainer({
   date,
   today,
   day,
+  target,
   suggestedMeal,
   recentFoods,
   initialFoods,
@@ -150,11 +155,17 @@ export function DiaryScreenContainer({
             }
           />
 
-          <DateNav
-            date={date}
-            today={today}
-            onPick={(picked) => router.push(diaryHref(picked, today), { transitionTypes: [dayTransitionType(date, picked)] })}
-          />
+          {/* The date takes only the width it needs; the day's target fills the rest of the row. */}
+          <div className="flex flex-col gap-16 md:flex-row md:items-stretch">
+            <DateNav
+              date={date}
+              today={today}
+              onPick={(picked) => router.push(diaryHref(picked, today), { transitionTypes: [dayTransitionType(date, picked)] })}
+            />
+            <div className="min-w-0 flex-1">
+              <DayTarget summary={target} />
+            </div>
+          </div>
         </div>
       </AnchoredTransition>
 
