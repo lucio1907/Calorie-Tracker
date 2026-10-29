@@ -37,7 +37,7 @@ type ActivityEntryFormProps = {
   footer?: ReactNode;
 };
 
-/** Duration form for one activity, with a live kcal preview (MET x weight x hours). */
+/** Duration form for one activity, with a live kcal preview ((MET - 1) x weight x hours). */
 export function ActivityEntryForm({
   title,
   met,

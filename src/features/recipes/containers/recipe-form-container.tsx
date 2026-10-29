@@ -6,7 +6,7 @@ import { FoodSearchBar } from "@/features/foods/components/food-search-bar";
 import { useFoodSearch } from "@/features/foods/hooks/use-food-search";
 import { toDecimal } from "@/features/foods/lib/food-schema";
 import { toInputValue } from "@/features/foods/lib/format";
-import type { FoodSummary } from "@/features/foods/lib/types";
+import type { FoodFilter, FoodSummary } from "@/features/foods/lib/types";
 import { createRecipe, updateRecipe } from "../actions/recipe-actions";
 import { RecipeForm, type IngredientDraft } from "../components/recipe-form";
 import { recipeNutrition, type RecipeNutrition } from "../lib/recipe-nutrition";
@@ -24,21 +24,16 @@ type RecipeFormContainerProps = {
 /** Catalog search (own + shared foods) for adding an ingredient. */
 function IngredientPicker({ initialFoods, onPick }: { initialFoods: FoodSummary[]; onPick: (food: FoodSummary) => void }) {
   const [query, setQuery] = useState("");
-  const [favoritesOnly, setFavoritesOnly] = useState(false);
-  const { foods, status, reload } = useFoodSearch(query, favoritesOnly, initialFoods);
+  const [filter, setFilter] = useState<FoodFilter>("all");
+  const { foods, status, reload } = useFoodSearch(query, filter, initialFoods);
   return (
     <div className="flex flex-col gap-12 rounded-cards border border-border p-12">
-      <FoodSearchBar
-        query={query}
-        onQueryChange={setQuery}
-        favoritesOnly={favoritesOnly}
-        onFavoritesOnlyChange={setFavoritesOnly}
-      />
+      <FoodSearchBar query={query} onQueryChange={setQuery} filter={filter} onFilterChange={setFilter} />
       <FoodResults
         foods={foods}
         status={status}
         query={query}
-        favoritesOnly={favoritesOnly}
+        filter={filter}
         onSelect={onPick}
         onRetry={reload}
       />

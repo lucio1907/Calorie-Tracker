@@ -11,6 +11,6 @@ import { searchFoodsPage } from "../data/foods";
 export async function FoodsPage() {
   // Client navigations do not re-run the layout's AuthGate: verify here too.
   await requireUser();
-  const { foods, hasNextPage } = await searchFoodsPage({ query: "", favoritesOnly: false, page: 1 });
+  const { foods, hasNextPage } = await searchFoodsPage({ query: "", filter: "all", page: 1 });
   return <FoodsScreenContainer initialFoods={foods} initialHasNextPage={hasNextPage} />;
 }

@@ -1,4 +1,5 @@
-import { Activity, BookOpen, ChartLine, House, Salad, Settings, type LucideIcon } from "lucide-react";
+import { Activity, BookOpen, ChartLine, House, Salad, Settings, Sparkles, type LucideIcon } from "lucide-react";
+import { insightsStrings } from "@/features/insights/strings";
 import { shellStrings } from "./strings";
 
 export type NavItem = {
@@ -14,12 +15,16 @@ export const SIDEBAR_ITEMS: readonly NavItem[] = [
   { href: "/activity", label: shellStrings.nav.activity, icon: Activity },
   { href: "/foods", label: shellStrings.nav.foods, icon: Salad },
   { href: "/progress", label: shellStrings.nav.progress, icon: ChartLine },
+  { href: "/insights", label: insightsStrings.nav, icon: Sparkles },
   { href: "/settings", label: shellStrings.nav.settings, icon: Settings },
 ];
 
-/** Mobile tab bar: two items, the center "+ Log" action, two items. */
+/**
+ * Mobile tab bar: two items, the center "+ Log" action, two items (Today,
+ * Diary · Progress, Settings). The AI section is reached from Progress there.
+ */
 export const TAB_BAR_LEADING: readonly NavItem[] = [SIDEBAR_ITEMS[0], SIDEBAR_ITEMS[1]];
-export const TAB_BAR_TRAILING: readonly NavItem[] = [SIDEBAR_ITEMS[4], SIDEBAR_ITEMS[5]];
+export const TAB_BAR_TRAILING: readonly NavItem[] = [SIDEBAR_ITEMS[4], SIDEBAR_ITEMS[6]];
 
 /** Logging starts in the diary (today's day, then pick a meal and a food). */
 export const LOG_HREF = "/diary";

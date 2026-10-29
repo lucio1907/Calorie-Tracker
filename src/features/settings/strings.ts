@@ -20,6 +20,7 @@ export const settingsStrings = {
     heightCm: "Altura (cm)",
     activityLevel: "Nivel de actividad",
     activityPlaceholder: "Elegí…",
+    activityHint: "Tu día a día sin contar entrenamientos: esos se registran en Actividad y se suman aparte.",
     goalLegend: "Meta",
     goal: "Meta de peso",
     goalKgPerWeek: "Ritmo (kg por semana)",
@@ -51,11 +52,11 @@ export const settingsStrings = {
 
   sexes: { male: "Masculino", female: "Femenino" } satisfies Record<Sex, string>,
   activityLevels: {
-    sedentary: "Sedentario (poco o nada de ejercicio)",
-    light: "Ligero (1–3 días por semana)",
-    moderate: "Moderado (3–5 días por semana)",
-    active: "Activo (6–7 días por semana)",
-    very_active: "Muy activo (ejercicio intenso todos los días o trabajo físico)",
+    sedentary: "Sedentario (casi todo el día sentado)",
+    light: "Ligero (de pie o caminando parte del día)",
+    moderate: "Moderado (de pie y en movimiento casi todo el día)",
+    active: "Activo (trabajo físico)",
+    very_active: "Muy activo (trabajo físico intenso)",
   } satisfies Record<ActivityLevel, string>,
   goals: {
     lose: "Bajar de peso",

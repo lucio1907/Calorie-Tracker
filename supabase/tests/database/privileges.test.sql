@@ -32,7 +32,7 @@ select ok(
   'a new private function is not executable by authenticated without a grant'
 );
 select ok(
-  has_function_privilege('authenticated', 'public.search_foods(text, boolean, integer, integer)', 'execute'),
+  has_function_privilege('authenticated', 'public.search_foods(text, boolean, integer, integer, text)', 'execute'),
   'functions granted explicitly keep their grants'
 );
 

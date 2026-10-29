@@ -25,7 +25,7 @@ test.describe("Settings", () => {
     await choose(page, "Sexo", "Femenino");
     await typeDate(page, "Fecha de nacimiento", "14031992");
     await page.getByLabel("Altura (cm)").fill("165");
-    await choose(page, "Nivel de actividad", "Ligero (1–3 días por semana)");
+    await choose(page, "Nivel de actividad", "Ligero (de pie o caminando parte del día)");
     await choose(page, "Meta de peso", "Bajar de peso");
     await page.getByLabel("Ritmo (kg por semana)").fill("0,25");
 
@@ -82,7 +82,7 @@ test.describe("Settings", () => {
     await choose(page, "Sexo", "Masculino");
     await typeDate(page, "Fecha de nacimiento", `0101${year}`);
     await page.getByLabel("Altura (cm)").fill("150");
-    await choose(page, "Nivel de actividad", "Moderado (3–5 días por semana)");
+    await choose(page, "Nivel de actividad", "Moderado (de pie y en movimiento casi todo el día)");
     await page.getByRole("button", { name: "Guardar perfil" }).click();
 
     await expect(page.locator("form").getByRole("alert")).toHaveText("Revisá los campos marcados.");

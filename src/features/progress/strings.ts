@@ -60,6 +60,10 @@ export const progressStrings = {
     kcal: "kcal",
   },
 
+  insights: {
+    seeAll: "Ver todos los resúmenes",
+  },
+
   form: {
     addTitle: "Registrar peso",
     editTitle: "Editar peso",

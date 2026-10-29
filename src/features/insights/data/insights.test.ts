@@ -3,19 +3,28 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 
 /** Minimal chainable stand-in for the supabase-js query builder and rpc. */
-type Call = { table: string; op: string; payload?: unknown; filters: Array<[string, unknown]> };
+type Call = {
+  table: string;
+  op: string;
+  payload?: unknown;
+  filters: Array<[string, unknown]>;
+  orders: Array<[string, unknown]>;
+  limit?: number;
+};
 const calls: Call[] = [];
 const results: Array<{ data: unknown; error: unknown }> = [];
 let rpcResult: { data: unknown; error: unknown } = { data: true, error: null };
 
 function from(table: string) {
-  const call: Call = { table, op: "select", filters: [] };
+  const call: Call = { table, op: "select", filters: [], orders: [] };
   calls.push(call);
   const settle = () => Promise.resolve(results.shift() ?? { data: null, error: null });
   const chain = {
     select: () => chain,
     insert: (payload: unknown) => ((call.op = "insert"), (call.payload = payload), chain),
     eq: (column: string, value: unknown) => (call.filters.push([column, value]), chain),
+    order: (column: string, options: unknown) => (call.orders.push([column, options]), chain),
+    limit: (count: number) => ((call.limit = count), settle()),
     maybeSingle: settle,
     single: settle,
   };
@@ -26,7 +35,8 @@ const rpc = vi.fn(() => Promise.resolve(rpcResult));
 
 vi.mock("@/lib/supabase/server", () => ({ createClient: async () => ({ from, rpc }) }));
 
-const { getStoredInsight, getStoredInsightOrNull, InsightLimitError, saveInsight, takeInsightSlot } = await import("./insights");
+const { getStoredInsight, getStoredInsightOrNull, InsightLimitError, INSIGHT_HISTORY_LIMIT, listInsights, saveInsight, takeInsightSlot } =
+  await import("./insights");
 
 const content = { overview: "Venís bien.", wins: ["Registraste 5 días."], improvements: [] };
 const row = { content, model: "nvidia/nemotron-3.5-lightning:free", generated_on: "2026-10-19", range_days: 7 };
@@ -135,5 +145,42 @@ describe("getStoredInsightOrNull", () => {
   it("returns the stored summary", async () => {
     results.push({ data: row, error: null });
     await expect(getStoredInsightOrNull("user-a", 7, "2026-10-19")).resolves.toEqual(insight);
+  });
+});
+
+describe("listInsights", () => {
+  it("reads every summary of the caller, newest day first, then the shortest range, capped", async () => {
+    const older = { ...row, generated_on: "2026-10-12", range_days: 30 };
+    results.push({ data: [row, { ...row, range_days: 90 }, older], error: null });
+
+    await expect(listInsights("user-a")).resolves.toEqual([
+      insight,
+      { ...insight, rangeDays: 90 },
+      { ...insight, generatedOn: "2026-10-12", rangeDays: 30 },
+    ]);
+    expect(calls[0]).toMatchObject({
+      table: "insights",
+      filters: [["owner_id", "user-a"]],
+      orders: [
+        ["generated_on", { ascending: false }],
+        ["range_days", { ascending: true }],
+      ],
+      limit: INSIGHT_HISTORY_LIMIT,
+    });
+  });
+
+  it("leaves out rows whose content no longer matches the schema", async () => {
+    results.push({ data: [{ ...row, content: { overview: "" } }, row], error: null });
+    await expect(listInsights("user-a")).resolves.toEqual([insight]);
+  });
+
+  it("is empty when there are none", async () => {
+    results.push({ data: [], error: null });
+    await expect(listInsights("user-a")).resolves.toEqual([]);
+  });
+
+  it("throws on a read error", async () => {
+    results.push({ data: null, error: { message: "boom" } });
+    await expect(listInsights("user-a")).rejects.toThrow("boom");
   });
 });

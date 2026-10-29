@@ -66,7 +66,7 @@ describe("ActivityScreenContainer", () => {
 
     await user.click(within(list).getByRole("button", { name: /Yoga, general/ }));
     expect(screen.getByLabelText(t.form.minutes)).toHaveValue("30");
-    // 2.3 x 70 x 0.5 h = 80.5 -> 81.
-    expect(screen.getByText("81")).toBeInTheDocument();
+    // (2.3 - 1) x 70 x 0.5 h = 45.5 -> 46.
+    expect(screen.getByText("46")).toBeInTheDocument();
   });
 });

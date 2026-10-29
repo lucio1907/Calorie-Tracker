@@ -106,6 +106,31 @@
     }
   }
 
+  /* Dialog: a short fade and lift; leaves faster than it enters. */
+  .dialog-motion {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+    transition:
+      opacity 150ms var(--ease-exit),
+      transform 150ms var(--ease-exit),
+      overlay 150ms var(--ease-exit) allow-discrete,
+      display 150ms var(--ease-exit) allow-discrete;
+  }
+
+  .dialog-motion[open] {
+    opacity: 1;
+    transform: none;
+    transition-duration: 220ms;
+    transition-timing-function: var(--ease-enter);
+  }
+
+  @starting-style {
+    .dialog-motion[open] {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+  }
+
   @media (width >= 48rem) {
     .sheet-motion {
       --sheet-offset: translateX(100%);

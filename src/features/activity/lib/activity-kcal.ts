@@ -7,7 +7,7 @@ export type ActivityKcalResult = { ok: true; kcal: number } | { ok: false; error
 
 /**
  * kcal burned by `minutes` of an activity with this MET for someone weighing
- * `weightKg`: MET x kg x hours, in whole kcal (the domain exercise
+ * `weightKg`: (MET - 1) x kg x hours, in whole kcal (the domain exercise
  * calculator). The server stores this as the entry's snapshot; the form uses
  * the same function for its preview.
  */
