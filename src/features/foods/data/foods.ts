@@ -43,11 +43,14 @@ export async function searchFoods({
   offset = 0,
 }: SearchFoodsOptions): Promise<FoodSummary[]> {
   const supabase = await createClient();
+  // result_offset only past the first page: the first page and the unpaged
+  // search then also work against the 3-argument search_foods, so deploying
+  // the code before the pagination migration leaves food search working.
   const { data, error } = await supabase.rpc("search_foods", {
     search_query: query,
     favorites_only: favoritesOnly,
     result_limit: limit,
-    result_offset: offset,
+    ...(offset > 0 ? { result_offset: offset } : {}),
   });
   if (error) throw new Error(`search_foods failed: ${error.message}`);
   return data.map(toSummary);

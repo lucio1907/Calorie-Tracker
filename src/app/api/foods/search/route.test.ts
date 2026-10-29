@@ -48,6 +48,9 @@ afterEach(() => {
 });
 
 describe("GET /api/foods/search", () => {
+  // result_offset is only sent past the first page, so the first page and the
+  // unpaged search keep working against the 3-argument search_foods (a
+  // database the pagination migration has not reached yet).
   it("without a page returns up to 30 foods and no paging info, as before", async () => {
     rpc.mockResolvedValue({ data: rows(30), error: null });
 
@@ -59,7 +62,6 @@ describe("GET /api/foods/search", () => {
       search_query: "arroz",
       favorites_only: false,
       result_limit: 30,
-      result_offset: 0,
     });
     expect(body.foods).toHaveLength(30);
     expect(body).not.toHaveProperty("hasNextPage");
@@ -75,7 +77,6 @@ describe("GET /api/foods/search", () => {
       search_query: "",
       favorites_only: false,
       result_limit: 8,
-      result_offset: 0,
     });
     expect(body.foods.map((food: { id: number }) => food.id)).toEqual(rows(7).map((food) => food.id));
     expect(body.hasNextPage).toBe(true);

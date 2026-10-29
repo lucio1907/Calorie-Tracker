@@ -124,6 +124,8 @@ export const diaryStrings = {
     portionMissing: "Esta porción ya no existe. Elegí otra.",
     unitFailed: "No se pudo guardar el peso de la unidad. Probá de nuevo.",
     unitLimit: "Ya guardaste la cantidad máxima de unidades.",
+    unitWeightDiffers: (grams: string) =>
+      `Ya tenés guardado el peso de 1 unidad: ${grams} g. Escribí ese peso para registrar.`,
     entryMissing: "Este registro ya no existe.",
     deleteFailed: "No se pudo eliminar el registro.",
     unexpected: "Algo salió mal. Probá de nuevo.",
