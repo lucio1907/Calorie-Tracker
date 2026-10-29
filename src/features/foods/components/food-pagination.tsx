@@ -19,13 +19,13 @@ export function FoodPagination({ page, hasNextPage, onPageChange }: FoodPaginati
     <nav aria-label={t.pagination} className="flex items-center justify-between gap-12">
       <Button onClick={() => onPageChange(page - 1)} disabled={page <= 1}>
         <ChevronLeft aria-hidden="true" size={18} />
-        <span>{t.previousPage}</span>
+        <span className="sr-only min-[375px]:not-sr-only">{t.previousPage}</span>
       </Button>
       <p aria-live="polite" className="tabular text-body text-ink-muted">
         {t.page(page)}
       </p>
       <Button onClick={() => onPageChange(page + 1)} disabled={!hasNextPage}>
-        <span>{t.nextPage}</span>
+        <span className="sr-only min-[375px]:not-sr-only">{t.nextPage}</span>
         <ChevronRight aria-hidden="true" size={18} />
       </Button>
     </nav>
