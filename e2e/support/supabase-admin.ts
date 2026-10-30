@@ -88,6 +88,8 @@ async function check(label: string, request: PromiseLike<{ error: { message: str
 /** Deletes every row the user owns (diary, activity, weights, own foods and activities, recipes, profile). */
 export async function resetUserData(admin: AdminClient, userId: string): Promise<void> {
   await check("food_entries", admin.from("food_entries").delete().eq("user_id", userId));
+  await check("insights", admin.from("insights").delete().eq("owner_id", userId));
+  await check("insight_answers", admin.from("insight_answers").delete().eq("owner_id", userId));
   await check("activity_entries", admin.from("activity_entries").delete().eq("user_id", userId));
   await check("weight_entries", admin.from("weight_entries").delete().eq("user_id", userId));
   await check("food_favorites", admin.from("food_favorites").delete().eq("user_id", userId));

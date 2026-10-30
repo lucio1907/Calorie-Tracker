@@ -9,6 +9,32 @@ export const insightsStrings = {
   improvements: "Qué mejorar",
   note: (date: string) => `Generado por IA el ${date}. Es orientativo, no reemplaza a un profesional.`,
 
+  /** Numbers next to a summary, read live for the range. */
+  stats: {
+    heading: "Tus números del período",
+    goalFor: "A favor de tu meta",
+    goalAgainst: "En contra de tu meta",
+    /** Signed kcal: "-150", "+220". */
+    balance: (kcal: string) => `Balance promedio: ${kcal} kcal por día frente al objetivo`,
+    macrosHeading: "Macros promedio frente al objetivo",
+    macros: { protein: "Proteínas", carbs: "Carbohidratos", fat: "Grasas" },
+  },
+
+  /** Predefined questions in the AI section. */
+  questions: {
+    heading: "Preguntale a la IA",
+    description: "Respuestas sobre el período elegido. Cada pregunta usa un intento del día y la respuesta queda guardada.",
+    pending: "Pensando la respuesta…",
+    tips: "Para probar",
+    note: "Respuestas generadas por IA. Son orientativas, no reemplazan a un profesional.",
+    labels: {
+      weight: "¿Por qué mi peso no cambia como espero?",
+      protein: "¿Cómo llego a mi objetivo de proteína?",
+      weekend: "¿Cómo mejoro mis fines de semana?",
+      consistency: "¿Cómo registro con más constancia?",
+    },
+  },
+
   /** Sidebar label of the AI section. */
   nav: "IA",
   page: {
@@ -30,6 +56,8 @@ export const insightsStrings = {
     busy: "El servicio de IA está ocupado. Probá de nuevo en unos minutos.",
     unavailable: "No se pudo generar el resumen. Probá de nuevo.",
     notEnoughData: "Registrá comidas al menos un día de este período para tener un resumen.",
+    notEnoughDataAnswer: "Registrá comidas al menos un día de este período para tener una respuesta.",
+    invalidQuestion: "Elegí una de las preguntas disponibles.",
     invalidRange: "Elegí un período de 7, 30 o 90 días.",
     unauthorized: "Tu sesión expiró. Iniciá sesión de nuevo.",
     unexpected: "Algo salió mal. Probá de nuevo.",

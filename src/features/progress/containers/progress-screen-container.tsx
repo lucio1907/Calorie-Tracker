@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCallback, useState } from "react";
 import { Button, PageHeader, Sheet } from "@/components/ui";
 import type { CalendarDate } from "@/domain";
-import { InsightCardContainer, insightsHref, type Insight } from "@/features/insights";
+import { InsightCardContainer, insightsHref, type Insight, type InsightStats } from "@/features/insights";
 import { CalorieHistoryView } from "../components/calorie-history-view";
 import { RangeNav } from "../components/range-nav";
 import { WeightChart } from "../components/weight-chart";
@@ -32,6 +32,8 @@ type ProgressScreenContainerProps = {
   history: CalorieHistory;
   /** Today's stored AI summary for the range; null until one is generated. */
   insight: Insight | null;
+  /** The numbers shown next to that summary; null when they could not be read or nothing is logged. */
+  insightStats: InsightStats | null;
 };
 
 /**
@@ -50,6 +52,7 @@ export function ProgressScreenContainer({
   latestKg,
   history,
   insight,
+  insightStats,
 }: ProgressScreenContainerProps) {
   const [panel, setPanel] = useState<Panel | null>(null);
   const close = useCallback(() => setPanel(null), []);
@@ -76,7 +79,7 @@ export function ProgressScreenContainer({
 
       <div className="flex flex-col gap-8">
         {/* Keyed by range: each range has its own summary, pending state and error. */}
-        <InsightCardContainer key={range} range={range} initialInsight={insight} />
+        <InsightCardContainer key={range} range={range} initialInsight={insight} stats={insightStats} />
         {/* The AI section is not in the mobile tab bar: this link is how phones reach it. */}
         <Link
           href={insightsHref(range)}
