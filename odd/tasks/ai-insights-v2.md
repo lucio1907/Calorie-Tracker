@@ -20,8 +20,8 @@ The user approved items of the assistant's recommendation by number (L1); each s
 | ID | Specs | Route | Status | Evidence |
 |---|---|---|---|---|
 | T1 | S1 | inline | done (bc20071) | RED: insight-input 7 failed (weekPattern, logging, expected weight undefined); GREEN: insights 113 passed; tsc + eslint clean |
-| T2 | S2 | inline | done (see Log L3) | RED: getPreviousInsight 3, previousBlock/previousWindow (missing module), action 3 failed; GREEN: insights 125, full vitest 1028 passed; tsc + eslint clean |
-| T3 | S3 | inline | pending (next session) | |
+| T2 | S2 | inline | done (24e341d) | RED: getPreviousInsight 3, previousBlock/previousWindow (missing module), action 3 failed; GREEN: insights 125, full vitest 1028 passed; tsc + eslint clean |
+| T3 | S3 | inline | done (see Log L4) | RED: insight-stats (missing module), card stats 4 failed; GREEN: vitest 1037 passed; e2e insights+progress 17 passed (desktop+mobile), screenshots checked |
 | T4 | S4 | inline | pending (next session) | |
 
 Route evidence: T1 and T2 both change `insight-input.ts`, the prompt and the action, so they run inline one after another (no Writer trigger). Forecast for T1-T2: ~350 authored lines.
@@ -31,3 +31,4 @@ Route evidence: T1 and T2 both change `insight-input.ts`, the prompt and the act
 - **L1** (2026-10-30, user) "necesito que mejores la seccion de ia ya que es muy basico lo que tiene y me gustaria agregarle mas cosas, que me recomendas?" — then "dale, arrancá con 1 + 2 y luego continuamos con el 4 y 5".
 - **L2** (2026-10-30) Fiber and sodium dropped from S1: `food_entries` (migration 20261014151347) snapshots only kcal, protein, carbs and fat, and `daily_macro_totals` returns only those.
 - **L3** (2026-10-30) T1 committed as bc20071; T2 adds `getPreviousInsight`, `previous-insight.ts` and the `previous` block (4 extra DB reads before the slot, no extra OpenRouter call). Next: T3 (S3) and T4 (S4) in a later session.
+- **L4** (2026-10-30, user) "continua". T3: the stats come from the same `buildInsightInput` the model reads (`lib/insight-stats.ts`), loaded per page by `data/insight-stats.ts` (macro read is secondary: a failure shows the text only). Shown only next to a summary, on /insights and Progress; past summaries in the history show text only (their numbers would need one read each). E2E seeds a stored summary (`E2EData.insight`) and resets `insights`.

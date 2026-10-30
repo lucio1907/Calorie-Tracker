@@ -125,7 +125,15 @@ export class E2EData {
     return uniqueName;
   }
 
-  async foodEntry(entry: { date: string; meal: string; foodId?: number; label: string; grams: number; kcal: number }): Promise<void> {
+  async foodEntry(entry: {
+    date: string;
+    meal: string;
+    foodId?: number;
+    label: string;
+    grams: number;
+    kcal: number;
+    protein?: number;
+  }): Promise<void> {
     await must(
       "food entry",
       this.admin.from("food_entries").insert({
@@ -136,6 +144,21 @@ export class E2EData {
         label: entry.label,
         grams: entry.grams,
         kcal: entry.kcal,
+        protein: entry.protein ?? 0,
+      }),
+    );
+  }
+
+  /** A stored AI summary, so tests never call OpenRouter. */
+  async insight(entry: { rangeDays: number; date: string; overview: string }): Promise<void> {
+    await must(
+      "insight",
+      this.admin.from("insights").insert({
+        owner_id: this.userId,
+        range_days: entry.rangeDays,
+        generated_on: entry.date,
+        content: { overview: entry.overview, wins: [], improvements: [] },
+        model: "e2e/seeded",
       }),
     );
   }

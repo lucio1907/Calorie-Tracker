@@ -24,7 +24,7 @@ beforeEach(() => {
 describe("InsightCardContainer", () => {
   it("replaces the button with the generated summary", async () => {
     generateInsight.mockResolvedValue({ ok: true, data: insight });
-    render(<InsightCardContainer range={7} initialInsight={null} />);
+    render(<InsightCardContainer range={7} initialInsight={null} stats={null} />);
 
     await userEvent.click(screen.getByRole("button", { name: t.generate }));
 
@@ -35,7 +35,7 @@ describe("InsightCardContainer", () => {
 
   it("shows the error and keeps the button when generation fails", async () => {
     generateInsight.mockResolvedValue({ ok: false, error: t.errors.busy });
-    render(<InsightCardContainer range={30} initialInsight={null} />);
+    render(<InsightCardContainer range={30} initialInsight={null} stats={null} />);
 
     await userEvent.click(screen.getByRole("button", { name: t.generate }));
 
@@ -44,7 +44,7 @@ describe("InsightCardContainer", () => {
   });
 
   it("shows the stored summary without calling the action", () => {
-    render(<InsightCardContainer range={7} initialInsight={insight} />);
+    render(<InsightCardContainer range={7} initialInsight={insight} stats={null} />);
 
     expect(screen.getByText(insight.overview)).toBeInTheDocument();
     expect(generateInsight).not.toHaveBeenCalled();

@@ -9,6 +9,17 @@ export const insightsStrings = {
   improvements: "Qué mejorar",
   note: (date: string) => `Generado por IA el ${date}. Es orientativo, no reemplaza a un profesional.`,
 
+  /** Numbers next to a summary, read live for the range. */
+  stats: {
+    heading: "Tus números del período",
+    goalFor: "A favor de tu meta",
+    goalAgainst: "En contra de tu meta",
+    /** Signed kcal: "-150", "+220". */
+    balance: (kcal: string) => `Balance promedio: ${kcal} kcal por día frente al objetivo`,
+    macrosHeading: "Macros promedio frente al objetivo",
+    macros: { protein: "Proteínas", carbs: "Carbohidratos", fat: "Grasas" },
+  },
+
   /** Sidebar label of the AI section. */
   nav: "IA",
   page: {
