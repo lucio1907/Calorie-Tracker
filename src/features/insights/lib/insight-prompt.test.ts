@@ -44,6 +44,18 @@ const input: InsightInput = {
     targetCarbsG: 190,
     targetFatG: 60,
   },
+  previous: {
+    daysAgo: 7,
+    improvements: ["Subí la proteína a 120 g."],
+    loggedDays: 6,
+    averageNetKcal: 1950,
+    averageBalanceKcal: 50,
+    balanceVsGoal: "a favor de la meta",
+    averageProteinG: 80,
+    averageCarbsG: 220,
+    averageFatG: 65,
+    endAverageKg: 72.4,
+  },
 };
 
 describe("buildInsightMessages", () => {
@@ -96,6 +108,13 @@ describe("buildInsightMessages", () => {
     expect(system).toMatch(/expectedLoggedDays.*parcial/);
     expect(system).toMatch(/menos de 0,5 kg son normales/);
     expect(system).toMatch(/nunca la atribuyas al metabolismo/);
+  });
+
+  it("asks to follow up on the previous summary's improvements with its numbers", () => {
+    expect(system).toContain("previous");
+    expect(system).toMatch(/improvements/);
+    expect(system).toMatch(/pasaste de 80 g a 105 g/);
+    expect(system).toMatch(/no repitas en improvements una que ya cumplió/);
   });
 
   it("asks to suggest logging more when few days are logged", () => {

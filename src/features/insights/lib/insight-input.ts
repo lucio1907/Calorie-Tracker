@@ -73,6 +73,23 @@ export type InsightInput = {
     targetCarbsG: number | null;
     targetFatG: number | null;
   } | null;
+  /**
+   * The previous summary of the same range (see previous-insight.ts): the
+   * improvements it suggested and the numbers of the period it covered; null
+   * when there is none.
+   */
+  previous: {
+    daysAgo: number;
+    improvements: string[];
+    loggedDays: number;
+    averageNetKcal: number | null;
+    averageBalanceKcal: number | null;
+    balanceVsGoal: BalanceVsGoal | null;
+    averageProteinG: number | null;
+    averageCarbsG: number | null;
+    averageFatG: number | null;
+    endAverageKg: number | null;
+  } | null;
 };
 
 export type BalanceVsTarget = "por encima del objetivo" | "por debajo del objetivo" | "en el objetivo";
@@ -90,6 +107,8 @@ export type InsightInputSource = {
   weights: readonly WeightEntry[];
   /** Per-day macro totals from daily_macro_totals. */
   macros: readonly DailyMacros[];
+  /** The previous summary's block; null or absent when there is none. */
+  previous?: InsightInput["previous"];
 };
 
 const NO_FOOD = { kcal: 0, protein: 0, carbs: 0, fat: 0 };
@@ -247,5 +266,6 @@ export function buildInsightInput(source: InsightInputSource): InsightInput {
       source,
       logged.map((day) => day.date),
     ),
+    previous: source.previous ?? null,
   };
 }
