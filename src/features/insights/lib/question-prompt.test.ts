@@ -48,6 +48,8 @@ describe("buildQuestionMessages", () => {
     expect(system).toMatch(/diagnóstico/i);
     expect(system).toMatch(/calorieFloorKcal/);
     expect(system).toMatch(/dietas extremas/i);
+    expect(system).toMatch(/completar el perfil en Ajustes/);
+    expect(system).toMatch(/Un valor null/);
   });
 
   it("asks for the answer JSON object instead of the summary one", () => {

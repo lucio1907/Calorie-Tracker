@@ -31,8 +31,10 @@ export const DATA_GUIDE = [
   "  - maintain: quedar en el objetivo va a favor de la meta; por encima o por debajo se aleja de mantener el peso.",
   "- macros: proteína, carbohidratos y grasas promedio en gramos frente a sus objetivos diarios.",
   "- calorieFloorKcal: el mínimo diario seguro de calorías.",
-  "Un valor null significa que ese dato no está disponible: no lo inventes.",
 ];
+
+/** Closes the field list, after the summary's `previous` field. */
+export const NULL_RULE = "Un valor null significa que ese dato no está disponible: no lo inventes.";
 
 const PREVIOUS_GUIDE = [
   "- previous: el resumen anterior de este mismo rango, de hace daysAgo días: las mejoras que le propusiste (improvements) y los números del período que cubrió (null si no hay).",
@@ -40,16 +42,18 @@ const PREVIOUS_GUIDE = [
   "  - Reconocé en wins las mejoras que logró y no repitas en improvements una que ya cumplió. Los dos períodos pueden compartir días: no exageres cambios chicos.",
 ];
 
-/** Safety rules every answer follows, whatever it was asked. */
+/** Safety rules every answer follows, whatever it was asked; PROFILE_RULE closes the list. */
 export const SAFETY_RULES = [
   "- No hagas ningún diagnóstico médico ni hables de enfermedades; si algo preocupa, sugerí consultar a un profesional de la salud.",
   "- Nunca sugieras comer por debajo de calorieFloorKcal, saltear comidas, ayunos prolongados ni dietas extremas.",
-  "- Si no hay objetivo de calorías (averageTargetKcal es null), sugerí completar el perfil en Ajustes.",
 ];
+
+export const PROFILE_RULE = "- Si no hay objetivo de calorías (averageTargetKcal es null), sugerí completar el perfil en Ajustes.";
 
 const SYSTEM_PROMPT = [
   ...DATA_GUIDE,
   ...PREVIOUS_GUIDE,
+  NULL_RULE,
   "",
   "Respondé solo un objeto JSON, sin texto fuera del JSON y sin bloques de código, con esta forma exacta:",
   '{"overview": string, "wins": string[], "improvements": string[]}',
@@ -61,6 +65,7 @@ const SYSTEM_PROMPT = [
   "Reglas:",
   ...SAFETY_RULES,
   `- Si hay pocos días registrados (menos de ${FEW_LOGGED_DAYS}), decilo en el overview y sugerí registrar más días para un resumen más preciso.`,
+  PROFILE_RULE,
 ].join("\n");
 
 /** System and user messages for one summary. The user message is the anonymous input as JSON. */

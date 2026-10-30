@@ -117,6 +117,23 @@ describe("buildInsightMessages", () => {
     expect(system).toMatch(/no repitas en improvements una que ya cumplió/);
   });
 
+  // The data guide and the rules are shared with the questions (question-prompt.ts);
+  // sharing them must not reorder the summary's own prompt.
+  it("keeps the field list and the rules in their order", () => {
+    const lines = system.split("\n");
+    const at = (start: string) => lines.findIndex((line) => line.startsWith(start));
+
+    expect(at("- previous:")).toBeLessThan(at("Un valor null"));
+    expect(at("Un valor null")).toBeLessThan(at("Respondé solo un objeto JSON"));
+    expect(lines.slice(at("Reglas:"))).toEqual([
+      "Reglas:",
+      expect.stringMatching(/^- No hagas ningún diagnóstico/),
+      expect.stringMatching(/^- Nunca sugieras comer por debajo/),
+      expect.stringMatching(/^- Si hay pocos días registrados/),
+      expect.stringMatching(/^- Si no hay objetivo de calorías/),
+    ]);
+  });
+
   it("asks to suggest logging more when few days are logged", () => {
     expect(system).toMatch(/pocos días/i);
   });
