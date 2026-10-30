@@ -18,7 +18,24 @@ const input: InsightInput = {
     onTargetDays: 3,
     averageExerciseKcal: 120,
   },
-  weight: { entries: 4, startAverageKg: 72.4, endAverageKg: 71.6, changeKg: -0.8 },
+  weekPattern: {
+    weekdayLoggedDays: 9,
+    weekendLoggedDays: 3,
+    weekdayAverageNetKcal: 1750,
+    weekendAverageNetKcal: 2150,
+    weekdayAverageBalanceKcal: -150,
+    weekendAverageBalanceKcal: 250,
+  },
+  logging: { currentStreakDays: 4, longestStreakDays: 6 },
+  weight: {
+    entries: 4,
+    startAverageKg: 72.4,
+    endAverageKg: 71.6,
+    changeKg: -0.8,
+    expectedChangeKg: -1.2,
+    expectedWindowDays: 20,
+    expectedLoggedDays: 10,
+  },
   macros: {
     averageProteinG: 95,
     averageCarbsG: 210,
@@ -60,6 +77,25 @@ describe("buildInsightMessages", () => {
     expect(system).toMatch(/lose.*por debajo/i);
     expect(system).toMatch(/gain.*por encima/i);
     expect(system).toMatch(/maintain/i);
+  });
+
+  it("explains the weekday and weekend split and asks to point out a weekend pattern", () => {
+    expect(system).toContain("weekPattern");
+    expect(system).toMatch(/fin de semana \(sábado y domingo\)/);
+    expect(system).toMatch(/200 kcal/);
+  });
+
+  it("explains the logging streaks", () => {
+    expect(system).toContain("currentStreakDays");
+    expect(system).toContain("longestStreakDays");
+  });
+
+  it("compares the expected weight change with the real one, without medical claims", () => {
+    expect(system).toContain("expectedChangeKg");
+    expect(system).toContain("7700 kcal = 1 kg");
+    expect(system).toMatch(/expectedLoggedDays.*parcial/);
+    expect(system).toMatch(/menos de 0,5 kg son normales/);
+    expect(system).toMatch(/nunca la atribuyas al metabolismo/);
   });
 
   it("asks to suggest logging more when few days are logged", () => {

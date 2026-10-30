@@ -1,6 +1,6 @@
-import { GOALS, type CalendarDate, type Goal } from "@/domain";
+import { GOALS, KCAL_PER_KG, type CalendarDate, type Goal } from "@/domain";
 import type { DailyMacros } from "@/features/progress/data/progress";
-import { ON_TARGET_TOLERANCE_KCAL, type CalorieHistory } from "@/features/progress/lib/calorie-history";
+import { ON_TARGET_TOLERANCE_KCAL, type CalorieDay, type CalorieHistory } from "@/features/progress/lib/calorie-history";
 import { profileOnDate, type ProfileVersion } from "@/features/progress/lib/profile-history";
 import type { WeightEntry } from "@/features/progress/lib/types";
 import { weightOnOrBefore, type WeightTrend } from "@/features/progress/lib/weight-trend";
@@ -34,8 +34,36 @@ export type InsightInput = {
     onTargetDays: number;
     averageExerciseKcal: number | null;
   };
-  /** The 7-day average weight on the first and last weigh-in of the range; null without weigh-ins. */
-  weight: { entries: number; startAverageKg: number; endAverageKg: number; changeKg: number } | null;
+  /** Logged days split by weekday (Monday to Friday) and weekend; averages are null without logged days on that side. */
+  weekPattern: {
+    weekdayLoggedDays: number;
+    weekendLoggedDays: number;
+    weekdayAverageNetKcal: number | null;
+    weekendAverageNetKcal: number | null;
+    weekdayAverageBalanceKcal: number | null;
+    weekendAverageBalanceKcal: number | null;
+  };
+  logging: {
+    /** Consecutive logged days ending on the last day (or the day before, while the last day has no food yet). */
+    currentStreakDays: number;
+    longestStreakDays: number;
+  };
+  /**
+   * The 7-day average weight on the first and last weigh-in of the range;
+   * null without weigh-ins. expectedChangeKg is the summed balance of the
+   * logged days from the first weigh-in to the day before the last one, in kg
+   * (null without such a day); expectedWindowDays counts every day of that
+   * span and expectedLoggedDays the ones that entered the sum.
+   */
+  weight: {
+    entries: number;
+    startAverageKg: number;
+    endAverageKg: number;
+    changeKg: number;
+    expectedChangeKg: number | null;
+    expectedWindowDays: number;
+    expectedLoggedDays: number;
+  } | null;
   /** Average grams eaten vs. the average daily targets; null without logged days. */
   macros: {
     averageProteinG: number;
@@ -116,16 +144,56 @@ function readyOn(source: InsightInputSource, date: CalendarDate) {
   return summary.status === "ready" ? summary : null;
 }
 
-function weightBlock(trend: WeightTrend): InsightInput["weight"] {
+/** A day's food changes the weight seen on later days, so the span ends the day before the last weigh-in. */
+function weightBlock(trend: WeightTrend, days: readonly CalorieDay[]): InsightInput["weight"] {
   const first = trend.points[0];
   const last = trend.points[trend.points.length - 1];
   if (!first || !last) return null;
+  const window = days.filter((day) => day.date >= first.date && day.date < last.date);
+  const balances = window.flatMap((day) => (day.foodKcal > 0 && day.balanceKcal !== null ? [day.balanceKcal] : []));
   return {
     entries: trend.points.length,
     startAverageKg: tenths(first.averageKg),
     endAverageKg: tenths(last.averageKg),
     changeKg: tenths(last.averageKg - first.averageKg),
+    expectedChangeKg: balances.length === 0 ? null : tenths(balances.reduce((total, kcal) => total + kcal, 0) / KCAL_PER_KG),
+    expectedWindowDays: window.length,
+    expectedLoggedDays: balances.length,
   };
+}
+
+/** Saturday or Sunday; calendar dates are read in UTC, like addDays. */
+function isWeekend(date: CalendarDate): boolean {
+  const weekday = new Date(`${date}T00:00:00Z`).getUTCDay();
+  return weekday === 0 || weekday === 6;
+}
+
+function weekPatternBlock(logged: readonly CalorieDay[]): InsightInput["weekPattern"] {
+  const weekend = logged.filter((day) => isWeekend(day.date));
+  const weekdays = logged.filter((day) => !isWeekend(day.date));
+  const balances = (side: readonly CalorieDay[]) => side.flatMap((day) => (day.balanceKcal === null ? [] : [day.balanceKcal]));
+  return {
+    weekdayLoggedDays: weekdays.length,
+    weekendLoggedDays: weekend.length,
+    weekdayAverageNetKcal: averageOf(weekdays.map((day) => day.netKcal)),
+    weekendAverageNetKcal: averageOf(weekend.map((day) => day.netKcal)),
+    weekdayAverageBalanceKcal: averageOf(balances(weekdays)),
+    weekendAverageBalanceKcal: averageOf(balances(weekend)),
+  };
+}
+
+/** Streaks over the range's days (oldest first); a day counts once it has food, as in the calorie history. */
+function loggingBlock(days: readonly CalorieDay[]): InsightInput["logging"] {
+  let longestStreakDays = 0;
+  let run = 0;
+  for (const day of days) {
+    run = day.foodKcal > 0 ? run + 1 : 0;
+    longestStreakDays = Math.max(longestStreakDays, run);
+  }
+  const lastDay = days[days.length - 1];
+  const upToStreak = lastDay && lastDay.foodKcal === 0 ? days.slice(0, -1) : days;
+  const lastUnlogged = upToStreak.findLastIndex((day) => day.foodKcal === 0);
+  return { currentStreakDays: upToStreak.length - 1 - lastUnlogged, longestStreakDays };
 }
 
 function macroBlock(source: InsightInputSource, loggedDates: readonly CalendarDate[]): InsightInput["macros"] {
@@ -172,7 +240,9 @@ export function buildInsightInput(source: InsightInputSource): InsightInput {
       onTargetDays: history.days.filter((day) => day.status === "on").length,
       averageExerciseKcal: averageOf(logged.map((day) => day.exerciseKcal)),
     },
-    weight: weightBlock(source.trend),
+    weekPattern: weekPatternBlock(logged),
+    logging: loggingBlock(history.days),
+    weight: weightBlock(source.trend, history.days),
     macros: macroBlock(
       source,
       logged.map((day) => day.date),
