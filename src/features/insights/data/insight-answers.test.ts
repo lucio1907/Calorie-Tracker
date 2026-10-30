@@ -77,6 +77,19 @@ describe("getStoredAnswer", () => {
   it("is null when there is none", async () => {
     await expect(getStoredAnswer("user-a", "weight", 7, "2026-10-19")).resolves.toBeNull();
   });
+
+  it("is null when the stored content no longer matches the schema", async () => {
+    results.push({ data: { ...row, content: { answer: "" } }, error: null });
+    await expect(getStoredAnswer("user-a", "weight", 7, "2026-10-19")).resolves.toBeNull();
+  });
+
+  it("throws on a read error, naming the question but not the content", async () => {
+    results.push({ data: null, error: { message: "boom" } });
+
+    const error = await getStoredAnswer("user-a", "weight", 7, "2026-10-19").catch((caught: unknown) => caught);
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).message).toBe("insight answer weight 7d on 2026-10-19: boom");
+  });
 });
 
 describe("saveAnswer", () => {

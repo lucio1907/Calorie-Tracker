@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import type { ProgressRange } from "@/features/progress/lib/progress-range";
 import { askInsightQuestion } from "../actions/insight-actions";
 import { InsightQuestions } from "../components/insight-questions";
@@ -25,8 +25,12 @@ export function InsightQuestionsContainer({ range, initialAnswers }: InsightQues
   const [errors, setErrors] = useState<Partial<Record<QuestionKey, string>>>({});
   const [pending, setPending] = useState<QuestionKey | null>(null);
   const [, startAsk] = useTransition();
+  // Set synchronously: clicks that land before the disabled buttons render must not spend more attempts.
+  const asking = useRef(false);
 
   function ask(question: QuestionKey) {
+    if (asking.current) return;
+    asking.current = true;
     setPending(question);
     setErrors((current) => ({ ...current, [question]: undefined }));
     startAsk(async () => {
@@ -39,6 +43,7 @@ export function InsightQuestionsContainer({ range, initialAnswers }: InsightQues
         setErrors((current) => ({ ...current, [question]: insightsStrings.errors.unexpected }));
       } finally {
         // Every question waits on this one; always let them be asked again.
+        asking.current = false;
         setPending(null);
       }
     });

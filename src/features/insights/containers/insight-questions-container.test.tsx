@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { InsightAnswer } from "../lib/insight-questions";
@@ -55,6 +55,28 @@ describe("InsightQuestionsContainer", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(t.errors.unexpected);
     for (const button of screen.getAllByRole("button")) expect(button).toBeEnabled();
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
+
+  it("asks only once when a question is clicked twice before the page updates", async () => {
+    let resolve: (value: unknown) => void = () => {};
+    askInsightQuestion.mockReturnValue(new Promise((done) => (resolve = done)));
+    render(<InsightQuestionsContainer range={7} initialAnswers={[]} />);
+
+    // Both clicks land before React re-renders the disabled buttons.
+    const weight = screen.getByRole("button", { name: q.labels.weight });
+    const protein = screen.getByRole("button", { name: q.labels.protein });
+    act(() => {
+      fireEvent.click(weight);
+      fireEvent.click(weight);
+      fireEvent.click(protein);
+    });
+
+    expect(askInsightQuestion).toHaveBeenCalledTimes(1);
+    expect(askInsightQuestion).toHaveBeenCalledWith(7, "weight");
+
+    await act(async () => resolve({ ok: true, data: answer }));
+    expect(screen.getByText(answer.answer)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: q.labels.protein })).toBeEnabled();
   });
 
   it("shows today's stored answers without calling the action", () => {
