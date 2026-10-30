@@ -13,7 +13,9 @@ The user approved items of the assistant's recommendation by number (L1); each s
 - **S2** Item 2, "Continuidad entre resúmenes": "Pasarle las improvements del resumen anterior para que diga 'la semana pasada te propuse subir la proteína y pasaste de 80 g a 105 g'".
   - (assumption) The previous summary is the newest stored one for the same range generated between 2 × range and half the range days before today (less would mostly overlap the current period). Its numbers are recomputed for its own window. A failed read leaves it out; generation still works.
 - **S3** Item 4, "Visual del resumen": "un mini-gráfico de macros contra objetivo y un indicador de estado (a favor o en contra de la meta). Es pura UI, cero llamadas."
-- **S4** Item 5, "Preguntas puntuales": "Tres o cuatro preguntas predefinidas, tipo '¿por qué no bajo de peso?', en vez de chat libre. Así controlás la cuota."
+- **S4** Item 5, "Preguntas puntuales": "Tres o cuatro preguntas predefinidas, tipo '¿por qué no bajo de peso?', en vez de chat libre. Así controlás la cuota." Answers are stored (L6: "si guardalas"): one per question, range and app day, so a reload or a repeated question spends nothing.
+  - (assumption) Four questions: why the weight does not change as expected, how to reach the protein target, how to improve weekends, how to log more consistently. Shown in the AI section only, for the selected range; today's stored answers show on load.
+- **S5** "el unico usuario soy yo, lo mejor no seria darle toda la cuota a mi usuario?" — the per-user daily limit goes from 10 to 50 (the shared OpenRouter key quota). Signups are closed (`supabase/config.toml` `enable_signup = false`); lower it again if they open.
 
 ## Tasks
 
@@ -21,8 +23,9 @@ The user approved items of the assistant's recommendation by number (L1); each s
 |---|---|---|---|---|
 | T1 | S1 | inline | done (bc20071) | RED: insight-input 7 failed (weekPattern, logging, expected weight undefined); GREEN: insights 113 passed; tsc + eslint clean |
 | T2 | S2 | inline | done (24e341d) | RED: getPreviousInsight 3, previousBlock/previousWindow (missing module), action 3 failed; GREEN: insights 125, full vitest 1028 passed; tsc + eslint clean |
-| T3 | S3 | inline | done (see Log L4) | RED: insight-stats (missing module), card stats 4 failed; GREEN: vitest 1037 passed; e2e insights+progress 17 passed (desktop+mobile), screenshots checked |
-| T4 | S4 | inline | pending (next session) | |
+| T3 | S3 | inline | done (7b24e76) | RED: insight-stats (missing module), card stats 4 failed; GREEN: vitest 1037 passed; e2e insights+progress 17 passed (desktop+mobile), screenshots checked |
+| T4a | S5 | inline | done (see Log L7) | RED: pgTAP 2/52 failed (tests 45, 48: limit still 10); GREEN after `supabase migration up`: pgTAP 420 passed |
+| T4b | S4 | inline | pending | |
 
 Route evidence: T1 and T2 both change `insight-input.ts`, the prompt and the action, so they run inline one after another (no Writer trigger). Forecast for T1-T2: ~350 authored lines.
 
@@ -32,3 +35,5 @@ Route evidence: T1 and T2 both change `insight-input.ts`, the prompt and the act
 - **L2** (2026-10-30) Fiber and sodium dropped from S1: `food_entries` (migration 20261014151347) snapshots only kcal, protein, carbs and fat, and `daily_macro_totals` returns only those.
 - **L3** (2026-10-30) T1 committed as bc20071; T2 adds `getPreviousInsight`, `previous-insight.ts` and the `previous` block (4 extra DB reads before the slot, no extra OpenRouter call). Next: T3 (S3) and T4 (S4) in a later session.
 - **L4** (2026-10-30, user) "continua". T3: the stats come from the same `buildInsightInput` the model reads (`lib/insight-stats.ts`), loaded per page by `data/insight-stats.ts` (macro read is secondary: a failure shows the text only). Shown only next to a summary, on /insights and Progress; past summaries in the history show text only (their numbers would need one read each). E2E seeds a stored summary (`E2EData.insight`) and resets `insights`.
+- **L5** (2026-10-30, user) "el unico usuario soy yo, lo mejor no seria darle toda la cuota a mi usuario?"
+- **L6** (2026-10-30, user) "si guardalas". RDD: T1-T3 range (main..7b24e76) consent declined by the user ("Saltear esta vez"). T4a (risk item 2: the per-user guard) and T4b (risk item 1: new table, migration; item 2: RLS) get their own commits and an independent verifier.
