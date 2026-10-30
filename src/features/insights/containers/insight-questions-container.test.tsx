@@ -46,6 +46,17 @@ describe("InsightQuestionsContainer", () => {
     expect(screen.getByRole("button", { name: q.labels.protein })).toBeEnabled();
   });
 
+  it("re-enables every question and shows a generic error when the request itself fails", async () => {
+    askInsightQuestion.mockRejectedValue(new TypeError("Failed to fetch"));
+    render(<InsightQuestionsContainer range={7} initialAnswers={[]} />);
+
+    await userEvent.click(screen.getByRole("button", { name: q.labels.protein }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(t.errors.unexpected);
+    for (const button of screen.getAllByRole("button")) expect(button).toBeEnabled();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
+
   it("shows today's stored answers without calling the action", () => {
     render(<InsightQuestionsContainer range={30} initialAnswers={[answer]} />);
 

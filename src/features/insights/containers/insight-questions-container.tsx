@@ -5,6 +5,7 @@ import type { ProgressRange } from "@/features/progress/lib/progress-range";
 import { askInsightQuestion } from "../actions/insight-actions";
 import { InsightQuestions } from "../components/insight-questions";
 import type { InsightAnswer, QuestionKey } from "../lib/insight-questions";
+import { insightsStrings } from "../strings";
 
 type InsightQuestionsContainerProps = {
   range: ProgressRange;
@@ -29,10 +30,17 @@ export function InsightQuestionsContainer({ range, initialAnswers }: InsightQues
     setPending(question);
     setErrors((current) => ({ ...current, [question]: undefined }));
     startAsk(async () => {
-      const result = await askInsightQuestion(range, question);
-      if (result.ok) setAnswers((current) => ({ ...current, [question]: result.data }));
-      else setErrors((current) => ({ ...current, [question]: result.error }));
-      setPending(null);
+      try {
+        const result = await askInsightQuestion(range, question);
+        if (result.ok) setAnswers((current) => ({ ...current, [question]: result.data }));
+        else setErrors((current) => ({ ...current, [question]: result.error }));
+      } catch {
+        // The request itself failed (network, server action error): nothing was answered.
+        setErrors((current) => ({ ...current, [question]: insightsStrings.errors.unexpected }));
+      } finally {
+        // Every question waits on this one; always let them be asked again.
+        setPending(null);
+      }
     });
   }
 
