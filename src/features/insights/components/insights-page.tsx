@@ -5,6 +5,8 @@ import { resolveProgressRange } from "@/features/progress/lib/progress-range";
 import { appToday } from "@/lib/app-time";
 import { requestNow } from "@/lib/request-time";
 import { InsightCardContainer } from "../containers/insight-card-container";
+import { InsightQuestionsContainer } from "../containers/insight-questions-container";
+import { listAnswers } from "../data/insight-answers";
 import { getStoredInsightOrNull, listInsights } from "../data/insights";
 import { loadInsightStats } from "../data/insight-stats";
 import { pastInsights } from "../lib/past-insights";
@@ -18,15 +20,16 @@ type InsightsPageProps = {
 
 /**
  * AI section route content: the generate card for ?range=7|30|90 (30 when
- * missing or invalid, as on Progress) with the range's numbers, then every
- * stored summary, newest first. Reads per request: must render inside <Suspense>.
+ * missing or invalid, as on Progress) with the range's numbers, the
+ * predefined questions with today's answers, then every stored summary,
+ * newest first. Reads per request: must render inside <Suspense>.
  */
 export async function InsightsPage({ searchParams }: InsightsPageProps) {
   const [{ range: rangeParam }, now, user] = await Promise.all([searchParams, requestNow(), requireUser()]);
   const today = appToday(now);
   const range = resolveProgressRange(rangeParam);
 
-  const [insight, history, stats] = await Promise.all([
+  const [insight, history, stats, answers] = await Promise.all([
     getStoredInsightOrNull(user.id, range, today),
     // The history is secondary: a failed read shows a message, the generate card still works.
     listInsights(user.id).catch((error: unknown) => {
@@ -41,6 +44,11 @@ export async function InsightsPage({ searchParams }: InsightsPageProps) {
         return null;
       },
     ),
+    // Without today's stored answers every question shows its button; asking returns the stored one.
+    listAnswers(user.id, range, today).catch((error: unknown) => {
+      console.error("[insights] answers read failed", error);
+      return [];
+    }),
   ]);
 
   return (
@@ -51,6 +59,7 @@ export async function InsightsPage({ searchParams }: InsightsPageProps) {
         <InsightRangeNav range={range} />
         {/* Keyed by range: each range has its own summary, pending state and error. */}
         <InsightCardContainer key={range} range={range} initialInsight={insight} stats={stats} />
+        <InsightQuestionsContainer key={`questions-${range}`} range={range} initialAnswers={answers} />
       </div>
 
       <section aria-labelledby="insight-history" className="flex flex-col gap-12">

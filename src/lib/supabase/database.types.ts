@@ -119,6 +119,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"insight_answers": {
+                  Row: {
+                    "content": NonNullable<Json>,"created_at": string,"generated_on": string,"id": number,"model": string,"owner_id": string,"question": string,"range_days": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "content": NonNullable<Json>,"created_at"?: string,"generated_on": string,"id"?: never,"model": string,"owner_id"?: string,"question": string,"range_days": number
+                  }
+                  Update: {
+                    "content"?: NonNullable<Json>,"created_at"?: string,"generated_on"?: string,"id"?: never,"model"?: string,"owner_id"?: string,"question"?: string,"range_days"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"insights": {
                   Row: {
                     "content": NonNullable<Json>,"created_at": string,"generated_on": string,"id": number,"model": string,"owner_id": string,"range_days": number

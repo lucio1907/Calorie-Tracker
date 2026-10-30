@@ -24,8 +24,8 @@ The user approved items of the assistant's recommendation by number (L1); each s
 | T1 | S1 | inline | done (bc20071) | RED: insight-input 7 failed (weekPattern, logging, expected weight undefined); GREEN: insights 113 passed; tsc + eslint clean |
 | T2 | S2 | inline | done (24e341d) | RED: getPreviousInsight 3, previousBlock/previousWindow (missing module), action 3 failed; GREEN: insights 125, full vitest 1028 passed; tsc + eslint clean |
 | T3 | S3 | inline | done (7b24e76) | RED: insight-stats (missing module), card stats 4 failed; GREEN: vitest 1037 passed; e2e insights+progress 17 passed (desktop+mobile), screenshots checked |
-| T4a | S5 | inline | done (see Log L7) | RED: pgTAP 2/52 failed (tests 45, 48: limit still 10); GREEN after `supabase migration up`: pgTAP 420 passed |
-| T4b | S4 | inline | pending | |
+| T4a | S5 | inline | done (c5dd4a4) | RED: pgTAP 2/52 failed (tests 45, 48: limit still 10); GREEN after `supabase migration up`: pgTAP 420 passed |
+| T4b | S4 | inline | done (see Log L8) | RED: pgTAP insight_answers (relation missing), questions/prompt lib, data 8, action 15, UI 2 files failed; GREEN: pgTAP 446, vitest 1090, e2e insights 9 passed; tsc + eslint clean |
 
 Route evidence: T1 and T2 both change `insight-input.ts`, the prompt and the action, so they run inline one after another (no Writer trigger). Forecast for T1-T2: ~350 authored lines.
 
@@ -37,3 +37,5 @@ Route evidence: T1 and T2 both change `insight-input.ts`, the prompt and the act
 - **L4** (2026-10-30, user) "continua". T3: the stats come from the same `buildInsightInput` the model reads (`lib/insight-stats.ts`), loaded per page by `data/insight-stats.ts` (macro read is secondary: a failure shows the text only). Shown only next to a summary, on /insights and Progress; past summaries in the history show text only (their numbers would need one read each). E2E seeds a stored summary (`E2EData.insight`) and resets `insights`.
 - **L5** (2026-10-30, user) "el unico usuario soy yo, lo mejor no seria darle toda la cuota a mi usuario?"
 - **L6** (2026-10-30, user) "si guardalas". RDD: T1-T3 range (main..7b24e76) consent declined by the user ("Saltear esta vez"). T4a (risk item 2: the per-user guard) and T4b (risk item 1: new table, migration; item 2: RLS) get their own commits and an independent verifier.
+- **L7** (2026-10-30) T4a committed as c5dd4a4. Independent verifier: PASS on every item (function body identical but the constant, grants, 51-call probe 50 true then false, rolled back; signups closed in config.toml). Advisory: the hosted project's signup setting is not visible from the repo.
+- **L8** (2026-10-30) T4b: migration 20261030130000_insight_answers (RLS select/insert own, aal2 restrictive, row quota 5000), `lib/insight-questions.ts`, `lib/question-prompt.ts` (shares `DATA_GUIDE` and `SAFETY_RULES` with the summary prompt), `data/insight-answers.ts`, `askInsightQuestion`, `InsightQuestions` UI on /insights only. Types regenerated (additive only).

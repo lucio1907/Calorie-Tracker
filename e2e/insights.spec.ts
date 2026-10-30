@@ -35,6 +35,35 @@ test.describe("AI summaries", () => {
     await expect(page.getByRole("region", { name: "Tus números del período" }).getByText("En contra de tu meta")).toBeVisible();
   });
 
+  test("shows today's stored answer and offers the other questions", async ({ page, data }, testInfo) => {
+    const today = appToday();
+    await data.insightAnswer({
+      question: "protein",
+      rangeDays: 7,
+      date: today,
+      answer: "Te faltan unos 30 g de proteína por día.",
+      tips: ["Sumá un yogur en la merienda."],
+    });
+
+    await page.goto("/insights?range=7");
+    const questions = page.getByRole("region", { name: "Preguntale a la IA" });
+    await expect(questions.getByText("Te faltan unos 30 g de proteína por día.")).toBeVisible();
+    await expect(questions.getByRole("list", { name: "Para probar" })).toContainText("Sumá un yogur en la merienda.");
+    // Only checked, never clicked: clicking would call OpenRouter.
+    await expect(questions.getByRole("button")).toHaveText([
+      "¿Por qué mi peso no cambia como espero?",
+      "¿Cómo mejoro mis fines de semana?",
+      "¿Cómo registro con más constancia?",
+    ]);
+    await captureScreen(page, testInfo, "insights-questions");
+
+    // Answers belong to their range.
+    // 30 days is the default range, so its link carries no parameter.
+    await page.getByRole("link", { name: "30 días" }).click();
+    await expect(page.getByRole("link", { name: "30 días" })).toHaveAttribute("aria-current", "page");
+    await expect(page.getByRole("region", { name: "Preguntale a la IA" }).getByRole("button")).toHaveCount(4);
+  });
+
   test("is reached from Progress, keeping the range", async ({ page }) => {
     await page.goto("/progress?range=7");
 

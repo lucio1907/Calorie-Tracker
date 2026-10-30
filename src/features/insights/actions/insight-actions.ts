@@ -7,13 +7,16 @@ import { getDailyMacroTotals } from "@/features/progress/data/progress";
 import type { CalendarDate } from "@/domain";
 import { PROGRESS_RANGES, rangeBounds, type ProgressRange } from "@/features/progress/lib/progress-range";
 import { appToday } from "@/lib/app-time";
+import { getStoredAnswer, saveAnswer } from "../data/insight-answers";
 import { getPreviousInsight, getStoredInsight, InsightLimitError, saveInsight, takeInsightSlot } from "../data/insights";
 import { InsightRateLimitedError, InsightUnavailableError, requestInsightCompletion } from "../data/openrouter";
 import { getOpenRouterApiKey } from "../data/openrouter-env";
 import { buildInsightInput, type InsightInput } from "../lib/insight-input";
 import { buildInsightMessages } from "../lib/insight-prompt";
+import { answerContentSchema, isQuestionKey, type InsightAnswer, type QuestionKey } from "../lib/insight-questions";
 import { insightContentSchema, type Insight } from "../lib/insight-schema";
 import { previousBlock, previousWindow } from "../lib/previous-insight";
+import { buildQuestionMessages } from "../lib/question-prompt";
 import { insightsStrings } from "../strings";
 
 const t = insightsStrings.errors;
@@ -79,10 +82,51 @@ export async function generateInsight(rangeDays: number): Promise<ActionResult<I
     const insight = await saveInsight(user.id, { rangeDays: range, day: today, content: content.data, model: answer.model });
     return { ok: true, data: insight };
   } catch (error) {
-    if (error instanceof InsightLimitError) return { ok: false, error: t.dailyLimit };
-    if (error instanceof InsightRateLimitedError) return { ok: false, error: t.busy };
-    if (error instanceof InsightUnavailableError) return { ok: false, error: t.unavailable };
-    console.error("[insights] generation failed", error instanceof Error ? error.message : error);
-    return { ok: false, error: t.unexpected };
+    return failure(error);
   }
+}
+
+/**
+ * Answers (or returns today's stored answer to) one predefined question about
+ * the last `rangeDays` days. Same order and quota as generateInsight: a stored
+ * answer or a range without logged food never takes a slot nor calls the model.
+ */
+export async function askInsightQuestion(rangeDays: number, question: QuestionKey): Promise<ActionResult<InsightAnswer>> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: t.unauthorized };
+
+  const range = PROGRESS_RANGES.find((candidate) => candidate === rangeDays);
+  if (range === undefined) return { ok: false, error: t.invalidRange };
+  // The client sends the key; anything else never reaches the database or the model.
+  if (!isQuestionKey(question)) return { ok: false, error: t.invalidQuestion };
+
+  const today = appToday(new Date());
+  try {
+    const stored = await getStoredAnswer(user.id, question, range, today);
+    if (stored) return { ok: true, data: stored };
+
+    const { progress, macros } = await rangeInput(user.id, range, today);
+    if (progress.history.loggedDays === 0) return { ok: false, error: t.notEnoughDataAnswer };
+
+    getOpenRouterApiKey();
+    await takeInsightSlot();
+    const input = buildInsightInput({ ...progress, rangeDays: range, macros });
+    const answer = await requestInsightCompletion(buildQuestionMessages(input, question));
+    const content = answerContentSchema.safeParse(answer.content);
+    if (!content.success) return { ok: false, error: t.unavailable };
+
+    const saved = await saveAnswer(user.id, { question, rangeDays: range, day: today, content: content.data, model: answer.model });
+    return { ok: true, data: saved };
+  } catch (error) {
+    return failure(error);
+  }
+}
+
+/** The message for a failed generation; unexpected errors are logged without prompts or answers. */
+function failure(error: unknown): { ok: false; error: string } {
+  if (error instanceof InsightLimitError) return { ok: false, error: t.dailyLimit };
+  if (error instanceof InsightRateLimitedError) return { ok: false, error: t.busy };
+  if (error instanceof InsightUnavailableError) return { ok: false, error: t.unavailable };
+  console.error("[insights] generation failed", error instanceof Error ? error.message : error);
+  return { ok: false, error: t.unexpected };
 }

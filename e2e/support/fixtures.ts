@@ -149,6 +149,21 @@ export class E2EData {
     );
   }
 
+  /** A stored AI answer to a predefined question, so tests never call OpenRouter. */
+  async insightAnswer(entry: { question: string; rangeDays: number; date: string; answer: string; tips: string[] }): Promise<void> {
+    await must(
+      "insight answer",
+      this.admin.from("insight_answers").insert({
+        owner_id: this.userId,
+        question: entry.question,
+        range_days: entry.rangeDays,
+        generated_on: entry.date,
+        content: { answer: entry.answer, tips: entry.tips },
+        model: "e2e/seeded",
+      }),
+    );
+  }
+
   /** A stored AI summary, so tests never call OpenRouter. */
   async insight(entry: { rangeDays: number; date: string; overview: string }): Promise<void> {
     await must(

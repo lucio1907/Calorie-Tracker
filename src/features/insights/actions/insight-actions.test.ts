@@ -21,6 +21,13 @@ vi.mock("../data/insights", async (importOriginal) => ({
   saveInsight: (...args: unknown[]) => saveInsight(...args),
 }));
 
+const getStoredAnswer = vi.fn();
+const saveAnswer = vi.fn();
+vi.mock("../data/insight-answers", () => ({
+  getStoredAnswer: (...args: unknown[]) => getStoredAnswer(...args),
+  saveAnswer: (...args: unknown[]) => saveAnswer(...args),
+}));
+
 const loadProgressData = vi.fn();
 vi.mock("@/features/progress/data/load-progress", () => ({
   loadProgressData: (...args: unknown[]) => loadProgressData(...args),
@@ -40,7 +47,7 @@ vi.mock("../data/openrouter", async (importOriginal) => ({
   requestInsightCompletion: (...args: unknown[]) => requestInsightCompletion(...args),
 }));
 
-const { generateInsight } = await import("./insight-actions");
+const { askInsightQuestion, generateInsight } = await import("./insight-actions");
 const { InsightLimitError } = await import("../data/insights");
 const { InsightRateLimitedError, InsightUnavailableError } = await import("../data/openrouter");
 
@@ -74,12 +81,22 @@ afterAll(() => vi.useRealTimers());
 
 beforeEach(() => {
   vi.restoreAllMocks();
-  for (const mock of [getStoredInsight, getPreviousInsight, takeInsightSlot, saveInsight, loadProgressData, getDailyMacroTotals, requestInsightCompletion]) {
+  for (const mock of [getStoredAnswer, saveAnswer, getStoredInsight, getPreviousInsight, takeInsightSlot, saveInsight, loadProgressData, getDailyMacroTotals, requestInsightCompletion]) {
     mock.mockReset();
   }
   getCurrentUser.mockReset().mockResolvedValue({ id: "user-a", email: "a@example.com" });
   getStoredInsight.mockResolvedValue(null);
   getPreviousInsight.mockResolvedValue(null);
+  getStoredAnswer.mockResolvedValue(null);
+  saveAnswer.mockImplementation(
+    async (_userId: string, input: { question: string; content: object; model: string; day: string; rangeDays: number }) => ({
+      ...input.content,
+      question: input.question,
+      model: input.model,
+      generatedOn: input.day,
+      rangeDays: input.rangeDays,
+    }),
+  );
   takeInsightSlot.mockResolvedValue(undefined);
   getOpenRouterApiKey.mockReset().mockReturnValue("test-key");
   loadProgressData.mockResolvedValue(progress(1800));
@@ -228,5 +245,100 @@ describe("generateInsight", () => {
     expect(log).toHaveBeenCalledTimes(1);
     expect(String(log.mock.calls[0][0])).toMatch(/^\[insights\]/);
     expect(JSON.stringify(log.mock.calls)).not.toContain(content.overview);
+  });
+});
+
+describe("askInsightQuestion", () => {
+  const answerContent = { answer: "Te faltan 30 g de proteína por día.", tips: ["Sumá un yogur."] };
+  const storedAnswer = { ...answerContent, question: "protein", model: MODEL, generatedOn: TODAY, rangeDays: 7 };
+
+  beforeEach(() => {
+    requestInsightCompletion.mockResolvedValue({ content: { ...answerContent, extra: "dropped" }, model: MODEL });
+  });
+
+  it("rejects a signed-out caller", async () => {
+    getCurrentUser.mockResolvedValue(null);
+
+    await expect(askInsightQuestion(7, "protein")).resolves.toEqual({ ok: false, error: t.unauthorized });
+    expect(takeInsightSlot).not.toHaveBeenCalled();
+  });
+
+  it.each([0, 14, "7"])("rejects the range %s", async (range) => {
+    await expect(askInsightQuestion(range as number, "protein")).resolves.toEqual({ ok: false, error: t.invalidRange });
+    expect(getStoredAnswer).not.toHaveBeenCalled();
+  });
+
+  it.each(["anything", "", 3, null])("rejects the question %s", async (question) => {
+    await expect(askInsightQuestion(7, question as "protein")).resolves.toEqual({ ok: false, error: t.invalidQuestion });
+    expect(getStoredAnswer).not.toHaveBeenCalled();
+  });
+
+  it("returns today's stored answer without taking a slot or calling the model", async () => {
+    getStoredAnswer.mockResolvedValue(storedAnswer);
+
+    await expect(askInsightQuestion(7, "protein")).resolves.toEqual({ ok: true, data: storedAnswer });
+    expect(getStoredAnswer).toHaveBeenCalledWith("user-a", "protein", 7, TODAY);
+    expect(takeInsightSlot).not.toHaveBeenCalled();
+    expect(requestInsightCompletion).not.toHaveBeenCalled();
+  });
+
+  it("asks to log food first when the range has no logged day, without a slot or a model call", async () => {
+    loadProgressData.mockResolvedValue(progress(0));
+
+    await expect(askInsightQuestion(7, "protein")).resolves.toEqual({ ok: false, error: t.notEnoughDataAnswer });
+    expect(takeInsightSlot).not.toHaveBeenCalled();
+    expect(requestInsightCompletion).not.toHaveBeenCalled();
+  });
+
+  it("answers, stores and returns the question from the range's anonymous numbers", async () => {
+    await expect(askInsightQuestion(7, "protein")).resolves.toEqual({ ok: true, data: storedAnswer });
+
+    expect(loadProgressData).toHaveBeenCalledWith("user-a", 7, TODAY);
+    expect(takeInsightSlot).toHaveBeenCalledTimes(1);
+    expect(saveAnswer).toHaveBeenCalledWith("user-a", { question: "protein", rangeDays: 7, day: TODAY, content: answerContent, model: MODEL });
+    expect(getPreviousInsight).not.toHaveBeenCalled();
+
+    const [{ system, user }] = requestInsightCompletion.mock.calls[0] as [{ system: string; user: string }];
+    expect(system).toContain('{"answer": string, "tips": string[]}');
+    expect(JSON.parse(user)).toMatchObject({ rangeDays: 7, loggedDays: 1, previous: null });
+    expect(user).not.toContain("a@example.com");
+  });
+
+  it("does not spend a daily generation when the OpenRouter key is missing", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    getOpenRouterApiKey.mockImplementation(() => {
+      throw new Error("OPENROUTER_API_KEY is not set.");
+    });
+
+    await expect(askInsightQuestion(7, "protein")).resolves.toEqual({ ok: false, error: t.unexpected });
+    expect(takeInsightSlot).not.toHaveBeenCalled();
+    consoleError.mockRestore();
+  });
+
+  it("maps the daily limit, a busy service and an unavailable one like the summary", async () => {
+    takeInsightSlot.mockRejectedValueOnce(new InsightLimitError());
+    await expect(askInsightQuestion(7, "protein")).resolves.toEqual({ ok: false, error: t.dailyLimit });
+
+    requestInsightCompletion.mockRejectedValueOnce(new InsightRateLimitedError("429"));
+    await expect(askInsightQuestion(7, "protein")).resolves.toEqual({ ok: false, error: t.busy });
+
+    requestInsightCompletion.mockRejectedValueOnce(new InsightUnavailableError("502"));
+    await expect(askInsightQuestion(7, "protein")).resolves.toEqual({ ok: false, error: t.unavailable });
+  });
+
+  it("treats an answer that fails the schema as unavailable and stores nothing", async () => {
+    requestInsightCompletion.mockResolvedValue({ content: { overview: "a summary instead" }, model: MODEL });
+
+    await expect(askInsightQuestion(7, "protein")).resolves.toEqual({ ok: false, error: t.unavailable });
+    expect(saveAnswer).not.toHaveBeenCalled();
+  });
+
+  it("logs unexpected errors without the content and shows a generic message", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    saveAnswer.mockRejectedValue(new Error("insert failed"));
+
+    await expect(askInsightQuestion(7, "protein")).resolves.toEqual({ ok: false, error: t.unexpected });
+    expect(String(log.mock.calls[0][0])).toMatch(/^\[insights\]/);
+    expect(JSON.stringify(log.mock.calls)).not.toContain(answerContent.answer);
   });
 });

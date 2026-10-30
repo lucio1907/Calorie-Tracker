@@ -115,6 +115,9 @@ and day is stored in `public.insights` and shown again on reload without a new c
   the app has one user and signups are closed, so lower it again if they ever open;
   stored summaries are one per range and day, and a range without logged food
   never calls the model.
+- **Questions**: the AI section also answers four predefined questions (weight change, protein, weekends,
+  logging consistency) from the same numbers. Each answer takes one of the day's attempts and is stored
+  in `insight_answers`, one per question, range and day, so asking again the same day spends nothing.
 - **Privacy**: free providers may log prompts. Only aggregated numbers are sent (averages, day counts,
   weight trend, goal direction, macros vs. targets); never the name, email, birth date or food names.
 
