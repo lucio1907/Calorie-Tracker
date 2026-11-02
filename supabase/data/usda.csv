@@ -1,0 +1,209 @@
+code,name,group,kcal,protein,carbs,fat,fiber,sodium_mg
+174037,"Vacuno, carne picada común (25 % grasa), cruda",Carnes y derivados,293,15.76,0,25,0,66
+174039,"Vacuno, carne picada común (25 % grasa), cocida a la plancha",Carnes y derivados,248,23.45,0,16.44,0,87
+171796,"Vacuno, carne picada especial (15 % grasa), cruda",Carnes y derivados,215,18.59,0,15,0,66
+174033,"Vacuno, carne picada especial (15 % grasa), cocida a la plancha",Carnes y derivados,232,24.62,0,14.02,0,79
+174030,"Vacuno, carne picada magra (10 % grasa), cruda",Carnes y derivados,176,20,0,10,0,66
+171793,"Vacuno, carne picada magra (10 % grasa), cocida a la plancha",Carnes y derivados,204,25.21,0,10.68,0,75
+171790,"Vacuno, carne picada extra magra (5 % grasa), cruda",Carnes y derivados,137,21.41,0,5,0,66
+171787,"Vacuno, entraña, a la parrilla",Carnes y derivados,220,26.13,0,12.05,0,75
+169433,"Vacuno, matambre, crudo",Carnes y derivados,165,21.22,0,8.29,0,54
+169435,"Vacuno, matambre, a la parrilla",Carnes y derivados,202,27.55,0,9.31,0,53
+169538,"Vacuno, bife de chorizo, crudo",Carnes y derivados,228,20.61,0,15.49,0,52
+168718,"Vacuno, bife de chorizo, a la parrilla",Carnes y derivados,278,26.16,0,18.45,0,52
+173402,"Vacuno, ojo de bife, crudo",Carnes y derivados,228,19.26,0.12,16.71,0,52
+172164,"Vacuno, ojo de bife, a la parrilla",Carnes y derivados,271,24.85,0,19.02,0,58
+169543,"Vacuno, lomo, a la parrilla",Carnes y derivados,267,26.46,0,17.12,0,54
+169441,"Vacuno, osobuco (carne magra), crudo",Carnes y derivados,128,21.75,0,3.85,0,63
+169442,"Vacuno, osobuco (carne magra), hervido",Carnes y derivados,201,33.68,0,6.36,0,64
+168666,"Vacuno, falda, cruda",Carnes y derivados,277,17.94,0,22.18,0,59
+170613,"Vacuno, falda, cocida",Carnes y derivados,213,32.9,0,8.01,0,54
+170196,"Vacuno, lengua, cruda",Carnes y derivados,224,14.9,3.68,16.09,0,69
+170598,"Vacuno, lengua, hervida",Carnes y derivados,284,19.29,0,22.3,0,65
+170599,"Vacuno, mondongo, crudo",Carnes y derivados,85,12.07,0,3.69,0,97
+174769,"Vacuno, mondongo, hervido",Carnes y derivados,94,11.71,1.99,4.05,0,68
+170194,"Vacuno, mollejas, crudas",Carnes y derivados,236,12.18,0,20.35,0,96
+170195,"Vacuno, mollejas, cocidas",Carnes y derivados,319,21.85,0,24.98,0,116
+168625,"Vacuno, corazón, crudo",Carnes y derivados,112,17.72,0.14,3.94,0,98
+168626,"Vacuno, hígado, cocido",Carnes y derivados,191,29.08,5.13,5.26,0,79
+167843,"Cerdo, bondiola, cruda",Carnes y derivados,236,17.18,0,17.99,0,65
+168259,"Cerdo, bondiola, asada",Carnes y derivados,269,23.11,0,18.86,0,67
+168312,"Cerdo, solomillo, crudo",Carnes y derivados,120,20.65,0,3.53,0,52
+167905,"Cerdo, solomillo, asado",Carnes y derivados,147,26.04,0,3.96,0,57
+167831,"Cerdo, carré (costeleta), a la parrilla",Carnes y derivados,222,24.42,0,13.04,0,55
+167853,"Cerdo, pechito, crudo",Carnes y derivados,277,15.47,0,23.4,0,81
+167854,"Cerdo, pechito, cocido",Carnes y derivados,397,29.06,0,30.3,0,93
+168222,"Cerdo, pernil, crudo",Carnes y derivados,245,17.43,0,18.87,0,47
+167902,"Cerdo, carne picada, cruda",Carnes y derivados,263,16.88,0,21.19,0,56
+167903,"Cerdo, carne picada, cocida",Carnes y derivados,297,25.69,0,20.77,0,73
+174311,"Cordero, pierna, cruda",Carnes y derivados,230,17.91,0,17.07,0,56
+174312,"Cordero, pierna, asada",Carnes y derivados,258,25.55,0,16.48,0,66
+174370,"Cordero, carne picada, cruda",Carnes y derivados,282,16.56,0,23.41,0,59
+171077,"Pollo, pechuga sin piel, cruda",Carnes y derivados,120,22.5,0,2.62,0,45
+171477,"Pollo, pechuga sin piel, asada",Carnes y derivados,165,31.02,0,3.57,0,74
+171478,"Pollo, pechuga sin piel, hervida",Carnes y derivados,151,28.98,0,3.03,0,63
+171078,"Pollo, pechuga sin piel, frita",Carnes y derivados,187,33.44,0.51,4.71,0,79
+171474,"Pollo, pechuga con piel, cruda",Carnes y derivados,172,20.85,0,9.25,0,63
+171075,"Pollo, pechuga con piel, asada",Carnes y derivados,197,29.8,0,7.78,0,71
+173619,"Pollo, pata y muslo sin piel, crudo",Carnes y derivados,120,19.16,0,4.22,0,96
+172380,"Pollo, pata y muslo sin piel, asado",Carnes y derivados,174,24.22,0,7.8,0,99
+172378,"Pollo, pata y muslo con piel, crudo",Carnes y derivados,214,16.37,0.17,15.95,0,84
+173617,"Pollo, pata y muslo con piel, asado",Carnes y derivados,184,24.03,0,8.99,0,98
+172385,"Pollo, muslo con piel, crudo",Carnes y derivados,221,16.52,0.25,16.61,0,81
+173625,"Pollo, muslo con piel, asado",Carnes y derivados,232,23.26,0,14.71,0,102
+172388,"Pollo, muslo sin piel, asado",Carnes y derivados,179,24.76,0,8.15,0,106
+172373,"Pollo, pata con piel, cruda",Carnes y derivados,161,18.08,0.11,9.2,0,106
+173612,"Pollo, pata con piel, asada",Carnes y derivados,191,23.35,0,10.15,0,123
+172390,"Pollo, ala con piel, cruda",Carnes y derivados,191,17.52,0,12.85,0,84
+173630,"Pollo, ala con piel, asada",Carnes y derivados,254,23.79,0,16.87,0,98
+171052,"Pollo, carne sin piel, cruda",Carnes y derivados,119,21.39,0,3.08,0,77
+171060,"Pollo, hígado, crudo",Carnes y derivados,119,16.92,0.73,4.83,0,71
+171061,"Pollo, hígado, hervido",Carnes y derivados,167,24.46,0.87,6.51,0,76
+171456,"Pollo, molleja, cruda",Carnes y derivados,94,17.66,0,2.06,0,69
+171457,"Pollo, molleja, hervida",Carnes y derivados,154,30.39,0,2.68,0,56
+171458,"Pollo, corazón, crudo",Carnes y derivados,153,15.55,0.71,9.33,0,74
+171098,"Pavo, pechuga sin piel, cruda",Carnes y derivados,114,23.66,0.14,1.48,0,113
+171496,"Pavo, pechuga sin piel, asada",Carnes y derivados,147,30.13,0,2.08,0,99
+172850,"Pavo, carne picada (7 % grasa), cruda",Carnes y derivados,150,18.73,0,8.34,0,69
+172851,"Pavo, carne picada (7 % grasa), cocida",Carnes y derivados,213,27.1,0,11.6,0,90
+171480,"Pavo, carne sin piel, cruda",Carnes y derivados,115,22.64,0.14,1.93,0,118
+171481,"Pavo, carne sin piel, asada",Carnes y derivados,159,29.06,0,3.84,0,101
+175159,"Atún, fresco, crudo","Pescados, mariscos y conservas",109,24.4,0,0.49,0,45
+172006,"Atún, fresco, a la plancha","Pescados, mariscos y conservas",130,29.15,0,0.59,0,54
+173709,"Atún al natural, enlatado, escurrido","Pescados, mariscos y conservas",86,19.44,0,0.96,0,247
+173708,"Atún en aceite, enlatado, escurrido","Pescados, mariscos y conservas",198,29.13,0,8.21,0,416
+175167,"Salmón rosado (del Atlántico, de criadero), crudo","Pescados, mariscos y conservas",208,20.42,0,13.42,0,59
+175168,"Salmón rosado (del Atlántico, de criadero), a la plancha","Pescados, mariscos y conservas",206,22.1,0,12.35,0,61
+173686,"Salmón del Atlántico salvaje, crudo","Pescados, mariscos y conservas",142,19.84,0,6.34,0,44
+175175,"Salmón, enlatado, escurrido","Pescados, mariscos y conservas",138,23.1,0,5.02,0,381
+173717,"Trucha arcoíris, cruda","Pescados, mariscos y conservas",141,19.94,0,6.18,0,51
+173718,"Trucha arcoíris, a la plancha","Pescados, mariscos y conservas",168,23.8,0,7.38,0,61
+171955,"Bacalao, crudo","Pescados, mariscos y conservas",82,17.81,0,0.67,0,54
+171956,"Bacalao, a la plancha","Pescados, mariscos y conservas",105,22.83,0,0.86,0,78
+175176,"Tilapia, cruda","Pescados, mariscos y conservas",96,20.08,0,1.7,0,52
+175177,"Tilapia, a la plancha","Pescados, mariscos y conservas",128,26.15,0,2.65,0,56
+175139,"Sardinas en aceite, enlatadas, escurridas","Pescados, mariscos y conservas",208,24.62,0,11.45,0,307
+175142,"Lubina, cruda","Pescados, mariscos y conservas",97,18.43,0,2,0,68
+174218,"Pulpo, crudo","Pescados, mariscos y conservas",82,14.91,2.2,1.04,0,230
+174249,"Pulpo, hervido","Pescados, mariscos y conservas",164,29.82,4.4,2.08,0,460
+174220,"Vieiras, crudas","Pescados, mariscos y conservas",69,12.06,3.18,0.49,0,392
+174214,"Almejas, crudas","Pescados, mariscos y conservas",86,14.67,3.57,0.96,0,601
+174204,"Cangrejo, crudo","Pescados, mariscos y conservas",87,18.06,0.04,1.08,0,293
+173702,Surimi (kanikama),"Pescados, mariscos y conservas",99,15.18,6.85,0.9,0,143
+169247,"Lechuga romana, cruda",Vegetales y derivados,17,1.23,3.29,0.3,2.1,8
+169249,"Lechuga criolla, cruda",Vegetales y derivados,15,1.36,2.87,0.15,1.3,28
+168431,"Lechuga morada, cruda",Vegetales y derivados,13,1.33,2.26,0.22,0.9,25
+168429,"Lechuga mantecosa, cruda",Vegetales y derivados,13,1.35,2.23,0.22,1.1,5
+169248,"Lechuga capuchina (iceberg), cruda",Vegetales y derivados,14,0.9,2.97,0.14,1.2,10
+170393,"Zanahoria, cruda",Vegetales y derivados,41,0.93,9.58,0.24,2.8,69
+170394,"Zanahoria, hervida",Vegetales y derivados,35,0.76,8.22,0.18,3,58
+170108,"Morrón rojo, crudo",Vegetales y derivados,26,0.99,6.03,0.3,2.1,4
+170110,"Morrón rojo, hervido",Vegetales y derivados,28,0.92,6.7,0.2,1.2,2
+168550,"Morrón rojo, salteado",Vegetales y derivados,133,1.04,6.57,12.75,1.8,21
+170427,"Morrón verde, crudo",Vegetales y derivados,20,0.86,4.64,0.17,1.7,3
+170024,"Morrón verde, salteado",Vegetales y derivados,116,0.78,4.22,11.85,1.8,17
+169383,"Morrón amarillo, crudo",Vegetales y derivados,27,1,6.32,0.21,0.9,2
+170005,"Cebolla de verdeo, cruda",Vegetales y derivados,32,1.83,7.34,0.19,2.6,16
+169988,"Apio, crudo",Vegetales y derivados,14,0.69,2.97,0.17,1.6,80
+169989,"Apio, hervido",Vegetales y derivados,18,0.83,4,0.16,1.6,91
+169387,"Rúcula, cruda",Vegetales y derivados,25,2.58,3.65,0.66,1.6,27
+168421,"Kale, crudo",Vegetales y derivados,35,2.92,4.42,1.49,4.1,53
+169977,"Repollo colorado, crudo",Vegetales y derivados,31,1.43,7.37,0.16,2.1,27
+170390,"Bok choy (repollo chino), crudo",Vegetales y derivados,13,1.5,2.18,0.2,1,65
+168564,"Radicchio, crudo",Vegetales y derivados,23,1.43,4.48,0.25,0.9,22
+168412,"Endivia, cruda",Vegetales y derivados,17,1.25,3.35,0.2,3.1,22
+169251,"Champiñones, crudos",Vegetales y derivados,22,3.09,3.26,0.34,1,5
+169252,"Champiñones, hervidos",Vegetales y derivados,28,2.17,5.29,0.47,2.2,2
+169253,"Champiñones, salteados",Vegetales y derivados,26,3.58,4.04,0.33,1.8,12
+169255,"Hongos portobello, crudos",Vegetales y derivados,22,2.11,3.87,0.35,1.3,9
+169243,"Hongos portobello, grillados",Vegetales y derivados,29,3.28,4.44,0.58,2.2,11
+169242,"Hongos shiitake, crudos",Vegetales y derivados,34,2.24,6.79,0.49,2.5,9
+168580,"Gírgolas, crudas",Vegetales y derivados,33,3.31,6.09,0.41,2.3,18
+169291,"Zucchini, crudo",Vegetales y derivados,17,1.21,3.11,0.32,1,8
+169292,"Zucchini, hervido",Vegetales y derivados,15,1.14,2.69,0.36,1,3
+169295,"Zapallo anco, crudo",Vegetales y derivados,45,1,11.69,0.1,2,4
+169296,"Zapallo anco, al horno",Vegetales y derivados,40,0.9,10.49,0.09,3.2,4
+170379,"Brócoli, crudo",Vegetales y derivados,34,2.82,6.64,0.37,2.6,33
+169967,"Brócoli, hervido",Vegetales y derivados,35,2.38,7.18,0.41,3.3,41
+170397,"Coliflor, hervida",Vegetales y derivados,23,1.84,4.11,0.45,2.3,15
+170093,"Papa, al horno con cáscara",Vegetales y derivados,93,2.5,21.15,0.13,2.2,10
+170438,"Papa, hervida con cáscara",Vegetales y derivados,87,1.87,20.13,0.1,1.8,4
+168483,"Batata, al horno con cáscara",Vegetales y derivados,90,2.01,20.71,0.15,3.3,36
+169985,"Mandioca, cruda",Vegetales y derivados,160,1.36,38.06,0.28,1.8,14
+169999,"Choclo, hervido",Vegetales y derivados,96,3.41,20.98,1.5,2.4,1
+169229,"Berenjena, hervida",Vegetales y derivados,35,0.83,8.73,0.23,2.5,1
+169231,"Jengibre, crudo",Vegetales y derivados,80,1.82,17.77,0.75,2,13
+168390,"Espárrago, hervido",Vegetales y derivados,22,2.4,4.11,0.22,2,14
+169971,"Repollitos de Bruselas, hervidos",Vegetales y derivados,36,2.55,7.1,0.5,2.6,21
+169957,"Brotes de soja, crudos",Vegetales y derivados,30,3.04,5.94,0.18,1.8,6
+168386,"Alcaucil, hervido",Vegetales y derivados,53,2.89,11.95,0.34,5.7,60
+170401,"Acelga, hervida",Vegetales y derivados,20,1.88,4.13,0.08,2.1,179
+169997,"Cilantro, hojas, crudo",Vegetales y derivados,23,2.13,3.67,0.52,2.8,46
+172232,"Albahaca, fresca",Vegetales y derivados,23,3.15,2.65,0.64,1.6,4
+172421,"Lentejas, hervidas",Vegetales y derivados,116,9.02,20.13,0.38,7.9,2
+173756,"Garbanzos, secos, crudos",Vegetales y derivados,378,20.47,62.95,6.04,12.2,24
+173735,"Porotos negros, hervidos",Vegetales y derivados,132,8.86,23.71,0.54,8.7,1
+175194,"Porotos colorados, hervidos",Vegetales y derivados,127,8.67,22.8,0.5,7.4,2
+175203,"Porotos blancos (alubia), hervidos",Vegetales y derivados,139,9.73,25.09,0.35,6.3,6
+174271,"Soja, hervida",Vegetales y derivados,172,18.21,8.36,8.97,6,1
+168411,"Edamame, cocido",Vegetales y derivados,121,11.91,8.91,5.2,5.2,6
+172475,Tofu firme,Vegetales y derivados,144,17.27,2.78,8.72,2.3,14
+170567,Almendras,Vegetales y derivados,579,21.15,21.55,49.93,12.5,1
+170162,"Castañas de cajú, crudas",Vegetales y derivados,553,18.22,30.19,43.85,3.3,12
+170571,"Castañas de cajú, tostadas sin sal",Vegetales y derivados,574,15.31,32.69,46.35,3,16
+170178,Nueces de macadamia,Vegetales y derivados,718,7.91,13.82,75.77,8.6,5
+170182,Nueces pecán,Vegetales y derivados,691,9.17,13.86,71.97,9.6,0
+170591,"Piñones, secos",Vegetales y derivados,673,13.69,13.08,68.37,3.7,2
+170170,"Coco rallado, sin azúcar",Vegetales y derivados,660,6.88,23.65,64.53,16.3,37
+170190,Castañas asadas,Vegetales y derivados,245,3.17,52.96,2.2,5.1,2
+170554,Semillas de chía,Vegetales y derivados,486,16.54,42.12,30.74,34.4,16
+169414,Semillas de lino,Vegetales y derivados,534,18.29,28.88,42.16,27.3,30
+170562,"Semillas de girasol, peladas",Vegetales y derivados,584,20.78,20,51.46,8.6,9
+170150,Semillas de sésamo,Vegetales y derivados,573,17.73,23.45,49.67,11.8,11
+170556,"Semillas de zapallo, peladas",Vegetales y derivados,559,30.23,10.71,49.05,6,7
+172470,"Pasta de maní, sin sal",Vegetales y derivados,598,22.21,22.31,51.36,5,17
+169097,"Naranja, fresca",Frutas y derivados,47,0.94,11.75,0.12,2.4,0
+169105,"Mandarina, fresca",Frutas y derivados,53,0.81,13.34,0.31,1.8,2
+168153,"Kiwi, fresco",Frutas y derivados,61,1.14,14.66,0.52,3,3
+174683,"Uva, fresca",Frutas y derivados,69,0.72,18.1,0.16,0.9,2
+171711,"Arándanos, frescos",Frutas y derivados,57,0.74,14.49,0.33,2.4,1
+167755,"Frambuesas, frescas",Frutas y derivados,52,1.2,11.94,0.65,6.5,1
+169910,"Mango, fresco",Frutas y derivados,60,0.82,14.98,0.38,1.6,1
+169926,"Mamón (papaya), fresco",Frutas y derivados,43,0.47,10.82,0.26,1.7,8
+169914,"Pelón (nectarina), fresco",Frutas y derivados,44,1.06,10.55,0.32,1.7,0
+168155,"Lima, fresca",Frutas y derivados,30,0.7,10.54,0.2,2.8,2
+169108,"Maracuyá, fresco",Frutas y derivados,97,2.2,23.38,0.7,10.4,28
+173044,"Guayaba, fresca",Frutas y derivados,68,2.55,14.32,0.95,5.4,2
+171688,"Manzana con cáscara, fresca",Frutas y derivados,52,0.26,13.81,0.17,2.4,1
+168165,Pasas de uva,Frutas y derivados,299,3.3,79.32,0.25,4.5,26
+171723,"Arándanos deshidratados, azucarados",Frutas y derivados,308,0.17,82.8,1.09,5.3,5
+171726,Dátiles,Frutas y derivados,282,2.45,75.03,0.39,8,2
+174665,Higos secos,Frutas y derivados,249,3.3,63.87,0.93,9.8,10
+173941,Orejones de damasco,Frutas y derivados,241,3.39,62.64,0.51,7.3,10
+168917,"Quinoa, cocida",Cereales y derivados,120,4.4,21.3,1.92,2.8,7
+169703,"Arroz integral, crudo",Cereales y derivados,367,7.54,76.25,3.2,3.6,5
+169704,"Arroz integral, cocido",Cereales y derivados,123,2.74,25.58,0.97,1.6,4
+169736,"Fideos secos, crudos",Cereales y derivados,371,13.04,74.67,1.51,3.2,6
+169737,"Fideos, cocidos",Cereales y derivados,158,5.8,30.86,0.93,1.8,1
+169738,"Fideos integrales, secos, crudos",Cereales y derivados,352,13.87,73.37,2.93,9.2,6
+168910,"Fideos integrales, cocidos",Cereales y derivados,149,5.99,30.07,1.71,3.9,4
+169699,"Cuscús, seco",Cereales y derivados,376,12.76,77.43,0.64,5,10
+169700,"Cuscús, cocido",Cereales y derivados,112,3.79,23.22,0.16,1.4,5
+170688,"Trigo burgol, seco",Cereales y derivados,342,12.29,75.87,1.33,12.5,17
+170287,"Trigo burgol, cocido",Cereales y derivados,83,3.08,18.58,0.24,4.5,5
+169702,"Mijo, crudo",Cereales y derivados,378,11.02,72.85,4.22,8.5,5
+168871,"Mijo, cocido",Cereales y derivados,119,3.51,23.67,1,1.3,2
+170686,"Trigo sarraceno, cocido",Cereales y derivados,92,3.38,19.94,0.62,2.7,4
+168892,Germen de trigo,Cereales y derivados,360,23.15,51.8,9.72,13.2,12
+170894,"Yogur griego natural, descremado",Leche y derivados,59,10.19,3.6,0.39,0,36
+171304,"Yogur griego natural, entero",Leche y derivados,97,9,3.98,5,0,35
+172179,Queso cottage,Leche y derivados,98,11.12,3.38,4.3,0,315
+173420,Queso feta,Leche y derivados,265,14.21,3.88,21.49,0,1139
+171241,Queso gouda,Leche y derivados,356,24.94,2.22,27.44,0,819
+170859,Crema de leche,Leche y derivados,340,2.84,2.84,36.08,0,27
+173424,"Huevo de gallina, entero, duro",Huevos y derivados,155,12.58,1.12,10.61,0,124
+172187,"Huevo de gallina, revuelto",Huevos y derivados,149,9.99,1.61,10.98,0,145
+171413,Aceite de oliva,Grasas y aceites,884,0,0,100,0,2
+171412,Aceite de coco,Grasas y aceites,892,0,0,99.06,0,0
+173573,Aceite de palta,Grasas y aceites,884,0,0,100,0,0
+171016,Aceite de sésamo,Grasas y aceites,884,0,0,100,0,0

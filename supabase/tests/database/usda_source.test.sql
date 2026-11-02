@@ -20,8 +20,8 @@ select lives_ok(
   $$insert into public.foods (id, owner_id, source, external_code, name, food_group, kcal_per_100g)
     overriding system value
     values
-      (940001, null, 'usda', '171077', 'Zqusda pollo, pechuga', 'Aves', 120),
-      (940002, null, 'argenfoods', '999', 'Zqusda argenfoods', 'Carnes y derivados', 100)$$,
+      (940001, null, 'usda', '9900001', 'Zqusda pollo, pechuga', 'Aves', 120),
+      (940002, null, 'argenfoods', '9900002', 'Zqusda argenfoods', 'Carnes y derivados', 100)$$,
   'a shared usda row is accepted'
 );
 
