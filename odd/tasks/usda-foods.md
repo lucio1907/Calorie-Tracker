@@ -15,7 +15,7 @@ Branch: feat/usda-foods (from development). Delivery: ask-on-risk. Test runner: 
 
 - [x] T1 (S1) source "usda": migration + pgTAP, types, strings, badge, detail attribution/link. Route: inline. Commit f9fd282.
 - [x] T2 (S2, S3) extract + import scripts with unit tests; import body shared via scripts/lib/catalog-import.mjs. Route: inline. Commit dcc905a.
-- [x] T3 (S4) curated selection (208 foods), usda.csv, README, local import verified. Route: inline. Commit: see git log (feat(data)).
+- [x] T3 (S4) curated selection (205 foods), usda.csv, README, local import verified. Route: inline. Commits b4d8c01, a6a4fe8.
 - [ ] T4 (S5) production import — pending user authorization.
 
 ## Log
@@ -27,3 +27,5 @@ Branch: feat/usda-foods (from development). Delivery: ask-on-risk. Test runner: 
 - L5: T2 differential check: import-argenfoods output (dry run, bad CSV, missing env, remote refusal, local import) identical before/after the shared catalog-import refactor.
 - L6: T3 selection: 215 drafted, 6 removed as ARGENFOODS duplicates (quinoa cruda, harinas, parmesano, provolone, emmental), 1 removed by the energy check (salvado de avena: 246 kcal declared vs 397 from macros). 208 foods. Local import idempotent (208 after two runs); search finds every gap term from S4. Checks: vitest 1116, pgTAP 451, lint, typecheck, Playwright food specs 54 passed.
 - L7: Next: T4 production import needs explicit user authorization (remote write to Supabase ref lopbhonacvlrvxckfnwt); the migration must reach production first (PR to development, then main).
+- L8: Independent verifier (high-risk item 1, migration): S1-S3 pass, S4 pass with advisories, no blockers; import-argenfoods differential identical in 8 cases. Native review (risk, readability, reliability) granted by the user, approved and acknowledged (target sha256:db39be3a…), advisories only.
+- L9: Applied advisories in a6a4fe8: removed ARGENFOODS duplicates (bife de chorizo crudo = bife angosto, endivia = escarola crespa, falda cruda = pecho crudo), renamed falda cocida -> pecho cocido, arándanos rojos deshidratados, papa/batata "pulpa", canned salmon "(pink)"; extract-usda fails on non-numeric amounts; README lists the approximations. 205 foods.
