@@ -26,7 +26,7 @@
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.118.0",
     "barcode-detector": "3.2.3",
-    "lucide-react": "1.61.0",
+    "lucide-react": "1.65.0",
     "next": "16.4.3",
     "react": "19.3.1",
     "react-aria": "3.53.1",
