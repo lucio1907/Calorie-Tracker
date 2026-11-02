@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { BottomTabBar } from "../components/bottom-tab-bar";
 import { useOptimisticPathname } from "../hooks/use-optimistic-pathname";
-import { isActive, LOG_FOOD_EVENT, LOG_HREF, TAB_BAR_LEADING, TAB_BAR_TRAILING } from "../nav-items";
+import { isActive, LOG_FOOD_EVENT, LOG_HREF, TAB_BAR_LEADING, TAB_BAR_MORE, TAB_BAR_TRAILING } from "../nav-items";
 
 export function BottomTabBarContainer() {
   const actual = usePathname();
@@ -12,6 +12,7 @@ export function BottomTabBarContainer() {
     <BottomTabBar
       leading={TAB_BAR_LEADING}
       trailing={TAB_BAR_TRAILING}
+      more={TAB_BAR_MORE}
       logHref={LOG_HREF}
       pathname={pathname}
       onNavigate={onNavigate}
