@@ -24,6 +24,7 @@ describe("FoodSearchBar", () => {
       t.filters.custom,
       t.filters.favorites,
       t.filters.argenfoods,
+      t.filters.usda,
       t.filters.off,
     ]);
     expect(screen.getByRole("button", { name: t.filters.custom })).toHaveAttribute("aria-pressed", "true");

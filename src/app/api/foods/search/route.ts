@@ -6,7 +6,7 @@ import { foodsPageSchema, searchQuerySchema } from "@/features/foods/lib/food-sc
 import { isFoodFilter, type FoodFilter } from "@/features/foods/lib/types";
 
 /**
- * GET /api/foods/search?q=<text>[&filter=<all|custom|favorites|argenfoods|off>][&page=<n>]
+ * GET /api/foods/search?q=<text>[&filter=<all|custom|favorites|argenfoods|usda|off>][&page=<n>]
  * Read-only search used by search-as-you-type. A Route Handler (not a Server
  * Action) so requests can run in parallel and be aborted by the client:
  * https://nextjs.org/docs/app/guides/server-actions#sequential-dispatch-on-the-client

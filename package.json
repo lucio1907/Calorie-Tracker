@@ -19,6 +19,7 @@
     "db:start": "node scripts/supabase-start.mjs",
     "user:create": "node --env-file-if-exists=.env.local scripts/create-user.mjs",
     "foods:import-argenfoods": "node --env-file-if-exists=.env.local scripts/import-argenfoods.mjs",
+    "foods:import-usda": "node --env-file-if-exists=.env.local scripts/import-usda.mjs",
     "audit:all": "node scripts/audit-all.mjs"
   },
   "dependencies": {

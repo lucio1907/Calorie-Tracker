@@ -1,4 +1,4 @@
-export const FOOD_SOURCES = ["argenfoods", "off", "custom"] as const;
+export const FOOD_SOURCES = ["argenfoods", "usda", "off", "custom"] as const;
 
 export type FoodSource = (typeof FOOD_SOURCES)[number];
 
@@ -12,7 +12,7 @@ export function isFoodSource(value: unknown): value is FoodSource {
  * also owned by the caller but are their own category), favorites, or one
  * shared source.
  */
-export const FOOD_FILTERS = ["all", "custom", "favorites", "argenfoods", "off"] as const;
+export const FOOD_FILTERS = ["all", "custom", "favorites", "argenfoods", "usda", "off"] as const;
 
 export type FoodFilter = (typeof FOOD_FILTERS)[number];
 

@@ -6,6 +6,8 @@ export const shellStrings = {
   tabBarNav: "Principal (móvil)",
   log: "Registrar",
   logAccessible: "Registrar comida",
+  more: "Más",
+  close: "Cerrar",
   nav: {
     today: "Hoy",
     diary: "Diario",

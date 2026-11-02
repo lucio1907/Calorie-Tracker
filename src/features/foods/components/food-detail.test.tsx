@@ -62,6 +62,17 @@ describe("FoodDetail", () => {
     expect(screen.getByText("1 pancito")).toBeInTheDocument();
   });
 
+  it("cites USDA FoodData Central and links to the food's FDC page", () => {
+    renderDetail({ ...shared, source: "usda", group: "Aves", externalCode: "171077" });
+
+    expect(screen.getByText(foodsStrings.sources.usda)).toBeInTheDocument();
+    expect(screen.getByText(t.usdaAttribution)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: t.viewSource })).toHaveAttribute(
+      "href",
+      "https://fdc.nal.usda.gov/food-details/171077/nutrients",
+    );
+  });
+
   it("does not offer edit or delete for catalog foods", () => {
     renderDetail(shared);
 
