@@ -100,7 +100,8 @@ kept for 7 days.
   beef cuts, chicken by piece, turkey, fish, vegetables, fruits, legumes, nuts, grains), per 100 g, in
   `supabase/data/usda.csv`. The curated list lives in `supabase/data/usda-selection.csv`: each FDC id
   with our Spanish name and group next to the USDA description, so every mapping can be reviewed (cuts
-  without an exact USDA equivalent use the closest one, e.g. matambre = flank steak). Carbohydrates are
+  without an exact USDA equivalent use the closest one: matambre = flank steak, raw bondiola = whole pork
+  shoulder, pecho = brisket). Carbohydrates are
   "by difference" (fiber included). `scripts/extract-usda.mjs` rebuilds the CSV from the selection; the
   app cites the source and links each food's FDC page.
 - **Open Food Facts** (ODbL): packaged products, fetched server-side only (barcode lookup and name search

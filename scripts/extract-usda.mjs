@@ -66,7 +66,10 @@ for await (const line of lines) {
   const food = fdcId ? foods.get(fdcId) : undefined;
   if (!food) continue;
   const [, , nutrientId, amount] = parseCsv(line)[0];
-  if (nutrientIds.has(nutrientId) && amount !== "") food.nutrients.set(nutrientId, Number(amount));
+  if (!nutrientIds.has(nutrientId) || amount === "") continue;
+  const value = Number(amount);
+  if (!Number.isFinite(value)) fail(`fdc_id ${fdcId}: nutrient ${nutrientId} amount "${amount}" is not a number`);
+  food.nutrients.set(nutrientId, value);
 }
 
 const rows = [];

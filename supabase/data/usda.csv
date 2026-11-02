@@ -9,15 +9,13 @@ code,name,group,kcal,protein,carbs,fat,fiber,sodium_mg
 171787,"Vacuno, entraña, a la parrilla",Carnes y derivados,220,26.13,0,12.05,0,75
 169433,"Vacuno, matambre, crudo",Carnes y derivados,165,21.22,0,8.29,0,54
 169435,"Vacuno, matambre, a la parrilla",Carnes y derivados,202,27.55,0,9.31,0,53
-169538,"Vacuno, bife de chorizo, crudo",Carnes y derivados,228,20.61,0,15.49,0,52
 168718,"Vacuno, bife de chorizo, a la parrilla",Carnes y derivados,278,26.16,0,18.45,0,52
 173402,"Vacuno, ojo de bife, crudo",Carnes y derivados,228,19.26,0.12,16.71,0,52
 172164,"Vacuno, ojo de bife, a la parrilla",Carnes y derivados,271,24.85,0,19.02,0,58
 169543,"Vacuno, lomo, a la parrilla",Carnes y derivados,267,26.46,0,17.12,0,54
 169441,"Vacuno, osobuco (carne magra), crudo",Carnes y derivados,128,21.75,0,3.85,0,63
 169442,"Vacuno, osobuco (carne magra), hervido",Carnes y derivados,201,33.68,0,6.36,0,64
-168666,"Vacuno, falda, cruda",Carnes y derivados,277,17.94,0,22.18,0,59
-170613,"Vacuno, falda, cocida",Carnes y derivados,213,32.9,0,8.01,0,54
+170613,"Vacuno, pecho, cocido",Carnes y derivados,213,32.9,0,8.01,0,54
 170196,"Vacuno, lengua, cruda",Carnes y derivados,224,14.9,3.68,16.09,0,69
 170598,"Vacuno, lengua, hervida",Carnes y derivados,284,19.29,0,22.3,0,65
 170599,"Vacuno, mondongo, crudo",Carnes y derivados,85,12.07,0,3.69,0,97
@@ -75,7 +73,7 @@ code,name,group,kcal,protein,carbs,fat,fiber,sodium_mg
 175167,"Salmón rosado (del Atlántico, de criadero), crudo","Pescados, mariscos y conservas",208,20.42,0,13.42,0,59
 175168,"Salmón rosado (del Atlántico, de criadero), a la plancha","Pescados, mariscos y conservas",206,22.1,0,12.35,0,61
 173686,"Salmón del Atlántico salvaje, crudo","Pescados, mariscos y conservas",142,19.84,0,6.34,0,44
-175175,"Salmón, enlatado, escurrido","Pescados, mariscos y conservas",138,23.1,0,5.02,0,381
+175175,"Salmón (pink), enlatado, escurrido","Pescados, mariscos y conservas",138,23.1,0,5.02,0,381
 173717,"Trucha arcoíris, cruda","Pescados, mariscos y conservas",141,19.94,0,6.18,0,51
 173718,"Trucha arcoíris, a la plancha","Pescados, mariscos y conservas",168,23.8,0,7.38,0,61
 171955,"Bacalao, crudo","Pescados, mariscos y conservas",82,17.81,0,0.67,0,54
@@ -111,7 +109,6 @@ code,name,group,kcal,protein,carbs,fat,fiber,sodium_mg
 169977,"Repollo colorado, crudo",Vegetales y derivados,31,1.43,7.37,0.16,2.1,27
 170390,"Bok choy (repollo chino), crudo",Vegetales y derivados,13,1.5,2.18,0.2,1,65
 168564,"Radicchio, crudo",Vegetales y derivados,23,1.43,4.48,0.25,0.9,22
-168412,"Endivia, cruda",Vegetales y derivados,17,1.25,3.35,0.2,3.1,22
 169251,"Champiñones, crudos",Vegetales y derivados,22,3.09,3.26,0.34,1,5
 169252,"Champiñones, hervidos",Vegetales y derivados,28,2.17,5.29,0.47,2.2,2
 169253,"Champiñones, salteados",Vegetales y derivados,26,3.58,4.04,0.33,1.8,12
@@ -127,8 +124,8 @@ code,name,group,kcal,protein,carbs,fat,fiber,sodium_mg
 169967,"Brócoli, hervido",Vegetales y derivados,35,2.38,7.18,0.41,3.3,41
 170397,"Coliflor, hervida",Vegetales y derivados,23,1.84,4.11,0.45,2.3,15
 170093,"Papa, al horno con cáscara",Vegetales y derivados,93,2.5,21.15,0.13,2.2,10
-170438,"Papa, hervida con cáscara",Vegetales y derivados,87,1.87,20.13,0.1,1.8,4
-168483,"Batata, al horno con cáscara",Vegetales y derivados,90,2.01,20.71,0.15,3.3,36
+170438,"Papa, pulpa, hervida con cáscara",Vegetales y derivados,87,1.87,20.13,0.1,1.8,4
+168483,"Batata, pulpa, al horno con cáscara",Vegetales y derivados,90,2.01,20.71,0.15,3.3,36
 169985,"Mandioca, cruda",Vegetales y derivados,160,1.36,38.06,0.28,1.8,14
 169999,"Choclo, hervido",Vegetales y derivados,96,3.41,20.98,1.5,2.4,1
 169229,"Berenjena, hervida",Vegetales y derivados,35,0.83,8.73,0.23,2.5,1
@@ -176,7 +173,7 @@ code,name,group,kcal,protein,carbs,fat,fiber,sodium_mg
 173044,"Guayaba, fresca",Frutas y derivados,68,2.55,14.32,0.95,5.4,2
 171688,"Manzana con cáscara, fresca",Frutas y derivados,52,0.26,13.81,0.17,2.4,1
 168165,Pasas de uva,Frutas y derivados,299,3.3,79.32,0.25,4.5,26
-171723,"Arándanos deshidratados, azucarados",Frutas y derivados,308,0.17,82.8,1.09,5.3,5
+171723,"Arándanos rojos deshidratados, azucarados",Frutas y derivados,308,0.17,82.8,1.09,5.3,5
 171726,Dátiles,Frutas y derivados,282,2.45,75.03,0.39,8,2
 174665,Higos secos,Frutas y derivados,249,3.3,63.87,0.93,9.8,10
 173941,Orejones de damasco,Frutas y derivados,241,3.39,62.64,0.51,7.3,10
