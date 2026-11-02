@@ -4,7 +4,8 @@
 -- - public.insights holds one summary per owner, range and day: owners read
 --   and insert only their own rows, never update or delete them, and the
 --   aal2 rule and a row quota apply as on the other user tables;
--- - consume_insight_request allows 10 generation attempts per user and app day
+-- - consume_insight_request allows 50 generation attempts per user and app day
+--   (migration insight_daily_limit_50; it was 10)
 --   (America/Argentina/Buenos_Aires); its counters are unreachable directly.
 -- Run: npx supabase test db
 -- Everything runs in one transaction and is rolled back.
@@ -322,9 +323,9 @@ select throws_ok(
 -- consume_insight_request: limits ------------------------------------------------------
 
 select is(
-  (select array_agg(public.consume_insight_request()) from generate_series(1, 11)),
-  array[true, true, true, true, true, true, true, true, true, true, false],
-  'ten generation attempts per day, the 11th is refused'
+  (select array_agg(public.consume_insight_request()) from generate_series(1, 51)),
+  array_append(array_fill(true, array[50]), false),
+  'fifty generation attempts per day, the 51st is refused'
 );
 select is(
   public.consume_insight_request(),
@@ -341,7 +342,7 @@ reset role;
 select results_eq(
   $$select window_day, request_count from private.insight_request_counters
     where user_id = '00000000-0000-4000-a000-0000000000e1'$$,
-  $$values ((now() at time zone 'America/Argentina/Buenos_Aires')::date, 10)$$,
+  $$values ((now() at time zone 'America/Argentina/Buenos_Aires')::date, 50)$$,
   'the counter is keyed by the app-time-zone day and never grows past the limit'
 );
 

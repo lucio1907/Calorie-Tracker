@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildTodaySummary, type TodayProfile } from "@/features/today/lib/today-summary";
 import { buildCalorieHistory } from "@/features/progress/lib/calorie-history";
 import type { ProfileVersion } from "@/features/progress/lib/profile-history";
-import type { WeightEntry } from "@/features/progress/lib/types";
+import type { DailyEnergy, WeightEntry } from "@/features/progress/lib/types";
 import { buildWeightTrend } from "@/features/progress/lib/weight-trend";
 import { buildInsightInput, describeBalance } from "./insight-input";
 
@@ -33,6 +33,20 @@ function readyOn(date: string, weightKg: number, dayProfile: TodayProfile = prof
   return summary;
 }
 
+// 2026-10-13 is a Tuesday: 10-17 and 10-18 are the range's weekend.
+function defaultTotals(target: number): DailyEnergy[] {
+  return [
+    { date: "2026-10-13", foodKcal: target - 300, exerciseKcal: 0 },
+    { date: "2026-10-14", foodKcal: target + 300, exerciseKcal: 150 },
+    { date: "2026-10-15", foodKcal: target + 10, exerciseKcal: 0 },
+  ];
+}
+
+/** Food at `target + offset` on each date, without exercise. */
+function eating(target: number, days: Record<string, number>): DailyEnergy[] {
+  return Object.entries(days).map(([date, offset]) => ({ date, foodKcal: target + offset, exerciseKcal: 0 }));
+}
+
 function input({
   weights = [
     { id: 1, date: "2026-10-10", kg: 70.4 },
@@ -40,13 +54,9 @@ function input({
     { id: 3, date: "2026-10-19", kg: 69.13 },
   ],
   versions = profiles,
-}: { weights?: WeightEntry[]; versions?: ProfileVersion[] } = {}) {
-  const target = readyOn(FROM, 70).targetKcal;
-  const totals = [
-    { date: "2026-10-13", foodKcal: target - 300, exerciseKcal: 0 },
-    { date: "2026-10-14", foodKcal: target + 300, exerciseKcal: 150 },
-    { date: "2026-10-15", foodKcal: target + 10, exerciseKcal: 0 },
-  ];
+  totals: totalsFor = defaultTotals,
+}: { weights?: WeightEntry[]; versions?: ProfileVersion[]; totals?: (target: number) => DailyEnergy[] } = {}) {
+  const totals = totalsFor(readyOn(FROM, 70).targetKcal);
   return buildInsightInput({
     rangeDays: 7,
     to: TO,
@@ -104,7 +114,64 @@ describe("buildInsightInput", () => {
     const { weight } = input();
 
     // 10-13: mean of 70.4 and 70 (70.2); 10-19: mean of 70 and 69.13 (69.57).
-    expect(weight).toEqual({ entries: 2, startAverageKg: 70.2, endAverageKg: 69.6, changeKg: -0.6 });
+    expect(weight).toMatchObject({ entries: 2, startAverageKg: 70.2, endAverageKg: 69.6, changeKg: -0.6 });
+  });
+
+  it("expects the weight change the balance between the first and the last weigh-in explains", () => {
+    // 10-13..10-18 (the days before the 10-19 weigh-in), each 770 kcal under: -4620 kcal = -0.6 kg.
+    const days = { "2026-10-13": -770, "2026-10-14": -770, "2026-10-15": -770, "2026-10-16": -770, "2026-10-17": -770, "2026-10-18": -770 };
+    const { weight } = input({ totals: (target) => eating(target, days) });
+
+    expect(weight).toMatchObject({ expectedChangeKg: -0.6, expectedWindowDays: 6, expectedLoggedDays: 6 });
+  });
+
+  it("counts only logged days in the expected change and says how many there were", () => {
+    const { weight } = input({ totals: (target) => eating(target, { "2026-10-13": -770, "2026-10-14": -770, "2026-10-19": -500 }) });
+
+    // 10-19 is the last weigh-in: its food shows on later weigh-ins, not this one.
+    expect(weight).toMatchObject({ expectedChangeKg: -0.2, expectedWindowDays: 6, expectedLoggedDays: 2 });
+  });
+
+  it("has no expected change with a single weigh-in in the range", () => {
+    const { weight } = input({ weights: [{ id: 1, date: "2026-10-15", kg: 70 }] });
+
+    expect(weight).toMatchObject({ entries: 1, expectedChangeKg: null, expectedWindowDays: 0, expectedLoggedDays: 0 });
+  });
+
+  it("splits net calories and balance between weekdays and the weekend", () => {
+    const days = { "2026-10-13": -200, "2026-10-14": -200, "2026-10-17": 400, "2026-10-18": 600 };
+    const { weekPattern } = input({ totals: (target) => eating(target, days) });
+    const target = readyOn(FROM, 70).targetKcal;
+
+    expect(weekPattern).toEqual({
+      weekdayLoggedDays: 2,
+      weekendLoggedDays: 2,
+      weekdayAverageNetKcal: target - 200,
+      weekendAverageNetKcal: target + 500,
+      weekdayAverageBalanceKcal: -200,
+      weekendAverageBalanceKcal: 500,
+    });
+  });
+
+  it("has no weekend averages when no weekend day is logged", () => {
+    expect(input().weekPattern).toMatchObject({
+      weekdayLoggedDays: 3,
+      weekendLoggedDays: 0,
+      weekendAverageNetKcal: null,
+      weekendAverageBalanceKcal: null,
+    });
+  });
+
+  it("reports the current and the longest logging streak", () => {
+    expect(input().logging).toEqual({ currentStreakDays: 0, longestStreakDays: 3 });
+
+    const everyDay = { "2026-10-15": 0, "2026-10-16": 0, "2026-10-17": 0, "2026-10-18": 0, "2026-10-19": 0, "2026-10-13": 0 };
+    expect(input({ totals: (target) => eating(target, everyDay) }).logging).toEqual({ currentStreakDays: 5, longestStreakDays: 5 });
+  });
+
+  it("keeps the current streak while the last day has no food yet", () => {
+    const days = { "2026-10-13": 0, "2026-10-17": 0, "2026-10-18": 0 };
+    expect(input({ totals: (target) => eating(target, days) }).logging).toEqual({ currentStreakDays: 2, longestStreakDays: 2 });
   });
 
   it("has no weight block without weights in the range", () => {

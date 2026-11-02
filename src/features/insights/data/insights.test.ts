@@ -23,6 +23,8 @@ function from(table: string) {
     select: () => chain,
     insert: (payload: unknown) => ((call.op = "insert"), (call.payload = payload), chain),
     eq: (column: string, value: unknown) => (call.filters.push([column, value]), chain),
+    gte: (column: string, value: unknown) => (call.filters.push([`${column} >=`, value]), chain),
+    lte: (column: string, value: unknown) => (call.filters.push([`${column} <=`, value]), chain),
     order: (column: string, options: unknown) => (call.orders.push([column, options]), chain),
     limit: (count: number) => ((call.limit = count), settle()),
     maybeSingle: settle,
@@ -35,7 +37,7 @@ const rpc = vi.fn(() => Promise.resolve(rpcResult));
 
 vi.mock("@/lib/supabase/server", () => ({ createClient: async () => ({ from, rpc }) }));
 
-const { getStoredInsight, getStoredInsightOrNull, InsightLimitError, INSIGHT_HISTORY_LIMIT, listInsights, saveInsight, takeInsightSlot } =
+const { getPreviousInsight, getStoredInsight, getStoredInsightOrNull, InsightLimitError, INSIGHT_HISTORY_LIMIT, listInsights, saveInsight, takeInsightSlot } =
   await import("./insights");
 
 const content = { overview: "Venís bien.", wins: ["Registraste 5 días."], improvements: [] };
@@ -182,5 +184,39 @@ describe("listInsights", () => {
   it("throws on a read error", async () => {
     results.push({ data: null, error: { message: "boom" } });
     await expect(listInsights("user-a")).rejects.toThrow("boom");
+  });
+});
+
+describe("getPreviousInsight", () => {
+  it("reads the caller's newest summary for the range between two days", async () => {
+    results.push({ data: [{ ...row, generated_on: "2026-10-12" }], error: null });
+
+    await expect(getPreviousInsight("user-a", 7, { from: "2026-10-05", to: "2026-10-15" })).resolves.toEqual({
+      ...insight,
+      generatedOn: "2026-10-12",
+    });
+    expect(calls[0]).toMatchObject({
+      table: "insights",
+      filters: [
+        ["owner_id", "user-a"],
+        ["range_days", 7],
+        ["generated_on >=", "2026-10-05"],
+        ["generated_on <=", "2026-10-15"],
+      ],
+      orders: [["generated_on", { ascending: false }]],
+      limit: 1,
+    });
+  });
+
+  it("is null when there is none or it no longer matches the schema", async () => {
+    results.push({ data: [], error: null }, { data: [{ ...row, content: { overview: "" } }], error: null });
+
+    await expect(getPreviousInsight("user-a", 7, { from: "2026-10-05", to: "2026-10-15" })).resolves.toBeNull();
+    await expect(getPreviousInsight("user-a", 7, { from: "2026-10-05", to: "2026-10-15" })).resolves.toBeNull();
+  });
+
+  it("throws on a read error", async () => {
+    results.push({ data: null, error: { message: "boom" } });
+    await expect(getPreviousInsight("user-a", 7, { from: "2026-10-05", to: "2026-10-15" })).rejects.toThrow("boom");
   });
 });

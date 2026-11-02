@@ -1,5 +1,6 @@
 import { requireUser } from "@/features/auth/data/current-user";
 import { getStoredInsightOrNull } from "@/features/insights/data/insights";
+import { loadInsightStats } from "@/features/insights/data/insight-stats";
 import { appToday } from "@/lib/app-time";
 import { requestNow } from "@/lib/request-time";
 import { ProgressScreenContainer } from "../containers/progress-screen-container";
@@ -13,17 +14,16 @@ type ProgressPageProps = {
 /**
  * Progress route content for ?range=7|30|90 (30 when missing or invalid),
  * ending today in the app time zone, plus today's stored AI summary for the
- * range. Reads per request: must render inside <Suspense>.
+ * range and the numbers shown next to it. Reads per request: must render inside <Suspense>.
  */
 export async function ProgressPage({ searchParams }: ProgressPageProps) {
   const [{ range: rangeParam }, now, user] = await Promise.all([searchParams, requestNow(), requireUser()]);
   const today = appToday(now);
   const range = resolveProgressRange(rangeParam);
 
-  const [{ from, to, trend, log, latestKg, history }, insight] = await Promise.all([
-    loadProgressData(user.id, range, today),
-    getStoredInsightOrNull(user.id, range, today),
-  ]);
+  const [progress, insight] = await Promise.all([loadProgressData(user.id, range, today), getStoredInsightOrNull(user.id, range, today)]);
+  const { from, to, trend, log, latestKg, history } = progress;
+  const insightNumbers = await loadInsightStats(progress, range);
 
   return (
     <ProgressScreenContainer
@@ -36,6 +36,7 @@ export async function ProgressPage({ searchParams }: ProgressPageProps) {
       latestKg={latestKg}
       history={history}
       insight={insight}
+      insightStats={insightNumbers}
     />
   );
 }

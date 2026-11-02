@@ -111,9 +111,13 @@ and day is stored in `public.insights` and shown again on reload without a new c
   `src/features/insights/data/openrouter.ts`).
 - **Limits**: OpenRouter's free tier allows 20 requests per minute and 50 per day per account (1000 per
   day once 10 credits were ever bought), shared by every user of the deployment. Each user gets at most
-  10 generation attempts per day, failed ones included (`consume_insight_request`, app time zone);
+  50 generation attempts per day, failed ones included (`consume_insight_request`, app time zone):
+  the app has one user and signups are closed, so lower it again if they ever open;
   stored summaries are one per range and day, and a range without logged food
   never calls the model.
+- **Questions**: the AI section also answers four predefined questions (weight change, protein, weekends,
+  logging consistency) from the same numbers. Each answer takes one of the day's attempts and is stored
+  in `insight_answers`, one per question, range and day, so asking again the same day spends nothing.
 - **Privacy**: free providers may log prompts. Only aggregated numbers are sent (averages, day counts,
   weight trend, goal direction, macros vs. targets); never the name, email, birth date or food names.
 

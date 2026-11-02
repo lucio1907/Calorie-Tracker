@@ -45,6 +45,31 @@ export async function getStoredInsight(userId: string, rangeDays: number, day: C
   return data ? toInsight(data) : null;
 }
 
+/**
+ * The caller's newest summary for `rangeDays` generated between `from` and
+ * `to` (inclusive), or null. A newest row that no longer matches the schema
+ * counts as none.
+ */
+export async function getPreviousInsight(
+  userId: string,
+  rangeDays: number,
+  { from, to }: { from: CalendarDate; to: CalendarDate },
+): Promise<Insight | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("insights")
+    .select(COLUMNS)
+    .eq("owner_id", userId)
+    .eq("range_days", rangeDays)
+    .gte("generated_on", from)
+    .lte("generated_on", to)
+    .order("generated_on", { ascending: false })
+    .limit(1);
+  if (error) throw new Error(`previous insight ${rangeDays}d ${from}..${to}: ${error.message}`);
+
+  return data[0] ? toInsight(data[0]) : null;
+}
+
 /** Most summaries the AI section lists: months of daily summaries for every range. */
 export const INSIGHT_HISTORY_LIMIT = 100;
 
