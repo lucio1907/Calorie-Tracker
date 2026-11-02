@@ -10,15 +10,16 @@ import { addDays, appToday, expect, test } from "./support/fixtures";
  * Needs a build with EXPOSE_TESTING_API=1 (see next.config.ts).
  */
 
-type AppRoute = { path: string; heading: string; inTabBar: boolean };
+/** `inMore`: on mobile the link sits in the tab bar's "Más" sheet instead of a tab. */
+type AppRoute = { path: string; heading: string; inMore: boolean };
 
 const ROUTES: readonly AppRoute[] = [
-  { path: "/today", heading: "Hoy", inTabBar: true },
-  { path: "/diary", heading: "Diario", inTabBar: true },
-  { path: "/activity", heading: "Actividad", inTabBar: false },
-  { path: "/foods", heading: "Alimentos", inTabBar: false },
-  { path: "/progress", heading: "Progreso", inTabBar: true },
-  { path: "/settings", heading: "Ajustes", inTabBar: true },
+  { path: "/today", heading: "Hoy", inMore: false },
+  { path: "/diary", heading: "Diario", inMore: false },
+  { path: "/activity", heading: "Actividad", inMore: true },
+  { path: "/foods", heading: "Alimentos", inMore: true },
+  { path: "/progress", heading: "Progreso", inMore: false },
+  { path: "/settings", heading: "Ajustes", inMore: true },
 ];
 
 /** The sidebar (desktop) or the bottom tab bar (mobile), whichever is on screen. */
@@ -59,11 +60,10 @@ for (const route of ROUTES) {
 
     test("on a client navigation", async ({ page }, testInfo) => {
       const mobile = testInfo.project.name === "mobile";
-      test.skip(mobile && !route.inTabBar, "not linked from the mobile tab bar");
-
       const from = route.path === "/today" ? ROUTES[1] : ROUTES[0];
       await page.goto(from.path);
       await expectLoaded(page, from.heading);
+      if (mobile && route.inMore) await mainNav(page, mobile).getByRole("button", { name: "Más", exact: true }).click();
       const link = mainNav(page, mobile).getByRole("link", { name: route.heading, exact: true });
       await expect(link).toBeVisible();
 

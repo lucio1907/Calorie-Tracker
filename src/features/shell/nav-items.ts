@@ -19,12 +19,22 @@ export const SIDEBAR_ITEMS: readonly NavItem[] = [
   { href: "/settings", label: shellStrings.nav.settings, icon: Settings },
 ];
 
+function byHref(href: string): NavItem {
+  const item = SIDEBAR_ITEMS.find((candidate) => candidate.href === href);
+  if (!item) throw new Error(`No sidebar item for ${href}`);
+  return item;
+}
+
 /**
- * Mobile tab bar: two items, the center "+ Log" action, two items (Today,
- * Diary · Progress, Settings). The AI section is reached from Progress there.
+ * Mobile tab bar: two tabs, the center "+ Log" action, one tab and "More"
+ * (Today, Diary · Progress, More). Every other sidebar destination lives in
+ * the More sheet, so mobile reaches all of them.
  */
-export const TAB_BAR_LEADING: readonly NavItem[] = [SIDEBAR_ITEMS[0], SIDEBAR_ITEMS[1]];
-export const TAB_BAR_TRAILING: readonly NavItem[] = [SIDEBAR_ITEMS[4], SIDEBAR_ITEMS[6]];
+export const TAB_BAR_LEADING: readonly NavItem[] = [byHref("/today"), byHref("/diary")];
+export const TAB_BAR_TRAILING: readonly NavItem[] = [byHref("/progress")];
+export const TAB_BAR_MORE: readonly NavItem[] = SIDEBAR_ITEMS.filter(
+  (item) => !TAB_BAR_LEADING.includes(item) && !TAB_BAR_TRAILING.includes(item),
+);
 
 /** Logging starts in the diary (today's day, then pick a meal and a food). */
 export const LOG_HREF = "/diary";

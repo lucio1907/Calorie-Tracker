@@ -53,10 +53,10 @@ test.describe("Sign out", () => {
 
     await signIn(page, second.email);
     const mobile = testInfo.project.name === "mobile";
-    await page
-      .getByRole("navigation", { name: mobile ? "Principal (móvil)" : "Principal", exact: true })
-      .getByRole("link", { name: "Ajustes", exact: true })
-      .click();
+    const nav = page.getByRole("navigation", { name: mobile ? "Principal (móvil)" : "Principal", exact: true });
+    // On mobile, Settings sits in the tab bar's "Más" sheet.
+    if (mobile) await nav.getByRole("button", { name: "Más", exact: true }).click();
+    await nav.getByRole("link", { name: "Ajustes", exact: true }).click();
     await expect(page).toHaveURL(/\/settings$/);
     await expect(page.getByLabel("Altura (cm)")).toHaveValue("158");
   });
