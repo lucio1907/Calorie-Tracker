@@ -8,10 +8,21 @@ import { SourceBadge } from "./source-badge";
 
 const t = foodsStrings.detail;
 
-const SOURCE_LINKS = {
-  argenfoods: () => "https://www.argenfood.unlu.edu.ar/",
-  off: (barcode: string | null) => (barcode ? `https://world.openfoodfacts.org/product/${barcode}` : "https://world.openfoodfacts.org/"),
-} as const;
+type CatalogSource = Exclude<FoodDetailData["source"], "custom">;
+
+/** Where each catalog source is cited and linked (to the food's own page when its id is known). */
+const SOURCE_CITATIONS: Record<CatalogSource, { attribution: string; href: (food: FoodDetailData) => string }> = {
+  argenfoods: { attribution: t.argenfoodsAttribution, href: () => "https://www.argenfood.unlu.edu.ar/" },
+  usda: {
+    attribution: t.usdaAttribution,
+    href: ({ externalCode }) =>
+      externalCode ? `https://fdc.nal.usda.gov/food-details/${externalCode}/nutrients` : "https://fdc.nal.usda.gov/",
+  },
+  off: {
+    attribution: t.offAttribution,
+    href: ({ barcode }) => (barcode ? `https://world.openfoodfacts.org/product/${barcode}` : "https://world.openfoodfacts.org/"),
+  },
+};
 
 type FoodDetailProps = {
   food: FoodDetailData;
@@ -94,9 +105,9 @@ export function FoodDetail({
 
       {food.source !== "custom" ? (
         <p className="flex flex-wrap items-center gap-x-8 gap-y-4 text-caption text-ink-muted">
-          <span>{food.source === "argenfoods" ? t.argenfoodsAttribution : t.offAttribution}</span>
+          <span>{SOURCE_CITATIONS[food.source].attribution}</span>
           <a
-            href={SOURCE_LINKS[food.source](food.barcode)}
+            href={SOURCE_CITATIONS[food.source].href(food)}
             target="_blank"
             rel="noopener noreferrer"
             className="-my-12 inline-flex min-h-44 items-center gap-4 font-medium text-brand underline-offset-2 hover:underline"

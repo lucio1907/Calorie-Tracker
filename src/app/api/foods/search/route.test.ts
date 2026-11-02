@@ -98,7 +98,7 @@ describe("GET /api/foods/search", () => {
     expect(body.foods).toHaveLength(5);
   });
 
-  it.each(["custom", "argenfoods", "off"])("filter=%s searches only that source", async (filter) => {
+  it.each(["custom", "argenfoods", "usda", "off"])("filter=%s searches only that source", async (filter) => {
     const response = await search({ q: "pan", filter, page: "1" });
 
     expect(response.status).toBe(200);

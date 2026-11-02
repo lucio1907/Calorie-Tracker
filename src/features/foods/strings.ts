@@ -21,6 +21,7 @@ export const foodsStrings = {
       custom: "Creados por mí",
       favorites: "Favoritos",
       argenfoods: "ARGENFOODS",
+      usda: "USDA",
       off: "Open Food Facts",
     } satisfies Record<FoodFilter, string>,
     loading: "Buscando…",
@@ -43,6 +44,7 @@ export const foodsStrings = {
 
   sources: {
     argenfoods: "ARGENFOODS",
+    usda: "USDA",
     off: "Open Food Facts",
     custom: "Propio",
   },
@@ -108,6 +110,7 @@ export const foodsStrings = {
     code: "Código",
     argenfoodsAttribution:
       "Fuente: ARGENFOODS, Tabla de Composición de Alimentos, Universidad Nacional de Luján.",
+    usdaAttribution: "Fuente: USDA FoodData Central (SR Legacy), dominio público.",
     offAttribution: "Fuente: Open Food Facts (ODbL).",
     viewSource: "Ver fuente",
   },

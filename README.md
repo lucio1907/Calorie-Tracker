@@ -10,6 +10,7 @@ npm run db:start                # local stack (Docker), ports on 127.0.0.1 only;
 cp .env.example .env.local      # fill with values from `npx supabase status`
 npm run user:create -- --email owner@local.test   # prints a generated password
 npm run foods:import-argenfoods                    # shared ARGENFOODS catalog (run after every db reset)
+npm run foods:import-usda                          # shared USDA catalog (run after every db reset)
 npm run dev                     # http://127.0.0.1:3000 (loopback only)
 ```
 
@@ -58,6 +59,7 @@ never appears in the process list or the shell history; there is no `--password 
 | `npm run typecheck` | `next typegen` + `tsc --noEmit` |
 | `npx supabase db reset` | Re-applies migrations and `supabase/seed.sql` |
 | `npm run foods:import-argenfoods` | Upserts `supabase/data/argenfoods.csv` as shared foods (service key; idempotent). Prints the target host; a non-local one needs `-- --yes` |
+| `npm run foods:import-usda` | Same for `supabase/data/usda.csv` (source `usda`) |
 | `npx supabase db advisors --local` | Security/performance lints |
 | `npx supabase test db` | pgTAP RLS proofs in `supabase/tests/` (rolled back; needs the local stack) |
 | `npm run test:e2e` | Playwright E2E (mobile + desktop Chromium); builds, starts `next start` on :3210 |
@@ -94,6 +96,14 @@ kept for 7 days.
   foods, per 100 g, in `supabase/data/argenfoods.csv`. Non-commercial use with attribution is allowed by
   its terms; the app cites the source on every ARGENFOODS food. `scripts/extract-argenfoods.mjs`
   documents how the CSV was produced.
+- **USDA FoodData Central** (SR Legacy, public domain): common natural foods ARGENFOODS lacks (Argentine
+  beef cuts, chicken by piece, turkey, fish, vegetables, fruits, legumes, nuts, grains), per 100 g, in
+  `supabase/data/usda.csv`. The curated list lives in `supabase/data/usda-selection.csv`: each FDC id
+  with our Spanish name and group next to the USDA description, so every mapping can be reviewed (cuts
+  without an exact USDA equivalent use the closest one: matambre = flank steak, raw bondiola = whole pork
+  shoulder, pecho = brisket). Carbohydrates are
+  "by difference" (fiber included). `scripts/extract-usda.mjs` rebuilds the CSV from the selection; the
+  app cites the source and links each food's FDC page.
 - **Open Food Facts** (ODbL): packaged products, fetched server-side only (barcode lookup and name search
   limited to Argentina). A product is stored as the user's own food only when looked up or picked.
 
