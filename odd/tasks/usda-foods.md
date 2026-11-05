@@ -16,7 +16,7 @@ Branch: feat/usda-foods (from development). Delivery: ask-on-risk. Test runner: 
 - [x] T1 (S1) source "usda": migration + pgTAP, types, strings, badge, detail attribution/link. Route: inline. Commit f9fd282.
 - [x] T2 (S2, S3) extract + import scripts with unit tests; import body shared via scripts/lib/catalog-import.mjs. Route: inline. Commit dcc905a.
 - [x] T3 (S4) curated selection (205 foods), usda.csv, README, local import verified. Route: inline. Commits b4d8c01, a6a4fe8.
-- [ ] T4 (S5) production import — pending user authorization.
+- [x] T4 (S5) production import, run by the user on 2026-11-05 (L12). Route: inline. No commit: data only. App check confirmed by the user (L14).
 
 ## Log
 
@@ -29,3 +29,8 @@ Branch: feat/usda-foods (from development). Delivery: ask-on-risk. Test runner: 
 - L7: Next: T4 production import needs explicit user authorization (remote write to the production Supabase project); the migration must reach production first (PR to development, then main).
 - L8: Independent verifier (high-risk item 1, migration): S1-S3 pass, S4 pass with advisories, no blockers; import-argenfoods differential identical in 8 cases. Native review (risk, readability, reliability) granted by the user, approved and acknowledged (target sha256:db39be3a…), advisories only.
 - L9: Applied advisories in a6a4fe8: removed ARGENFOODS duplicates (bife de chorizo crudo = bife angosto, endivia = escarola crespa, falda cruda = pecho crudo), renamed falda cocida -> pecho cocido, arándanos rojos deshidratados, papa/batata "pulpa", canned salmon "(pink)"; extract-usda fails on non-numeric amounts; README lists the approximations. 205 foods.
+- L10 (2026-11-05, user): "hay un problema que los alimentos USDA no se estan mostrando"
+- L11: Production diagnostic in the SQL Editor as role authenticated: visible_usda 0, visible_argenfoods 421, search_usda 0, search_argenfoods 21, search_matambre 0. search_foods (signature, md5) and the foods policies match the local stack, so the cause was the missing import, not code or RLS. The user's earlier report of usda rows in an owner_id-null query stayed unexplained.
+- L12 (2026-11-05, user): ran `npm run foods:import-usda -- --yes` against the production host: "Upserted 205 USDA foods. Shared USDA rows in the database: 205."
+- L13: Next: the user confirms the USDA chip in the production app. This document's update is not committed yet.
+- L14 (2026-11-05, user): "si ya aparecen". Feature complete; this document's update is still uncommitted.
