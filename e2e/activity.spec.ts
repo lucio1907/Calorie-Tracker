@@ -32,4 +32,40 @@ test.describe("Activity", () => {
     await expect.poll(() => data.count("activity_entries")).toBe(1);
     await captureScreen(page, testInfo, "activity");
   });
+
+  test("logs the calories from a watch and keeps them when the duration changes", async ({ page, data }) => {
+    await data.weight(addDays(appToday(), -3), 70);
+
+    await page.goto("/activity");
+    await page.getByRole("button", { name: "Registrar actividad" }).click();
+    const sheet = page.getByRole("dialog", { name: "Registrar actividad" });
+    await sheet.getByLabel("Buscar actividades").fill("Correr, 10");
+    await sheet.getByRole("button", { name: /Correr, 10 km\/h/ }).click();
+
+    await sheet.getByLabel("Duración (minutos)").fill("30");
+    await sheet.getByLabel("Calorías de tu reloj (opcional)").fill("1200");
+    await expect(sheet.getByText("291", { exact: true })).toHaveCount(0);
+    await sheet.getByRole("button", { name: "Agregar actividad" }).click();
+    await expect(sheet).toBeHidden();
+
+    const total = page.getByRole("region", { name: "Total de ejercicio" });
+    await expect(total).toContainText("1200");
+
+    const entries = page.getByRole("list", { name: "Actividades registradas" });
+    await entries.getByRole("button", { name: /Correr, 10 km\/h/ }).click();
+    const editor = page.getByRole("dialog", { name: "Editar actividad" });
+    await expect(editor.getByLabel("Calorías de tu reloj (opcional)")).toHaveValue("1200");
+    await editor.getByLabel("Duración (minutos)").fill("60");
+    await editor.getByRole("button", { name: "Guardar cambios" }).click();
+    await expect(editor).toBeHidden();
+    await expect(entries).toContainText("60 min");
+    await expect(total).toContainText("1200");
+
+    // Clearing the field goes back to the MET estimate: (9.3 - 1) x 70 kg x 1 h = 581.
+    await entries.getByRole("button", { name: /Correr, 10 km\/h/ }).click();
+    await editor.getByLabel("Calorías de tu reloj (opcional)").fill("");
+    await editor.getByRole("button", { name: "Guardar cambios" }).click();
+    await expect(editor).toBeHidden();
+    await expect(total).toContainText("581");
+  });
 });

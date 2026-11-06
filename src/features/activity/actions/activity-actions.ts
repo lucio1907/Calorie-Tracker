@@ -21,10 +21,11 @@ import type { ActivityFormState, CatalogActivity } from "../lib/types";
 import { activityStrings as t } from "../strings";
 
 /*
- * Activity mutations. The client sends only ids, a date and a duration: the
- * kcal snapshot is always computed here as MET (from the catalog row as
- * stored; RLS decides which rows the caller can see) x the caller's latest
- * weight on or before the entry date x hours, never taken from the browser.
+ * Activity mutations. The client sends only ids, a date, a duration and,
+ * optionally, the kcal the user read on a device. Without those, the kcal
+ * snapshot is computed here as MET (from the catalog row as stored; RLS decides
+ * which rows the caller can see) x the caller's latest weight on or before the
+ * entry date x hours. The estimate itself is never taken from the browser.
  * user_id comes from the verified session; RLS enforces the same rules again.
  *
  * Today sums activity_entries.kcal per request (nothing is cached with
@@ -64,13 +65,18 @@ async function loadWeight(userId: string, date: CalendarDate): Promise<LatestWei
   }
 }
 
-/** kcal for `minutes` of `activity` with the caller's weight on or before the entry date. */
+/**
+ * The kcal the user typed when there are any; otherwise the estimate for
+ * `minutes` of `activity` with the caller's weight on or before the entry date.
+ */
 function computeSnapshot(
   formData: FormData,
   activity: CatalogActivity,
   weight: LatestWeight | null | "error",
   minutes: number,
+  manualKcal: number | null,
 ): Snapshot {
+  if (manualKcal !== null) return { ok: true, kcal: manualKcal };
   if (weight === "error") return { ok: false, state: failed(formData, t.errors.saveFailed) };
   if (!weight) return { ok: false, state: failed(formData, t.errors.noWeight, true) };
 
@@ -109,7 +115,7 @@ export async function createActivityEntry(_previous: ActivityFormState, formData
   if (activity === "error") return failed(formData, t.errors.saveFailed);
   if (!activity) return failed(formData, t.errors.activityMissing);
 
-  const snapshot = computeSnapshot(formData, activity, weight, input.minutes);
+  const snapshot = computeSnapshot(formData, activity, weight, input.minutes, input.manualKcal);
   if (!snapshot.ok) return snapshot.state;
 
   const supabase = await createClient();
@@ -120,6 +126,7 @@ export async function createActivityEntry(_previous: ActivityFormState, formData
     label: activity.name,
     minutes: input.minutes,
     kcal: snapshot.kcal,
+    kcal_is_manual: input.manualKcal !== null,
   });
   if (isRowQuotaViolation(error)) return failed(formData, t.errors.dayFull);
   if (error) {
@@ -132,9 +139,9 @@ export async function createActivityEntry(_previous: ActivityFormState, formData
 }
 
 /**
- * Form action: changes an entry's duration and recomputes its kcal snapshot
- * from the activity's MET and the caller's weight on or before the entry's
- * own date (as stored, never from the form).
+ * Form action: changes an entry's duration and its kcal snapshot: the kcal the
+ * user typed, or else the estimate from the activity's MET and the caller's
+ * weight on or before the entry's own date (as stored, never from the form).
  */
 export async function updateActivityEntry(_previous: ActivityFormState, formData: FormData): Promise<ActivityFormState> {
   const user = await getCurrentUser();
@@ -165,12 +172,12 @@ export async function updateActivityEntry(_previous: ActivityFormState, formData
   if (activity === "error") return failed(formData, t.errors.saveFailed);
   if (!activity) return failed(formData, t.errors.activityMissing);
 
-  const snapshot = computeSnapshot(formData, activity, weight, input.minutes);
+  const snapshot = computeSnapshot(formData, activity, weight, input.minutes, input.manualKcal);
   if (!snapshot.ok) return snapshot.state;
 
   const { data, error } = await supabase
     .from("activity_entries")
-    .update({ minutes: input.minutes, kcal: snapshot.kcal })
+    .update({ minutes: input.minutes, kcal: snapshot.kcal, kcal_is_manual: input.manualKcal !== null })
     .eq("id", input.entryId)
     .eq("user_id", user.id)
     .select("id")

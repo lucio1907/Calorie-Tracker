@@ -4,7 +4,7 @@ import { useState, type ReactNode } from "react";
 import { Button, ButtonLink, TextField } from "@/components/ui";
 import { formatAmount, formatKcal } from "@/features/foods/lib/format";
 import { activityKcal } from "../lib/activity-kcal";
-import { MAX_ACTIVITY_MINUTES, parseMinutes } from "../lib/activity-schema";
+import { MAX_ACTIVITY_MINUTES, parseManualKcal, parseMinutes } from "../lib/activity-schema";
 import type { ActivityFormState } from "../lib/types";
 import { activityStrings } from "../strings";
 
@@ -25,6 +25,8 @@ type ActivityEntryFormProps = {
   met: number;
   weightKg: number;
   defaultMinutes: string;
+  /** Calories already typed for this entry; blank means use the estimate. */
+  defaultManualKcal?: string;
   /** Hidden ids (date + activityId to create, entryId to edit). */
   hidden: Record<string, string>;
   submitLabel: string;
@@ -37,12 +39,16 @@ type ActivityEntryFormProps = {
   footer?: ReactNode;
 };
 
-/** Duration form for one activity, with a live kcal preview ((MET - 1) x weight x hours). */
+/**
+ * Duration and optional calories for one activity, with a live kcal preview:
+ * the typed calories, or else the estimate ((MET - 1) x weight x hours).
+ */
 export function ActivityEntryForm({
   title,
   met,
   weightKg,
   defaultMinutes,
+  defaultManualKcal = "",
   hidden,
   submitLabel,
   state,
@@ -53,7 +59,10 @@ export function ActivityEntryForm({
   footer,
 }: ActivityEntryFormProps) {
   const [minutes, setMinutes] = useState(state.values.minutes ?? defaultMinutes);
-  const preview = previewActivityKcal(met, weightKg, minutes);
+  const [manualKcal, setManualKcal] = useState(state.values.manualKcal ?? defaultManualKcal);
+  const manual = parseManualKcal(manualKcal);
+  const usesManualKcal = manual.ok && manual.value !== null;
+  const preview = manual.ok ? (manual.value ?? previewActivityKcal(met, weightKg, minutes)) : null;
 
   return (
     <div className="flex flex-col gap-24">
@@ -89,6 +98,19 @@ export function ActivityEntryForm({
             className="tabular"
           />
 
+          <TextField
+            label={t.form.manualKcal}
+            name="manualKcal"
+            inputMode="numeric"
+            autoComplete="off"
+            enterKeyHint="done"
+            value={manualKcal}
+            onChange={(event) => setManualKcal(event.target.value)}
+            hint={t.form.manualKcalHint}
+            error={state.fieldErrors.manualKcal}
+            className="tabular"
+          />
+
           <section aria-labelledby="activity-preview-heading" className="rounded-cards bg-surface-muted p-12">
             <h3
               id="activity-preview-heading"
@@ -103,9 +125,12 @@ export function ActivityEntryForm({
                   <span className="text-body text-ink-muted">{t.units.kcal}</span>
                 </>
               ) : (
-                <span className="text-body text-ink-muted">{t.form.previewEmpty}</span>
+                <span className="text-body text-ink-muted">
+                  {manual.ok ? t.form.previewEmpty : t.form.previewInvalidKcal}
+                </span>
               )}
             </output>
+            {usesManualKcal ? <p className="mt-4 text-caption text-ink-muted">{t.form.previewManual}</p> : null}
           </section>
 
           <div className="flex flex-wrap gap-8">

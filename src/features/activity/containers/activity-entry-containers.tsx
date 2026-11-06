@@ -126,6 +126,7 @@ function EditDurationForm({
       met={activity.met}
       weightKg={weight.kg}
       defaultMinutes={formatAmount(entry.minutes)}
+      defaultManualKcal={entry.kcalIsManual ? String(entry.kcal) : ""}
       hidden={{ entryId: String(entry.id) }}
       submitLabel={t.form.update}
       state={state}
@@ -137,9 +138,9 @@ function EditDurationForm({
 }
 
 /**
- * Edit an entry's duration (kcal are recomputed on the server) or delete it.
- * Without its activity or a weight the duration cannot be recomputed, so
- * only delete is offered.
+ * Edit an entry's duration and typed kcal (an estimate is recomputed on the
+ * server) or delete it. Without its activity or a weight there is no estimate
+ * to show, so only delete is offered.
  */
 export function EditActivityContainer({ entry, activity, weight, onDone }: EditActivityContainerProps) {
   if (activity && weight) {

@@ -109,11 +109,55 @@ describe("createActivityEntry", () => {
           minutes: 30,
           // (9.3 - 1) x 70 kg x 0.5 h = 290.5 -> 291.
           kcal: 291,
+          kcal_is_manual: false,
         },
       },
     ]);
     expect(revalidatePath).toHaveBeenCalledWith("/today");
     expect(refresh).toHaveBeenCalledOnce();
+  });
+
+  it("saves the calories the user typed instead of the estimate, and flags them as manual", async () => {
+    const state = await createActivityEntry(initialActivityFormState, form({ ...fields, manualKcal: "450" }));
+
+    expect(state.status).toBe("saved");
+    expect(calls).toEqual([
+      {
+        table: "activity_entries",
+        op: "insert",
+        filters: [],
+        payload: {
+          user_id: USER.id,
+          entry_date: "2026-10-14",
+          activity_id: 8,
+          label: "Running, 10 km/h",
+          minutes: 30,
+          kcal: 450,
+          kcal_is_manual: true,
+        },
+      },
+    ]);
+    expect(revalidatePath).toHaveBeenCalledWith("/today");
+  });
+
+  it("does not need a weight when the user typed the calories", async () => {
+    getLatestWeight.mockResolvedValue(null);
+    const state = await createActivityEntry(initialActivityFormState, form({ ...fields, manualKcal: "450" }));
+    expect(state.status).toBe("saved");
+    expect(calls[0]).toMatchObject({ op: "insert", payload: { kcal: 450, kcal_is_manual: true } });
+  });
+
+  it("returns a field error for invalid calories without touching the database", async () => {
+    const state = await createActivityEntry(initialActivityFormState, form({ ...fields, manualKcal: "abc" }));
+    expect(state).toEqual({
+      status: "error",
+      fieldErrors: { manualKcal: t.validation.wholeKcal },
+      formError: t.validation.fix,
+      needsWeight: false,
+      values: { minutes: "30", manualKcal: "abc" },
+    });
+    expect(getActivity).not.toHaveBeenCalled();
+    expect(calls).toHaveLength(0);
   });
 
   it("requires a session", async () => {
@@ -221,7 +265,7 @@ describe("updateActivityEntry", () => {
         table: "activity_entries",
         op: "update",
         // (9.3 - 1) x 80 kg x 1 h = 664.
-        payload: { minutes: 60, kcal: 664 },
+        payload: { minutes: 60, kcal: 664, kcal_is_manual: false },
         filters: [
           ["id", 42],
           ["user_id", USER.id],
@@ -230,6 +274,34 @@ describe("updateActivityEntry", () => {
     ]);
     expect(revalidatePath).toHaveBeenCalledWith("/today");
     expect(refresh).toHaveBeenCalledOnce();
+  });
+
+  it("keeps the calories the user typed when the duration changes", async () => {
+    results.push({ data: stored, error: null }, { data: { id: 42 }, error: null });
+
+    const state = await updateActivityEntry(
+      initialActivityFormState,
+      form({ entryId: "42", minutes: "60", manualKcal: "450" }),
+    );
+
+    expect(state.status).toBe("saved");
+    expect(calls[1]).toMatchObject({
+      op: "update",
+      payload: { minutes: 60, kcal: 450, kcal_is_manual: true },
+    });
+  });
+
+  it("does not need a weight when the user typed the calories", async () => {
+    results.push({ data: stored, error: null }, { data: { id: 42 }, error: null });
+    getLatestWeight.mockResolvedValue(null);
+
+    const state = await updateActivityEntry(
+      initialActivityFormState,
+      form({ entryId: "42", minutes: "60", manualKcal: "450" }),
+    );
+
+    expect(state.status).toBe("saved");
+    expect(calls[1]).toMatchObject({ op: "update", payload: { kcal: 450, kcal_is_manual: true } });
   });
 
   it("validates the duration before reading anything", async () => {

@@ -21,7 +21,7 @@ Single-user app (sign-ups are closed). The UI is in Spanish (Argentina); this do
 |--------|-----------------|
 | **Hoy** (Today) | See how many calories you have left today, your target breakdown (TDEE, food, exercise) and your macros. |
 | **Diario** (Diary) | Log food by meal for any day, pick from recent foods, copy a day's entries to another day. |
-| **Actividad** (Activity) | Log exercise from a MET catalog; burned calories are added to the day's budget. |
+| **Actividad** (Activity) | Log exercise from a MET catalog, or type the calories your watch reported; burned calories are added to the day's budget. |
 | **Alimentos** (Foods) | Search 626 shared foods (421 from ARGENFOODS, 205 from USDA), scan a barcode, import packaged products from Open Food Facts, or create your own foods and portions. |
 | **Recetas** (Recipes) | Combine foods into recipes and log them by serving. |
 | **Progreso** (Progress) | Weight trend and history, daily calorie balance over 7, 30 or 90 days. |

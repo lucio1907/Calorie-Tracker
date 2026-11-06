@@ -8,8 +8,8 @@ import { ActivityDayView, WeightNotice } from "./activity-day-view";
 
 const t = activityStrings;
 
-const run: ActivityEntry = { id: 1, activityId: 8, label: "Running, 10 km/h", minutes: 30, kcal: 326 };
-const yoga: ActivityEntry = { id: 2, activityId: 21, label: "Yoga, general", minutes: 45, kcal: 120.4 };
+const run: ActivityEntry = { id: 1, activityId: 8, label: "Running, 10 km/h", minutes: 30, kcal: 326, kcalIsManual: false };
+const yoga: ActivityEntry = { id: 2, activityId: 21, label: "Yoga, general", minutes: 45, kcal: 120.4, kcalIsManual: false };
 
 describe("ActivityDayView", () => {
   it("lists each entry with its duration and kcal, plus the day total", () => {

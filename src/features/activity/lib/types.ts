@@ -17,6 +17,8 @@ export type ActivityEntry = {
   label: string;
   minutes: number;
   kcal: number;
+  /** True when the user typed the kcal; false when they are the MET estimate. */
+  kcalIsManual: boolean;
 };
 
 /** The weight kcal are computed with: the latest one on or before the viewed day. */
@@ -33,7 +35,7 @@ export type ActivityFormState = {
   values: ActivityFormValues;
 };
 
-export type ActivityFieldName = "minutes";
+export type ActivityFieldName = "minutes" | "manualKcal";
 export type ActivityFieldErrors = Partial<Record<ActivityFieldName, string>>;
 export type ActivityFormValues = Partial<Record<ActivityFieldName, string>>;
 
