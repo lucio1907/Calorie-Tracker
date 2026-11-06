@@ -21,14 +21,14 @@ export type Database = {
                   ]
                 },"activity_entries": {
                   Row: {
-                    "activity_id": number | null,"created_at": string,"entry_date": string,"id": number,"kcal": number,"label": string,"minutes": number,"user_id": string
+                    "activity_id": number | null,"created_at": string,"entry_date": string,"id": number,"kcal": number,"kcal_is_manual": boolean,"label": string,"minutes": number,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "activity_id"?: number | null,"created_at"?: string,"entry_date": string,"id"?: never,"kcal": number,"label": string,"minutes": number,"user_id"?: string
+                    "activity_id"?: number | null,"created_at"?: string,"entry_date": string,"id"?: never,"kcal": number,"kcal_is_manual"?: boolean,"label": string,"minutes": number,"user_id"?: string
                   }
                   Update: {
-                    "activity_id"?: number | null,"created_at"?: string,"entry_date"?: string,"id"?: never,"kcal"?: number,"label"?: string,"minutes"?: number,"user_id"?: string
+                    "activity_id"?: number | null,"created_at"?: string,"entry_date"?: string,"id"?: never,"kcal"?: number,"kcal_is_manual"?: boolean,"label"?: string,"minutes"?: number,"user_id"?: string
                   }
                   Relationships: [
                     {

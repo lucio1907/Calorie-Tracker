@@ -43,7 +43,7 @@ export async function getActivityEntries(userId: string, date: CalendarDate): Pr
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("activity_entries")
-    .select("id, activity_id, label, minutes, kcal")
+    .select("id, activity_id, label, minutes, kcal, kcal_is_manual")
     .eq("user_id", userId)
     .eq("entry_date", date)
     .order("created_at", { ascending: true })
@@ -56,5 +56,6 @@ export async function getActivityEntries(userId: string, date: CalendarDate): Pr
     label: row.label,
     minutes: Number(row.minutes),
     kcal: Number(row.kcal),
+    kcalIsManual: row.kcal_is_manual,
   }));
 }
