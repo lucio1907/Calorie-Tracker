@@ -45,11 +45,69 @@ describe("ActivityEntryForm", () => {
     expect(screen.getByText("581")).toBeInTheDocument();
   });
 
-  it("posts only the hidden ids and the duration", () => {
+  it("posts only the hidden ids, the duration and the optional calories", () => {
     const { container } = renderForm();
     const form = container.querySelector("form");
     expect(form).not.toBeNull();
-    expect(Object.fromEntries(new FormData(form!))).toEqual({ date: "2026-10-15", activityId: "8", minutes: "30" });
+    expect(Object.fromEntries(new FormData(form!))).toEqual({
+      date: "2026-10-15",
+      activityId: "8",
+      minutes: "30",
+      manualKcal: "",
+    });
+  });
+
+  it("shows the typed calories instead of the estimate, and returns to it when cleared", async () => {
+    const user = userEvent.setup();
+    renderForm();
+    const manualKcal = screen.getByLabelText(t.form.manualKcal);
+
+    await user.type(manualKcal, "450");
+    expect(screen.getByText("450")).toBeInTheDocument();
+    expect(screen.queryByText("291")).not.toBeInTheDocument();
+    expect(screen.getByText(t.form.previewManual)).toBeInTheDocument();
+
+    await user.clear(manualKcal);
+    expect(screen.getByText("291")).toBeInTheDocument();
+    expect(screen.queryByText(t.form.previewManual)).not.toBeInTheDocument();
+  });
+
+  it("shows no calories while the typed value is invalid", async () => {
+    const user = userEvent.setup();
+    renderForm();
+
+    await user.type(screen.getByLabelText(t.form.manualKcal), "abc");
+    expect(screen.queryByText("291")).not.toBeInTheDocument();
+    expect(screen.getByText(t.form.previewInvalidKcal)).toBeInTheDocument();
+  });
+
+  it("starts from the stored calories when editing a manual entry", () => {
+    render(
+      <ActivityEntryForm
+        title="Running, 10 km/h"
+        met={9.3}
+        weightKg={70}
+        defaultMinutes="30"
+        defaultManualKcal="1200"
+        hidden={{ entryId: "42" }}
+        submitLabel={t.form.update}
+        state={initialActivityFormState}
+      />,
+    );
+    expect(screen.getByLabelText(t.form.manualKcal)).toHaveValue("1200");
+  });
+
+  it("shows the field error for the calories", () => {
+    renderForm({
+      ...initialActivityFormState,
+      status: "error",
+      fieldErrors: { manualKcal: t.validation.wholeKcal },
+      formError: t.validation.fix,
+      values: { minutes: "30", manualKcal: "abc" },
+    });
+    const manualKcal = screen.getByLabelText(t.form.manualKcal);
+    expect(manualKcal).toHaveValue("abc");
+    expect(manualKcal).toHaveAccessibleDescription(expect.stringContaining(t.validation.wholeKcal));
   });
 
   it("shows field errors from the server", () => {

@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { buildActivityDay } from "./activity-day";
 import type { ActivityEntry } from "./types";
 
-const run: ActivityEntry = { id: 1, activityId: 8, label: "Running, 10 km/h", minutes: 30, kcal: 326 };
-const yoga: ActivityEntry = { id: 2, activityId: 21, label: "Yoga, general", minutes: 45.5, kcal: 120.1 };
+const run: ActivityEntry = { id: 1, activityId: 8, label: "Running, 10 km/h", minutes: 30, kcal: 326, kcalIsManual: false };
+const yoga: ActivityEntry = { id: 2, activityId: 21, label: "Yoga, general", minutes: 45.5, kcal: 120.1, kcalIsManual: false };
 
 describe("buildActivityDay", () => {
   it("keeps the entries in order and totals kcal and minutes", () => {
